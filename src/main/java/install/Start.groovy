@@ -1,5 +1,8 @@
 package install
 
+import groovy.sql.Sql
+import install.external.TestDB
+
 class Start {
 
     PropMan prop
@@ -147,13 +150,14 @@ class Start {
      * @param exProp
      */
     void runOtherFunc(def exProp){
-        exProp.each{
-            if (it.key.startsWith('-')){
-                if (it.key.substring(1).equals("getPath")){
-                    println new PropMan().getFullPath(it.value)
-                }
-                System.exit(0)
-            }
+
+        if (exProp['-getPath']){
+            println new PropMan().getFullPath(exProp['-getPath'])
+            System.exit(0)
+        }
+        if (exProp['-testdb'] as boolean){
+            new TestDB().run(exProp)
+            System.exit(0)
         }
     }
 
@@ -168,8 +172,14 @@ class Start {
         // OverWrite with external properties
         if (args){
             args.each{
-                def array = it.split('=')
-                prop[array[0]] = (array.size()>1) ? array[1] : ''
+                int indexEqualMark = it.indexOf('=');
+                String beforeEqualMark
+                def afterEqualMark
+                if (indexEqualMark != -1){
+                    beforeEqualMark = it.substring(0, indexEqualMark)
+                    afterEqualMark = it.substring(indexEqualMark + 1)
+                    prop[beforeEqualMark] = (afterEqualMark) ?: ''
+                }
             }
         }
         // start
