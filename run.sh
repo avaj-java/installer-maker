@@ -1,1 +1,1 @@
-java -jar build/libs/install.jar
+java -jar build/libs/installer.jar
