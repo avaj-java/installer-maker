@@ -5,22 +5,24 @@ import groovy.sql.Sql
 /**
  * Created by sujkim on 2017-01-25.
  */
-class TestDB {
+class TestDB implements ExternalFunction{
 
     TestDB(){}
 
-    boolean run(def exProp){
+    @Override
+    boolean run(Map exProp){
         List list
         Sql sql
 
         // START
+        String vendor = exProp['-vendor']?:'oracle'
         String id = exProp['-id']
         String pw = exProp['-pw']
         String ip = exProp['-ip'] ?: "127.0.0.1"
         String port = exProp['-port'] ?: "1521"
         String db = exProp['-db'] ?: "orcl"
-        String url = exProp['-url'] ?: "jdbc:oracle:thin:@${ip}:${port}:${db}"
-        String driver = exProp['-driver'] ?: "oracle.jdbc.driver.OracleDriver"
+        String url = exProp['-url'] ?: "${getURLProtocol(vendor)}@${ip}:${port}:${db}"
+        String driver = exProp['-driver'] ?: getDriverName(vendor)
         String query = exProp['-query'] ?: "select * from META_OBJECT where OBJECT_ID = 1"
         println '\n=================================================='
         println ' - START CHECK DB -'
@@ -50,13 +52,18 @@ class TestDB {
             println 'OK\n'
 
         }catch(Exception e){
+            println '!!! FAILED\n'
             e.printStackTrace()
             throw e
         }finally{
             //DISCONNECT
             print '4. Disconnect from DB - '
-            sql.close()
-            println 'OK\n'
+            if (sql){
+                sql.close()
+                println 'OK\n'
+            }else{
+                println '!!! Tester is not connected\n'
+            }
         }
 
         // CHECK DATA
@@ -67,5 +74,37 @@ class TestDB {
         println '\n=================================================='
         println ' - FINISHED CHECK DB -'
         println '==================================================\n'
+    }
+
+
+
+
+
+    /**
+     * Get Driver Name
+     * @param vendor
+     * @return
+     */
+    String getDriverName(String vendor){
+        vendor = (vendor) ?: 'oracle'
+        String driver = ''
+        //Get By Vendor
+        if (vendor.equals('oracle')) driver = 'oracle.jdbc.driver.OracleDriver'
+        else if (vendor.equals('tibero')) driver = 'com.tmax.tibero.jdbc.TbDriver'
+        return driver
+    }
+
+    /**
+     * Get URLProtocol
+     * @param vendor
+     * @return
+     */
+    String getURLProtocol(String vendor){
+        vendor = (vendor) ?: 'oracle'
+        String URLProtocol = ''
+        //Get By Vendor
+        if (vendor.equals('oracle')) URLProtocol = 'jdbc:oracle:thin:'
+        else if (vendor.equals('tibero')) URLProtocol = 'jdbc:tibero:thin:'
+        return URLProtocol
     }
 }
