@@ -1,4 +1,4 @@
-package install
+package com.jaemisseo.man
 
 import java.util.regex.Matcher
 import java.util.regex.Pattern
@@ -52,6 +52,8 @@ class SqlAnalMan {
         int viewNameIdx
         int functionNameIdx
         int sequenceNameIdx
+
+        String warnningMessage
     }
 
 
@@ -687,7 +689,7 @@ class SqlAnalMan {
 
 
     def ifReturn(def replaceObj, String target){
-        def result = []
+        List result = []
         if (!replaceObj || !target){
 
         }else if (replaceObj instanceof String){

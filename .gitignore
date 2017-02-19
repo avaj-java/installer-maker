@@ -19,3 +19,5 @@ out/
 
 .sjbash/
 build/
+./*.txt
+./*.xlsx

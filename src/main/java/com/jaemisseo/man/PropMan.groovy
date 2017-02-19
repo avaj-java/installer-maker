@@ -1,17 +1,30 @@
-package install
+package com.jaemisseo.man
 
 import groovy.json.JsonSlurper
 
 /**
  * Created by sujung on 2016-09-25.
  */
-class PropMan extends Properties{
+class PropMan{
 
+    Properties properties = new Properties()
     String programPath
+
+    PropMan(){
+    }
 
     PropMan(String programPath){
         this.programPath = programPath
     }
+
+    def get(String key){
+        return properties[key]
+    }
+
+    void set(String key, def data){
+        properties[key] = data
+    }
+
 
     def parse(String key){
         String val = this[key]
@@ -27,12 +40,12 @@ class PropMan extends Properties{
         return val
     }
 
-    PropMan getFIle(def paths, String filename){
+    PropMan getFile(def paths, String filename){
         def exProp = [:]
         return getFile(paths, filename, exProp)
     }
 
-    PropMan getFIle(def paths, String filename, def exProp){
+    PropMan getFile(def paths, String filename, def exProp){
         String programPath = programPath
 
         // Load Properties File
@@ -44,7 +57,7 @@ class PropMan extends Properties{
                 File file = new File("${absolutePath}/${filename}")
                 result.path = file.path
                 file.withInputStream {
-                    super.load(it)
+                    properties.load(it)
                     result.isOk = true
                 }
             }catch(Exception){
@@ -63,14 +76,14 @@ class PropMan extends Properties{
 
         // Merge prop with exProp
         exProp.each{
-            super[it.key] = it.value
+            properties[it.key] = it.value
         }
         return this
     }
 
     void validate(def checkList){
         checkList.each { propKey ->
-            if (!super[propKey])
+            if (!properties[propKey])
                 throw new Exception("Doesn't exist ${propKey} on install.properties!!!  Please Check install.properties")
         }
     }

@@ -1,4 +1,4 @@
-package install
+package com.jaemisseo.man
 
 import groovy.sql.Sql
 
@@ -17,8 +17,8 @@ class SqlMan extends SqlAnalMan{
 
     String sqlContent
     String patternToGetQuery
-    def results = []
-    def report
+    List<SqlObject> analysisResultList = []
+    Map resultReportMap
 
 
     public static final String ORACLE = "ORACLE"
@@ -49,6 +49,51 @@ class SqlMan extends SqlAnalMan{
     }
 
 
+
+    List<SqlObject> getAnalysisResultList(){
+        return analysisResultList
+    }
+
+    Map getResultReportMap(){
+        return resultReportMap
+    }
+
+    List<String> getReplacedQueryList(){
+        return analysisResultList.collect{ it.query }
+    }
+
+
+
+    List<String> getAnalysisStringResultList(){
+        return getAnalysisStringResultList(analysisResultList)
+    }
+
+    List<String> getAnalysisStringResultList(List<SqlObject> analysisList){
+        List<String> warningList = getWarningList(analysisList)
+        List<String> analysisStringList = analysisList.collect{
+            """
+            Already Exist: ${it.isExistOnDB}        
+            ${it.query}
+            """
+        }
+        return (warningList + analysisStringList)
+    }
+
+    List<String> getResultList(){
+        return getResultList([resultReportMap])
+    }
+
+    List<String> getResultList(List<Map> resultReportMapList){
+        List<String> resultList = resultReportMapList.collect{
+            """
+            ${it}
+            """
+        }
+        return resultList
+    }
+
+
+
     SqlMan set(def obj){
         this.dataSource.vendor = obj.vendor
         this.dataSource.ip = obj.ip
@@ -74,17 +119,18 @@ class SqlMan extends SqlAnalMan{
         close()
         return connect(this.dataSource)
     }
-    SqlMan connect(def t){
+    SqlMan connect(Map dataSourceMap){
+        Map l = dataSourceMap
         // DataSource
-        String vendor = t.vendor ? t.vendor : dataSource.vendor
-        String ip = t.ip ? t.ip : dataSource.ip
-        String port = t.port ? t.port : dataSource.port
-        String db = t.db ? t.db : dataSource.db
-        String user = t.user ? t.user : dataSource.user
-        String password = t.password ? t.password : dataSource.password
-        String url = (t.url) ? t.url : getUrl(vendor, ip, port, db)
+        String vendor = l.vendor ? l.vendor : dataSource.vendor
+        String ip = l.ip ? l.ip : dataSource.ip
+        String port = l.port ? l.port : dataSource.port
+        String db = l.db ? l.db : dataSource.db
+        String user = l.user ? l.user : dataSource.user
+        String password = l.password ? l.password : dataSource.password
+        String url = (l.url) ? l.url : getUrl(vendor, ip, port, db)
         url = (url) ? url : dataSource.url
-        String driver = (t.driver) ? t.driver : getDriver(vendor)
+        String driver = (l.driver) ? l.driver : getDriver(vendor)
         driver = (driver) ? driver : dataSource.driver
         this.sql = Sql.newInstance(url, user, password, driver)
         this.connectedDataSource = [
@@ -98,16 +144,17 @@ class SqlMan extends SqlAnalMan{
     SqlMan option(){
         return option(this.option)
     }
-    SqlMan option(def t){
-        def replace = t.replace ? t.replace : option.replace
-        def replaceTable = t.replaceTable ? t.replaceTable : option.replaceTable
-        def replaceIndex = t.replaceIndex ? t.replaceIndex : option.replaceIndex
-        def replaceView = t.replaceView ? t.replaceView : option.replaceView
-        def replaceSequence = t.replaceSequence ? t.replaceSequence : option.replaceSequence
-        def replaceTablespace = t.replaceTablespace ? t.replaceTablespace : option.replaceTablespace
-        def replaceUser = t.replaceUser ? t.replaceUser : option.replaceUser
-        def replaceDatafile = t.replaceDatafile ? t.replaceDatafile : option.replaceDatafile
-        def replacePassword = t.replacePassword ? t.replacePassword : option.replacePassword
+    SqlMan option(Map replacementMap){
+        Map l = replacementMap
+        def replace = l.replace ? l.replace : option.replace
+        def replaceTable = l.replaceTable ? l.replaceTable : option.replaceTable
+        def replaceIndex = l.replaceIndex ? l.replaceIndex : option.replaceIndex
+        def replaceView = l.replaceView ? l.replaceView : option.replaceView
+        def replaceSequence = l.replaceSequence ? l.replaceSequence : option.replaceSequence
+        def replaceTablespace = l.replaceTablespace ? l.replaceTablespace : option.replaceTablespace
+        def replaceUser = l.replaceUser ? l.replaceUser : option.replaceUser
+        def replaceDatafile = l.replaceDatafile ? l.replaceDatafile : option.replaceDatafile
+        def replacePassword = l.replacePassword ? l.replacePassword : option.replacePassword
         this.connectedOption = [
             replace :replace,
             replaceTable : replaceTable,
@@ -131,8 +178,8 @@ class SqlMan extends SqlAnalMan{
     SqlMan init(){
         this.sqlContent = ''
         this.patternToGetQuery = ''
-        this.results = []
-        this.report = [:]
+        this.analysisResultList = []
+        this.resultReportMap = [:]
         return this
     }
 
@@ -154,21 +201,21 @@ class SqlMan extends SqlAnalMan{
         option(tempOption)
         // analysis
         Matcher m = getMatchedList(this.sqlContent, this.patternToGetQuery)
-        results = getAnalysisResult(m)
+        analysisResultList = getAnalysisResultList(m)
         return this
     }
 
-    SqlMan checkBefore(def tempDataSource){
+    SqlMan checkBefore(Map dataSourceMap){
         def existObjectList
         def existTablespaceList
         def existUserList
-        def resultsForTablespace = results.findAll{ it.commandType.equalsIgnoreCase("CREATE") && it.objectType.equalsIgnoreCase("TABLESPACE") }
-        def resultsForUser = results.findAll{ it.commandType.equalsIgnoreCase("CREATE") && it.objectType.equalsIgnoreCase("USER") }
+        def resultsForTablespace = analysisResultList.findAll{ it.commandType.equalsIgnoreCase("CREATE") && it.objectType.equalsIgnoreCase("TABLESPACE") }
+        def resultsForUser = analysisResultList.findAll{ it.commandType.equalsIgnoreCase("CREATE") && it.objectType.equalsIgnoreCase("USER") }
         // Second Analysis
         try {
-            connect(tempDataSource)
+            connect(dataSourceMap)
             existObjectList = sql.rows("SELECT OBJECT_NAME, OBJECT_TYPE, OWNER AS SCHEME FROM ALL_OBJECTS")
-            results.each {
+            analysisResultList.each {
                 it.isExistOnDB = isExistOnSchemeOnDB(it, existObjectList)
             }
             if (resultsForTablespace) {
@@ -187,53 +234,21 @@ class SqlMan extends SqlAnalMan{
         }finally{
             close()
         }
-        def createTablespaceList = results.findAll { it.commandType.equalsIgnoreCase('CREATE') && it.objectType.equalsIgnoreCase('TABLESPACE') }
-        def createUserList = results.findAll { it.commandType.equalsIgnoreCase('CREATE') && it.objectType.equalsIgnoreCase('USER') }
-        def createTableList = results.findAll { it.commandType.equalsIgnoreCase('CREATE') && it.objectType.equalsIgnoreCase('TABLE') }
-        def createIndexList = results.findAll { it.commandType.equalsIgnoreCase('CREATE') && it.objectType.equalsIgnoreCase('INDEX') }
-        def createViewList = results.findAll { it.commandType.equalsIgnoreCase('CREATE') && it.objectType.equalsIgnoreCase('VIEW') }
-        def createSequenceList = results.findAll { it.commandType.equalsIgnoreCase('CREATE') && it.objectType.equalsIgnoreCase('SEQUENCE') }
-        def createFunctionList = results.findAll { it.commandType.equalsIgnoreCase('CREATE') && it.objectType.equalsIgnoreCase('FUNCTION') }
-        def insertList = results.findAll { it.commandType.equalsIgnoreCase('INSERT') }
-        def updateList = results.findAll { it.commandType.equalsIgnoreCase('UPDATE') }
-//        println "//////////////////////////////////////////////////"
-        warningAlreadyExist("create tablespace warning:", createTablespaceList)
-        warningAlreadyExist("create user warning:", createUserList)
-        warningAlreadyExist("create table warning:", createTableList)
-        warningAlreadyExist("create index warning:", createIndexList)
-        warningAlreadyExist("create view warning:", createViewList)
-        warningAlreadyExist("create sequence warning:", createSequenceList)
-        warningAlreadyExist("create function warning:", createFunctionList)
-        warningNotExist("insert warning:", insertList)
-        warningNotExist("update warning:", updateList)
-        // check before run SQL
-//        if (checkType == SqlMan.CHECK_BEFORE_AND_STOP
-//        && (createTableWarningCnt || createIndexWarningCnt || createViewWarningCnt || createSequenceWarningCnt || createFunctionWarningCnt || insertWarningCnt || updateWarningCnt)){
         return this
     }
 
-    SqlMan printQuerys(){
-        println ""
-        println ""
-        println "///// QUERYS"
-        results.eachWithIndex{ SqlObject sqlObj, int idx ->
-            println ""
-            println "--${idx+1}"
-            println "${sqlObj.query}"
-        }
-        return this
-    }
+
 
 
     SqlMan run() {
         return run([:])
     }
-    SqlMan run(def tempDataSource) {
+    SqlMan run(Map dataSourceMap) {
         // SQL
-        runSql(tempDataSource, results)
+        runSql(dataSourceMap, analysisResultList)
 
         // create report
-        createReport(results)
+        createReport(analysisResultList)
         return this
     }
 
@@ -241,7 +256,7 @@ class SqlMan extends SqlAnalMan{
 
 
 
-    def getAnalysisResult(Matcher m){
+    def getAnalysisResultList(Matcher m){
         def results = []
         // First Analysis
         m.each { String query ->
@@ -251,10 +266,10 @@ class SqlMan extends SqlAnalMan{
     }
 
 
-    void runSql(def tempDataSource, def results){
-        connect(tempDataSource)
+    void runSql(Map dataSourceMap, List<SqlObject> analysisResultList){
+        connect(dataSourceMap)
         sql.withTransaction{
-            results.eachWithIndex{ def result, int idx ->
+            analysisResultList.eachWithIndex{ SqlObject result, int idx ->
                 try{
                     String query = result.query
                     sql.execute(removeLastSemicoln(removeLastSlash(query)))
@@ -271,30 +286,59 @@ class SqlMan extends SqlAnalMan{
 
 
 
-    void createReport(def results){
-        this.report = [
-                database:connectedDataSource,
-                pattern:patternToGetQuery,
-                matchedCnt:results.size(),
+    void createReport(List<SqlObject> results){
+        this.resultReportMap = [
+                database    :connectedDataSource,
+                pattern     :patternToGetQuery,
+                matchedCnt  :results.size(),
                 succeededCnt:results.findAll{ it.isOk }.size(),
-                failedCnt:results.findAll{ !it.isOk }.size(),
-                summary:getSummary(results),
-//                results:results
+                failedCnt   :results.findAll{ !it.isOk }.size(),
+                summary     :getSummary(results),
+//                analysisResultList:analysisResultList
         ]
     }
 
-    def report(){
+
+
+    /**
+     * Report 'Before Check' With Console
+     */
+    SqlMan reportAnalysis(){
+        List<String> warningList = getWarningList()
+        warningList.each{
+            println it
+        }
+        reportGeneratedQuerys()
+        return this
+    }
+
+    SqlMan reportGeneratedQuerys(){
+        println ""
+        println ""
+        println "///// QUERYS"
+        analysisResultList.eachWithIndex{ SqlObject sqlObj, int idx ->
+            println ""
+            println "--${idx+1}"
+            println "${sqlObj.query}"
+        }
+        return this
+    }
+
+    /**
+     * Report 'SQL Result' With Console
+     */
+    SqlMan reportResult(){
         println ""
         println ""
         println "///// REPORT"
-        report.each{
+        resultReportMap.each{
             println ""
             println it
         }
         println ""
         println ""
         println ""
-        return
+        return this
     }
 
 
@@ -431,17 +475,49 @@ class SqlMan extends SqlAnalMan{
         return isExist
     }
 
-    def warningAlreadyExist(String msg, def list){
+    List<String> getWarningAlreadyExist(String msg, List<SqlObject> list){
+        List<String> result = []
         int existCnt = list.findAll{ it.isExistOnDB }.size()
-        if (existCnt){
-            println  "[${msg}] Already Exists Object :   ${existCnt} / ${list.size()}"
-        }
+        if (existCnt)
+            result << "[${msg}] Already Exists Object :   ${existCnt} / ${list.size()}"
+        return result
     }
-    def warningNotExist(String msg, def list){
+    List<String> getWarningNotExist(String msg, List<SqlObject> list){
+        List<String> result = []
         int notExistCnt = list.findAll{ !it.isExistOnDB }.size()
-        if (notExistCnt){
-            println  "[${msg}] Not Exsist Object :   ${notExistCnt} / ${list.size()}"
-        }
+        if (notExistCnt)
+            result << "[${msg}] Not Exsist Object :   ${notExistCnt} / ${list.size()}"
+        return result
+    }
+
+    List<String> getWarningList(){
+        return getWarningList(analysisResultList)
+    }
+
+    List<String> getWarningList(List<SqlObject> analysisResultList){
+        List<String> warningList = []
+        def createTablespaceList    = analysisResultList.findAll { it.commandType.equalsIgnoreCase('CREATE') && it.objectType.equalsIgnoreCase('TABLESPACE') }
+        def createUserList          = analysisResultList.findAll { it.commandType.equalsIgnoreCase('CREATE') && it.objectType.equalsIgnoreCase('USER') }
+        def createTableList         = analysisResultList.findAll { it.commandType.equalsIgnoreCase('CREATE') && it.objectType.equalsIgnoreCase('TABLE') }
+        def createIndexList         = analysisResultList.findAll { it.commandType.equalsIgnoreCase('CREATE') && it.objectType.equalsIgnoreCase('INDEX') }
+        def createViewList          = analysisResultList.findAll { it.commandType.equalsIgnoreCase('CREATE') && it.objectType.equalsIgnoreCase('VIEW') }
+        def createSequenceList      = analysisResultList.findAll { it.commandType.equalsIgnoreCase('CREATE') && it.objectType.equalsIgnoreCase('SEQUENCE') }
+        def createFunctionList      = analysisResultList.findAll { it.commandType.equalsIgnoreCase('CREATE') && it.objectType.equalsIgnoreCase('FUNCTION') }
+        def insertList              = analysisResultList.findAll { it.commandType.equalsIgnoreCase('INSERT') }
+        def updateList              = analysisResultList.findAll { it.commandType.equalsIgnoreCase('UPDATE') }
+        warningList += getWarningAlreadyExist("create tablespace warning:", createTablespaceList)
+        warningList += getWarningAlreadyExist("create user warning:", createUserList)
+        warningList += getWarningAlreadyExist("create table warning:", createTableList)
+        warningList += getWarningAlreadyExist("create index warning:", createIndexList)
+        warningList += getWarningAlreadyExist("create view warning:", createViewList)
+        warningList += getWarningAlreadyExist("create sequence warning:", createSequenceList)
+        warningList += getWarningAlreadyExist("create function warning:", createFunctionList)
+        warningList += getWarningNotExist("insert warning:", insertList)
+        warningList += getWarningNotExist("update warning:", updateList)
+        return warningList
+        // check before run SQL
+//        if (checkType == SqlMan.CHECK_BEFORE_AND_STOP
+//        && (createTableWarningCnt || createIndexWarningCnt || createViewWarningCnt || createSequenceWarningCnt || createFunctionWarningCnt || insertWarningCnt || updateWarningCnt)){
     }
 
 
