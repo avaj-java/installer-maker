@@ -35,7 +35,7 @@ class TaskInstallDatabase {
             reportFileLineBreak        : propman.get('report.file.linebreak'),
             reportFileLastLineBreak    : propman.get('report.file.last.linebreak'),
         ))
-        mode.each{
+        mode.eachFieldName{
             println "${it}  :   ${mode[it]}"
         }
     }

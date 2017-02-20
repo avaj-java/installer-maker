@@ -7,13 +7,13 @@ class Option {
 
     Option merge(Option newOption){
         Option oldOption = this
-        oldOption.each{ String fieldName ->
+        oldOption.eachFieldName{ String fieldName ->
             oldOption[fieldName] = (newOption[fieldName] != null && newOption[fieldName] != '') ? newOption[fieldName] : oldOption[fieldName]
         }
         return this
     }
 
-    List each(Closure closure){
+    List eachFieldName(Closure closure){
         List list = properties.keySet().toList()
         list -= ['class']
         list.each{ String fieldName ->
