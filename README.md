@@ -40,7 +40,7 @@ java -jar ./installer.jar -x.execute.sql
 
 ex)
 ```sh
-java -jar ./installer.jar -x.execute.sql -report.sql 
+java -jar ./installer.jar -x.execute.sql -report.sql -report.file.encoding=utf-8 
 ```
 
 
