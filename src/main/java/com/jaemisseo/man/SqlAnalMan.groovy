@@ -14,12 +14,16 @@ class SqlAnalMan {
 
 
     class SqlObject{
+
+        String sqlFileName
+        Integer seq
+        String query
         boolean isExistOnDB
         boolean isOk
+        String warnningMessage
         Exception error
-        String query
-        def arrayToCompare
 
+        def arrayToCompare
 
         String commandType
         String objectType
@@ -52,9 +56,14 @@ class SqlAnalMan {
         int viewNameIdx
         int functionNameIdx
         int sequenceNameIdx
-
-        String warnningMessage
     }
+
+    public static final String WARN_MSG_1 = '=> There is no object!'
+    public static final String WARN_MSG_2 = '=> Object already exist!'
+
+    String sqlFileName
+
+
 
 
 
@@ -539,7 +548,7 @@ class SqlAnalMan {
 
 
 
-    SqlObject getReplacedObject(SqlObject obj, def opt){
+    SqlObject getReplacedObject(SqlObject obj, def opt, Integer seq){
         // Replace Some With Some On Query
         def words = obj.arrayToCompare
         String target
@@ -660,6 +669,8 @@ class SqlAnalMan {
                     obj.objectName = obj.sequenceName
             }
         }
+        obj.sqlFileName = sqlFileName
+        obj.seq = seq
         obj.query = words.join(" ")
         return obj
     }

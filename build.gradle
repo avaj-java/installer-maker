@@ -64,15 +64,55 @@ repositories {
 dependencies {
     //GROOVY
     compile 'org.codehaus.groovy:groovy-all:2.1.3'
+
+    //REST
+//    compile group: 'org.restlet.jse', name: 'org.restlet.ext.apispark', version: '2.3.1'  //restlet
+//    compile 'com.sun.jersey:jersey-server:1.12-b01' //Jersey-Server
+    compile 'com.sun.jersey:jersey-client:1.9.1'    //Jersey-Client
+    
     //JDBC
     compile "com.oracle:ojdbc6:11.2.0.3"
     compile "com.tmax.tibero:tibero-jdbc:5.0"
+
     //POI
     compile "org.apache.poi:poi:3.9"
     compile "org.apache.poi:poi-ooxml:3.9"
     compile "org.apache.poi:poi-ooxml-schemas:3.9"
+
+    //TAR
+    compile 'org.apache.commons:commons-compress:1.4.1'
+
+    // TEST
+    testCompile "junit:junit:4.11"
 }
 
 task wrapper(type: Wrapper) {
     gradleVersion = '1.12'
+}
+
+
+tasks.create(name: 'hello', dependsOn: 'jar') {
+    File directory = new File("${project.rootDir}/archive")
+    if (!directory.exists()){
+        println directory.mkdirs()
+    }
+}
+
+tasks.withType(Jar) {
+//    destinationDir = file("$rootDir/build/New_libs")
+}
+
+task copyJars(type: Copy, dependsOn: jar) {
+    File directory = new File("${project.rootDir}/archive")
+    if (!directory.exists()){
+        println directory.mkdirs()
+    }
+    from "$rootDir/build/libs"
+    into "${project.rootDir}/${directory}"
+}
+
+task zip(type: Zip) {
+    from configurations.runtime.allArtifacts.files
+    from configurations.runtime
+    into (project.name + '-' + project.version)
 }

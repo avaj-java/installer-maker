@@ -5,6 +5,11 @@ package com.jaemisseo.man.util
  */
 class Option {
 
+    Option clone(){
+        Option oldOption = this
+        return this.class.newInstance().merge(oldOption)
+    }
+
     Option merge(Option newOption){
         Option oldOption = this
         oldOption.eachFieldName{ String fieldName ->

@@ -1,16 +1,6 @@
 package com.jaemisseo.man
 
-import com.jaemisseo.man.annotation.ReportColumn
-import com.jaemisseo.man.annotation.ReportColumnDataStyle
-import com.jaemisseo.man.annotation.ReportColumnHeaderStyle
-import com.jaemisseo.man.annotation.ReportColumnHighlightStyle
-import com.jaemisseo.man.annotation.ReportSheet
-import com.jaemisseo.man.annotation.ReportSheetDataStyle
-import com.jaemisseo.man.annotation.ReportSheetDataTwoToneStyle
-import com.jaemisseo.man.annotation.ReportSheetHeaderStyle
-import com.jaemisseo.man.annotation.ReportSheetHighlightStyle
-import com.jaemisseo.man.annotation.ReportSheetName
-import com.jaemisseo.man.annotation.ReportSheetStyle
+import com.jaemisseo.man.annotation.*
 import org.apache.poi.ss.usermodel.*
 import org.apache.poi.ss.util.CellRangeAddress
 import org.apache.poi.ss.util.CellReference
@@ -310,10 +300,15 @@ class ReportMan {
             //Create Row(Data)
             //Option - DataTwoToneStyle
             boolean modeTowToneChange = (!!sheetOpt.dataTwoToneStyle)
+            boolean modeTwoToneToggleChange
+            List<String> pkList
             Map pkMap = [:]
             if (modeTowToneChange){
-                List<String> pkList = sheetOpt.dataTwoToneStyle.option.pk.split("\\s*,\\s*")
-                pkList.each{ pkMap[it] = null }
+                pkList = sheetOpt.dataTwoToneStyle.option.pk.split("\\s*,\\s*")
+                if (pkList[0])
+                    pkList.each{ pkMap[it] = null }
+                else
+                    modeTwoToneToggleChange = true
             }
             //CellStyleMap
             cellStyleMap = (modeTowToneChange) ? sheetOpt.columnDataTwoToneCellStyleMap : sheetOpt.columnDataCellStyleMap
@@ -329,7 +324,7 @@ class ReportMan {
                             isTwoToneChange = true
                         }
                     }
-                    if (isTwoToneChange)
+                    if (isTwoToneChange || modeTwoToneToggleChange)
                         cellStyleMap = (cellStyleMap == sheetOpt.columnDataCellStyleMap) ? sheetOpt.columnDataTwoToneCellStyleMap : sheetOpt.columnDataCellStyleMap
                 }
                 //Create Cell
@@ -509,9 +504,9 @@ class ReportMan {
 
     SheetOption generateSheetOption(def instance){
         SheetOption sheet
-        if (instance.getClass().getAnnotation(install.core.man.annotation.ReportSheet.class)){
-            ReportSheet sheetAnt = instance.getClass().getAnnotation(install.core.man.annotation.ReportSheet.class)
-            ReportSheetStyle allAnt = instance.getClass().getAnnotation(install.core.man.annotation.ReportSheetStyle.class)
+        if (instance.getClass().getAnnotation(ReportSheet.class)){
+            ReportSheet sheetAnt = instance.getClass().getAnnotation(ReportSheet.class)
+            ReportSheetStyle allAnt = instance.getClass().getAnnotation(ReportSheetStyle.class)
             ReportSheetHeaderStyle headerAnt = instance.getClass().getAnnotation(ReportSheetHeaderStyle.class)
             ReportSheetDataStyle dataAnt = instance.getClass().getAnnotation(ReportSheetDataStyle.class)
             ReportSheetDataTwoToneStyle dataTwoToneAnt = instance.getClass().getAnnotation(ReportSheetDataTwoToneStyle.class)
@@ -551,13 +546,13 @@ class ReportMan {
             ReportColumnHeaderStyle headerAnt = field.getAnnotation(ReportColumnHeaderStyle.class)
             ReportColumnDataStyle dataAnt = field.getAnnotation(ReportColumnDataStyle.class)
             ReportColumnHighlightStyle highlightAnt = field.getAnnotation(ReportColumnHighlightStyle.class)
-            if (columnAnt){
+            if (columnAnt || sheetNameAnt){
                 field.accessible = true
                 String fieldName = field.name
                 columnOptMap[fieldName] = new ColumnOption(
-                    index: columnAnt.index(),
-                    width: columnAnt.width(),
-                    headerName: columnAnt.headerName(),
+                    index: columnAnt ? columnAnt.index() : -1,
+                    width: columnAnt ? columnAnt.width() : -1,
+                    headerName: columnAnt ? columnAnt.headerName() : null,
                     isSheetNameField: sheetNameAnt ? true : false
                 )
                 if (headerAnt)

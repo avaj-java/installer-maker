@@ -5,7 +5,7 @@ import com.jaemisseo.man.util.Option
 /**
  * Created by sujkim on 2017-02-19.
  */
-class InstallMode extends Option{
+class BuildGlobalOption extends Option{
 
     Boolean modeGenerateReportText = false
     Boolean modeGenerateReportExcel = false

@@ -72,7 +72,7 @@ class SqlMan extends SqlAnalMan{
         List<String> warningList = getWarningList(analysisList)
         List<String> analysisStringList = analysisList.collect{
             """
-            Already Exist: ${it.isExistOnDB}        
+            [${it.sqlFileName}] ${it.seq} ${it.warnningMessage}         
             ${it.query}
             """
         }
@@ -176,6 +176,7 @@ class SqlMan extends SqlAnalMan{
 
 
     SqlMan init(){
+        this.sqlFileName = ''
         this.sqlContent = ''
         this.patternToGetQuery = ''
         this.analysisResultList = []
@@ -189,7 +190,9 @@ class SqlMan extends SqlAnalMan{
     }
 
     SqlMan queryFromFile(String url){
-        return query(new File(url).text)
+        File file = new File(url)
+        this.sqlFileName = file.getName()
+        return query(file.text)
     }
 
     SqlMan command(def targetList){
@@ -217,17 +220,26 @@ class SqlMan extends SqlAnalMan{
             existObjectList = sql.rows("SELECT OBJECT_NAME, OBJECT_TYPE, OWNER AS SCHEME FROM ALL_OBJECTS")
             analysisResultList.each {
                 it.isExistOnDB = isExistOnSchemeOnDB(it, existObjectList)
+                if ( it.isExistOnDB && !(it.commandType.equalsIgnoreCase('INSERT') || it.commandType.equalsIgnoreCase('UPDATE')) ){
+                    it.warnningMessage = WARN_MSG_2
+                }else{
+                    it.warnningMessage = ''
+                }
             }
             if (resultsForTablespace) {
                 existTablespaceList = sql.rows("SELECT TABLESPACE_NAME AS OBJECT_NAME, 'TABLESPACE' AS OBJECT_TYPE FROM USER_TABLESPACES")
                 resultsForTablespace.each {
                     it.isExistOnDB = isExistOnDB(it, existTablespaceList)
+                    if (it.isExistOnDB)
+                        it.warnningMessage = WARN_MSG_2
                 }
             }
             if (resultsForUser){
                 existUserList = sql.rows("SELECT USERNAME AS OBJECT_NAME, 'USER' AS OBJECT_TYPE FROM ALL_USERS")
                 resultsForUser.each {
                     it.isExistOnDB = isExistOnDB(it, existUserList)
+                    if (it.isExistOnDB)
+                        it.warnningMessage = WARN_MSG_2
                 }
             }
         }catch(Exception){
@@ -256,11 +268,11 @@ class SqlMan extends SqlAnalMan{
 
 
 
-    def getAnalysisResultList(Matcher m){
+    List<SqlObject> getAnalysisResultList(Matcher m){
         def results = []
         // First Analysis
-        m.each { String query ->
-            results << getReplacedObject(getAnalysisObject(query), this.connectedOption)
+        m.eachWithIndex { String query, int index ->
+            results << getReplacedObject(getAnalysisObject(query), this.connectedOption, index+1)
         }
         return results
     }
@@ -316,10 +328,9 @@ class SqlMan extends SqlAnalMan{
         println ""
         println ""
         println "///// QUERYS"
-        analysisResultList.eachWithIndex{ SqlObject sqlObj, int idx ->
-            println ""
-            println "--${idx+1}"
-            println "${sqlObj.query}"
+        analysisResultList.each{
+            println "\n[${it.sqlFileName}] ${it.seq} ${it.warnningMessage}"
+            println "${it.query}"
         }
         return this
     }
@@ -376,7 +387,7 @@ class SqlMan extends SqlAnalMan{
 
 
 
-    def getSummary(def results){
+    Map getSummary(List<SqlObject> results){
         def tableList = results.findAll{ it.commandType.equalsIgnoreCase('CREATE') && it.objectType .equalsIgnoreCase("TABLE") }
         def indexList = results.findAll{ it.commandType.equalsIgnoreCase('CREATE') && it.objectType .equalsIgnoreCase("INDEX") }
         def viewList = results.findAll{ it.commandType.equalsIgnoreCase('CREATE') && it.objectType .equalsIgnoreCase("VIEW") }
@@ -463,13 +474,13 @@ class SqlMan extends SqlAnalMan{
         return isExist
     }
 
-    boolean isExistOnSchemeOnDB(def result, def objectList){
+    boolean isExistOnSchemeOnDB(SqlObject sqlObj, def catalogList){
         boolean isExist
-        String objectName = result.objectName
+        String objectName = sqlObj.objectName
         int idx = objectName.indexOf(".")
         objectName = (idx == -1) ? objectName : objectName.substring(idx+1)
-        def equalList = objectList.findAll{ Map<String, String> row ->
-            return row["OBJECT_NAME"].equalsIgnoreCase(objectName) && row["OBJECT_TYPE"].equalsIgnoreCase(result.objectType) && row["SCHEME"].equalsIgnoreCase(result.schemeName)
+        def equalList = catalogList.findAll{ Map<String, String> row ->
+            return row["OBJECT_NAME"].equalsIgnoreCase(objectName) && row["OBJECT_TYPE"].equalsIgnoreCase(sqlObj.objectType) && row["SCHEME"].equalsIgnoreCase(sqlObj.schemeName)
         }
         isExist = (equalList) ? true : false
         return isExist

@@ -1,8 +1,17 @@
 package com.jaemisseo.man
 
 import com.jaemisseo.man.util.FileSetup
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
 
+import java.nio.channels.FileChannel
 import java.util.logging.Logger
+import java.util.regex.Matcher
+import java.util.regex.Pattern
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+import java.util.zip.ZipOutputStream
 
 /**
  * Created by sujkim on 2017-02-19.
@@ -11,13 +20,40 @@ class FileMan {
 
     FileMan(){}
 
+    FileMan(String filePath){
+        init()
+        setSource(filePath)
+    }
+
+    FileMan(File file){
+        init()
+        setSource(file)
+    }
+
+    void init(){
+        nowPath = System.getProperty('user.dir')
+    }
+
     private static final Logger log = Logger.getLogger(FileMan.class.getName());
 
     boolean directoryAutoCreateUse = true
 
+    final static int BUFFER = 2048
+    static String nowPath = System.getProperty('user.dir')
+
+    File sourceFile
+
+    FileSetup globalOption = new FileSetup()
+
+    String originalContent
+    String content
 
 
 
+    FileMan set(FileSetup fileSetup){
+        globalOption.merge(fileSetup)
+        return this
+    }
 
     /**
      * Process - Backup
@@ -53,6 +89,45 @@ class FileMan {
     }
 
     /**
+     * Read File
+     */
+    private boolean loadFileContent(String filePath){
+        return loadFileContent(new File(filePath))
+    }
+
+    private boolean loadFileContent(String filePath, FileSetup opt){
+        return loadFileContent(new File(filePath), opt)
+    }
+
+    private boolean loadFileContent(File f){
+        return loadFileContent(f, globalOption)
+    }
+
+    private List<String> loadFileContent(File f, FileSetup opt){
+        opt = globalOption.clone().merge(opt)
+        String encoding = opt.encoding
+        List<String> lineList = new ArrayList<String>()
+        String line
+        try {
+//            FileReader fr = new FileReader(f)
+            InputStreamReader isr = new InputStreamReader(new FileInputStream(f), encoding)
+            BufferedReader br = new BufferedReader(isr)
+            while ((line = br.readLine()) != null) {
+                lineList.add(line)
+            }
+//            fr.close()
+            isr.close()
+            br.close()
+
+        } catch (Exception ex) {
+            ex.printStackTrace()
+        }
+
+        return lineList
+    }
+
+
+    /**
      * Create New File By LineList
      */
     boolean createNewFile(String dirPath, String fileName, List fileContentLineList){
@@ -60,13 +135,29 @@ class FileMan {
     }
 
     boolean createNewFile(String dirPath, String fileName, List fileContentLineList, FileSetup fileSetup){
+        createNewFile(new File(dirPath, fileName), fileContentLineList, fileSetup)
+    }
+
+    boolean createNewFile(String filePath, List fileContentLineList){
+        createNewFile(filePath, fileContentLineList, new FileSetup())
+    }
+
+    boolean createNewFile(String filePath, List fileContentLineList, FileSetup fileSetup){
+        createNewFile(new File(filePath), fileContentLineList, fileSetup)
+    }
+
+    boolean createNewFile(File file, List fileContentLineList){
+        createNewFile(file, fileContentLineList, new FileSetup())
+    }
+
+    boolean createNewFile(File newFile, List fileContentLineList, FileSetup opt){
+        opt = globalOption.clone().merge(opt)
         // 1) Set Values
-        File newFile = new File(dirPath, fileName)
         File dir = new File(newFile.getParent())
-        String encoding = fileSetup.encoding
-        Boolean autoLineBreakUse = fileSetup.autoLineBreakUse
-        String lineBreak = fileSetup.lineBreak
-        String lastLineBreak = fileSetup.lastLineBreak
+        String encoding = opt.encoding
+        Boolean autoLineBreakUse = opt.modeAutoLineBreak
+        String lineBreak = opt.lineBreak
+        String lastLineBreak = opt.lastLineBreak
         // 2) Check Directory And Try To Create Directory
         if ( !dir.exists() ){
             dir.mkdirs()
@@ -158,6 +249,550 @@ class FileMan {
         return true
     }
 
+
+
+    static boolean mkdirs(String path){
+        boolean isOk = false
+        File dir = new File(path)
+        if (!dir.exists()){
+            isOk = new File(path).mkdirs()
+            println "Created Directory: ${dir.path}"
+        }
+        return isOk
+    }
+
+    static boolean mkdirs(String path, Map buildStructureMap){
+        buildStructureMap.each{
+            //Make Directory
+            String directoryName = it.key
+            String dirPath = getFullPath("${path}/${directoryName}")
+            mkdirs(dirPath)
+            //Make Sub Directory
+            Map subDirectoryMap = it.value
+            mkdirs(dirPath, subDirectoryMap)
+        }
+    }
+
+//    static boolean checkDestDir(modeAutoMkdir){
+//        //AUTO MKDIR
+//        if (modeAutoMkdir){
+//            //끝이 구분자로 끝나면 => 폴더로 인식
+//            if (destPath.endsWith('/')|| destPath.endsWith('\\'))
+//                FileMan.mkdirs(destPath)
+//            //확장자가 존재하면 => 부모를 폴더르 인식
+//            else if (new File(destPath).getName().contains('.'))
+//                FileMan.mkdirs(new File(destPath).getParentFile().getPath())
+//            //그외에는 무조건 폴더로 인식
+//            else
+//                FileMan.mkdirs(destPath)
+//        }else if (!new File(destPath).exists()){
+//            throw new Exception()
+//        }
+//    }
+
+//    static boolean copy(String sourcePath, String destPath, boolean modeAutoMkdir){
+//        checkDestDir()
+//        copy()
+//    }
+
+    /**
+     * COPY
+     * 파일 => 파일 (파일명변경)
+     * *   => 폴더   (자동파일명)
+     * 파일 => 폴더  (자동파일명)
+     * 폴더 => 폴더  (자동파일명)
+     */
+    static boolean copy(String sourcePath, String destPath){
+        sourcePath = getFullPath(sourcePath)
+        destPath = getFullPath(destPath)
+        if (!sourcePath || !destPath)
+            return false
+        File originalSourceFile = new File(sourcePath)
+        File originalDestFile = new File(destPath)
+        boolean isFileSource = originalSourceFile.getName().contains('.')
+        boolean isFileDest = originalDestFile.getName().contains('.')
+        String sourceRootPath = originalSourceFile.getParentFile().getPath()
+        String destRootPath = (isFileDest) ? originalDestFile.getParentFile().getPath() : originalDestFile.getPath()
+        List<String> filePathList = getFilePathList(sourcePath)
+        List entryList = []
+        //Generate EntryList
+        filePathList.each{ String oneFilePath ->
+            generateFileList(entryList, sourceRootPath, oneFilePath)
+        }
+        //Copy To Dest
+        if (isFileSource && isFileDest){
+            File sourceFile = new File(sourcePath)
+            File destFile = new File(destPath)
+            copy(sourceFile, destFile)
+        }else{
+            for (String fileRelPath : entryList){
+                File sourceFile = new File(sourceRootPath, fileRelPath)
+                File destFile = new File(destRootPath, fileRelPath)
+                copy(sourceFile, destFile)
+            }
+        }
+        System.out.println("Done")
+        return true
+    }
+
+    static boolean copy(File sourceFile, File destFile){
+        if (sourceFile.isDirectory()){
+            mkdirs(destFile.path)
+        }else{
+            FileChannel sourceChannel = null
+            FileChannel destChannel = null
+            try{
+                sourceChannel = new FileInputStream(sourceFile.path).getChannel()
+                destChannel = new FileOutputStream(destFile.path).getChannel()
+                destChannel.transferFrom(sourceChannel, 0, sourceChannel.size())
+                println "Copied: ${sourceFile.path}"
+                println "     => ${destFile.path}"
+            }catch (Exception e){
+                e.printStackTrace()
+                throw e
+            }finally{
+                if (sourceChannel)
+                    sourceChannel.close()
+                if (destChannel)
+                    destChannel.close()
+            }
+        }
+        return true
+    }
+    
+    /**
+     * COMPRESSING
+     */
+    static void compress(String sourcePath, String destPath){
+        String fileName = new File(destPath).getName()
+        String extension = fileName.substring(fileName.lastIndexOf('.'))
+        if (extension){
+            if (extension == 'tar')
+                tar(sourcePath, destPath)
+            else
+                zip(sourcePath, destPath)
+        }
+    }
+
+    static void zip(String sourcePath, String destPath){
+        sourcePath = getFullPath(sourcePath)
+        destPath = getFullPath(destPath)
+        String sourceRootPath = new File(sourcePath).getParentFile().getPath()
+        List<String> filePathList = getFilePathList(sourcePath)
+        byte[] buffer = new byte[BUFFER]
+        List entryList = []
+        //Generate EntryList
+        filePathList.each{ String oneFilePath ->
+            generateFileList(entryList, sourceRootPath, oneFilePath)
+        }
+        //Compress Zip
+        try{
+            FileOutputStream fos = new FileOutputStream(destPath)
+            ZipOutputStream zos = new ZipOutputStream(fos)
+            for (String file : entryList){
+                println("Compressing: ${file}")
+                zos.putNextEntry(new ZipEntry(file))
+                String path = sourceRootPath + File.separator + file
+                if (new File(path).isFile()){
+                    FileInputStream fin = new FileInputStream(path)
+                    int len
+                    while ((len = fin.read(buffer)) > 0){
+                        zos.write(buffer, 0, len)
+                    }
+                    fin.close()
+                }
+            }
+            zos.closeEntry()
+            zos.close()
+            System.out.println("Done")
+        }catch(IOException ex){
+            ex.printStackTrace()
+        }
+    }
+
+    static List<String> generateFileList(List<String> entryList, String sourcePath, String path){
+        File node = new File(path)
+        String oneFilePath = node.getPath().substring(sourcePath.length()+1, path.length())
+        if(node.isDirectory()){
+            String[] subNote = node.list()
+            entryList.add(oneFilePath + System.getProperty('file.separator'))
+            for (String filename : subNote){
+                generateFileList(entryList, sourcePath, new File(node, filename).getPath())
+            }
+        }else{
+            entryList.add(oneFilePath)
+        }
+        return entryList
+    }
+
+    static void tar(String filePath, String destPath){
+        filePath = getFullPath(filePath)
+        destPath = getFullPath(destPath)
+    }
+
+    /**
+     * EXTRACTING
+     */
+    static void extract(String filePath, String destPath){
+        String fileName = new File(filePath).getName()
+        String extension = fileName.substring(fileName.lastIndexOf('.'))
+        if (extension){
+            if (extension == 'tar')
+                untar(filePath, destPath)
+            if (extension == 'jar')
+                unjar(filePath, destPath)
+            else
+                unzip(filePath, destPath)
+        }
+    }
+
+    /**
+     * Extract Tar File
+     * @param sourcePath
+     * @param destPath
+     */
+    static void untar(String sourcePath, String destPath){
+        sourcePath = getFullPath(sourcePath)
+        destPath = getFullPath(destPath)
+        List<String> filePathList = getFilePathList(sourcePath)
+
+        filePathList.each {
+            byte[] buffer = new byte[BUFFER]
+            try {
+                /** Ready **/
+                FileInputStream fin = new FileInputStream(sourcePath)
+                BufferedInputStream bis = new BufferedInputStream(fin)
+                GzipCompressorInputStream gzIn = new GzipCompressorInputStream(bis)
+                TarArchiveInputStream tarIn = new TarArchiveInputStream(gzIn)
+                TarArchiveEntry entry
+                /** Read the tar entries using the getNextEntry method **/
+                while ((entry = (TarArchiveEntry) tarIn.getNextEntry()) != null) {
+                    File file = new File(destPath, entry.getName())
+                    println "Extracting: ${file.getAbsolutePath()}"
+                    if (entry.isDirectory()) {
+                        file.mkdirs()
+                    } else {
+                        file.parentFile.mkdirs()
+                        int len
+                        FileOutputStream fos = new FileOutputStream(file)
+                        BufferedOutputStream destOs = new BufferedOutputStream(fos, BUFFER)
+                        while ((len = tarIn.read(buffer, 0, BUFFER)) != -1) {
+                            destOs.write(buffer, 0, len)
+                        }
+                        destOs.close()
+                    }
+                }
+                /** Close the input stream **/
+                tarIn.close()
+                println "Untar Completed Successfully!!"
+
+            } catch (IOException ex) {
+                ex.printStackTrace()
+            }
+        }
+    }
+
+    /**
+     * Extract Zip File
+     * @param sourcePath
+     * @param destPath
+     */
+    static void unzip(String sourcePath, String destPath){
+        sourcePath = getFullPath(sourcePath)
+        destPath = getFullPath(destPath)
+        List<String> filePathList = getFilePathList(sourcePath)
+
+        filePathList.each{
+            byte[] buffer = new byte[BUFFER]
+            try{
+                /** Ready **/
+                ZipInputStream zis = new ZipInputStream(new FileInputStream(sourcePath))
+                ZipEntry entry
+                /** Read the zip entries using the getNextEntry method **/
+                while ((entry = zis.getNextEntry()) != null){
+                    File file = new File(destPath + File.separator + entry.getName())
+                    println "Extracting: ${file.getAbsolutePath()}"
+                    if (entry.isDirectory()){
+                        file.mkdirs()
+                    }else{
+                        file.parentFile.mkdirs()
+                        FileOutputStream fos = new FileOutputStream(file)
+                        int len
+                        while ((len = zis.read(buffer)) > 0) {
+                            fos.write(buffer, 0, len)
+                        }
+                        fos.close()
+                    }
+                }
+                /** Close the input stream **/
+                zis.closeEntry()
+                zis.close()
+                println "Unzip Completed Successfully!!"
+
+            }catch(IOException ex){
+                ex.printStackTrace()
+            }
+        }
+    }
+
+    /**
+     * Extract Jar File
+     * @param sourcePath
+     * @param destPath
+     */
+    static void unjar(String sourcePath, String destPath){
+        sourcePath = getFullPath(sourcePath)
+        destPath = getFullPath(destPath)
+        List<String> filePathList = getFilePathList(sourcePath)
+
+        filePathList.each {
+            byte[] buffer = new byte[BUFFER]
+            try {
+                /** Ready **/
+                java.util.jar.JarFile jar = new java.util.jar.JarFile(sourcePath)
+                java.util.Enumeration enumEntries = jar.entries()
+                /** Read the jar entries using the nextElement method **/
+                while (enumEntries.hasMoreElements()) {
+                    java.util.jar.JarEntry entry = (java.util.jar.JarEntry) enumEntries.nextElement()
+                    java.io.File file = new java.io.File(destPath + java.io.File.separator + entry.getName())
+                    println "Extracting: ${file.getAbsolutePath()}"
+                    if (entry.isDirectory()) {
+                        file.mkdirs()
+                    } else {
+                        file.parentFile.mkdirs()
+                        java.io.InputStream is = jar.getInputStream(entry)
+                        java.io.FileOutputStream fos = new java.io.FileOutputStream(file)
+                        int len
+                        while ((len = is.read(buffer)) > 0) {
+                            fos.write(buffer, 0, len)
+                        }
+                        fos.close()
+                        is.close()
+                    }
+                }
+                /** Close the input stream **/
+                jar.close()
+                println "Unjar Completed Successfully!!"
+
+            } catch (IOException ex) {
+                ex.printStackTrace()
+            }
+        }
+
+
+    }
+
+
+    static List<String> getFilePathList(String filePath){
+        return getFilePathList(filePath, '')
+    }
+
+    static List<String> getFilePathList(String filePath, String extension){
+        def filePathList = []
+        String fullPath = getFullPath(filePath)
+        File file = new File(fullPath)
+        // check files (new)
+        if (!fullPath){
+        }else if (file.getName().endsWith('*')){
+            new File(fullPath).getParentFile().listFiles().each{ File f -> filePathList << f.path }
+        }else{
+            filePathList << new File(fullPath).path
+        }
+        // check extension
+        if (extension){
+            filePathList = filePathList.findAll{
+                int lastDotIdx = it.lastIndexOf('.')
+                String itExtension = it.substring(lastDotIdx+1).toUpperCase()
+                String acceptExtension = extension.toUpperCase()
+                return ( itExtension.equals(acceptExtension) )
+            }
+        }
+        return filePathList
+    }
+
+
+
+    FileMan setSource(String filePath){
+        filePath = getFullPath(filePath)
+        return setSource(new File(filePath))
+    }
+    FileMan setSource(File file){
+        this.sourceFile = file
+        return this
+    }
+    
+    FileMan backup(){
+        return backup(globalOption)
+    }
+    FileMan backup(FileSetup opt){
+        opt = globalOption.clone().merge(opt)
+        if (opt.modeBackup){
+            String filePath = sourceFile.getPath()
+            String backupPath = (opt.backupPath) ?: "${filePath}.bak_${new Date().format('yyyyMMdd_HHmmss')}"
+            return backup(backupPath)
+        }else{
+            return this
+        }
+    }
+
+    FileMan backup(String destPath){
+        return copy(destPath)
+    }
+
+    FileMan copy(String destPath){
+        copy(sourceFile.path, destPath)
+        return this
+    }
+
+    FileMan move(String destPath){
+        destPath = getFullPath(destPath)
+        try{
+            sourceFile.renameTo(destPath)
+        }finally{
+        }
+        return this
+    }
+
+    FileMan read(){
+        return read(sourceFile, globalOption)
+    }
+
+    FileMan read(FileSetup fileSetup){
+        return read(sourceFile, fileSetup)
+    }
+
+    FileMan read(File file, FileSetup fileSetup){
+        List<String> lineList = loadFileContent(file, fileSetup)
+        read(lineList)
+        return this
+    }
+
+    FileMan read(String text){
+        originalContent = text
+        content = "${originalContent}"
+        return this
+    }
+
+    FileMan read(List lineList){
+        originalContent = lineList.join(System.getProperty("line.separator"))
+        content = "${originalContent}"
+        return this
+    }
+
+    FileMan write(){
+        return write(globalOption)
+    }
+
+    FileMan write(FileSetup fileSetup){
+        List<String> lineList = []
+        content.eachLine{ lineList << it }
+        createNewFile(sourceFile, lineList, fileSetup)
+        return this
+    }
+
+    def analysis(){
+        return ""
+    }
+
+    def report(){
+        return ""
+    }
+
+
+    FileMan replace(Map replaceMap){
+        replaceMap.each{ String target, String replacement ->
+            replace(target, replacement)
+        }
+        return this
+    }
+    FileMan replace(String target, String replacement){
+        replacement = getRightReplacement(replacement)
+//        //PRINT
+//        if (matchedList.size()){
+//            matchedList.each{
+//                println "${it} => ${replacement}"
+//            }
+//        }
+//        //REPLACE
+        content = content.replaceAll(target, replacement)
+        return this
+    }
+
+    FileMan replaceLine(Map replaceLineMap){
+        replaceLineMap.each{ String target, String replacement ->
+            replaceLine(target, replacement)
+        }
+        return this
+    }
+    FileMan replaceLine(String target, String replacement){
+        String targetPattern = target.replace('.','\\.').replace('$','\\$').replace('#','\\#')
+        String patternToGetProperty = ".*" + targetPattern + ".*"
+        Matcher matchedList = Pattern.compile(patternToGetProperty, Pattern.MULTILINE).matcher(content)
+        replacement = getRightReplacement(replacement)
+        //PRINT
+        if (matchedList.size()){
+            matchedList.each{
+                println "${it} \n => ${replacement}"
+            }
+        }
+        //REPLACE
+        content = matchedList.replaceAll(replacement)
+        return this
+    }
+
+    FileMan replaceProperty(Map replacePropertyMap){
+        replacePropertyMap.each{ String target, String replacement ->
+            replaceProperty(target, replacement)
+        }
+        return this
+    }
+    FileMan replaceProperty(String target, String replacement){
+        String targetPattern = target.replace('.','[.]').replace('$','\\$')
+        String patternToGetProperty = "^\\s*" + targetPattern + "\\s*=.*\$"
+        Matcher matchedList = Pattern.compile(patternToGetProperty, Pattern.MULTILINE).matcher(content)
+        replacement = getRightReplacement("${target}=${replacement}")
+//        println "${matchedList.size()} ${replacement}"
+        //PRINT
+        if (matchedList.size()){
+            matchedList.each{
+                println "${it} \n => ${replacement}"
+            }
+        }
+        //REPLACE
+        content = matchedList.replaceAll(replacement)
+        return this
+    }
+
+
+    String getRightReplacement(String replacement){
+        // This Condition's Logic prevent disapearance \
+        if (replacement.indexOf('\\') != -1)
+            replacement = replacement.replaceAll('\\\\','\\\\\\\\')
+        // This Condition's Logic prevent Error - java.lang.IllegalArgumentException: named capturing group has 0 length name
+        if (replacement.indexOf('$') != -1)
+            replacement = replacement.replaceAll('\\$','\\\\\\$')
+        return replacement
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     /**
      * Check Exclude File
      */
@@ -204,6 +839,44 @@ class FileMan {
             fileMapForSeperator[validKey] = dataList.findAll{ it[keyName] == validKey }
         }
         return fileMapForSeperator
+    }
+
+
+
+    static String getFullPath(String path){
+        return getFullPath(nowPath, path)
+    }
+
+    static String getFullPath(String nowPath, String relativePath){
+        if (isItStartsWithRootPath(relativePath))
+            return relativePath
+        if (!nowPath || !relativePath)
+            return ''
+        relativePath.split(/[\/\\]/).each{ String next ->
+            if (next.equals('..')){
+                nowPath = new File(nowPath).getParent()
+            }else if (next.equals('.')){
+                // ignore
+            }else if (next.equals('~')){
+                nowPath = System.getProperty("user.home")
+            }else{
+                nowPath = "${nowPath}/${next}"
+            }
+        }
+        return new File(nowPath).path
+    }
+
+    static boolean isItStartsWithRootPath(String path){
+        boolean isRootPath = false
+        path = new File(path).path
+        if (path.startsWith('/') || path.startsWith('\\'))
+            return true
+        File.listRoots().each{
+            String rootPath = new File(it.path).path
+            if (path.startsWith(rootPath) || path.startsWith(rootPath.toLowerCase()))
+                isRootPath = true
+        }
+        return isRootPath
     }
 
 }
