@@ -1,16 +1,23 @@
 package install.task
 
+import com.jaemisseo.man.PropMan
+
 /**
  * Created by sujkim on 2017-02-27.
  */
 class TaskTestPort extends TaskUtil{
 
-    @Override
-    void run(Map prop) {
-        //Ready
+    TaskTestPort(PropMan propman){
+        this.propman = propman
+    }
 
-        def rangeFrom   = (prop['port'] ?: prop['from'] ?: 0) as int
-        def rangeTo     = (prop['to'] ?: rangeFrom) as int
+
+
+    @Override
+    void run(String propertyPrefix){
+        //Ready
+        def rangeFrom   = (propman.get('port') ?: propman.get('from') ?: 0) as int
+        def rangeTo     = (propman.get('to') ?: rangeFrom) as int
         // - No Reverse
         if (rangeFrom > rangeTo){
             def temp = rangeTo

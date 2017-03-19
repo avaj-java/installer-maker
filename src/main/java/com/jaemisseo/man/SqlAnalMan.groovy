@@ -1,5 +1,7 @@
 package com.jaemisseo.man
 
+import com.jaemisseo.man.util.SqlSetup
+
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -548,7 +550,7 @@ class SqlAnalMan {
 
 
 
-    SqlObject getReplacedObject(SqlObject obj, def opt, Integer seq){
+    SqlObject getReplacedObject(SqlObject obj, SqlSetup opt, Integer seq){
         // Replace Some With Some On Query
         def words = obj.arrayToCompare
         String target

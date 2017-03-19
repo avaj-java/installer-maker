@@ -7,7 +7,8 @@ class FileSetup extends Option {
 
     Boolean modeAutoLineBreak = true
     Boolean modeAutoMkdir = false
-    Boolean modeBackup = false
+    Boolean modeAutoBackup = false
+//    Boolean modeAutoOverWrite = false     //Not Yet
 
     String encoding = 'utf-8'
     String lineBreak = System.getProperty("line.seperator")

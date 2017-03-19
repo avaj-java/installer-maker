@@ -9,8 +9,6 @@ import com.jaemisseo.man.util.FileSetup
  */
 class TaskMergeProperties extends TaskUtil{
 
-    String thisPath
-
     @Override
     void run(Map prop) {
         //Ready
@@ -18,7 +16,7 @@ class TaskMergeProperties extends TaskUtil{
         String sourceFilePath               = propman.get('merge-into')
         String specificPropertiesFilePath   = propman.get('get-value-from')
         String fileEncoding                 = propman.get('file.encoding')
-        FileSetup opt = new FileSetup(modeBackup: true)
+        FileSetup opt = new FileSetup(modeAutoBackup: true)
         if (fileEncoding)
             opt.encoding = fileEncoding
 

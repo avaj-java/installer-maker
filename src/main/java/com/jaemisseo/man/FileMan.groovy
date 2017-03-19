@@ -251,6 +251,21 @@ class FileMan {
 
 
 
+
+
+    /***************
+     ***************
+     *
+     * CASE STATIC
+     *
+     ***************
+     ***************/
+
+
+
+    /**
+     * MKDIRS
+     */
     static boolean mkdirs(String path){
         boolean isOk = false
         File dir = new File(path)
@@ -273,27 +288,25 @@ class FileMan {
         }
     }
 
-//    static boolean checkDestDir(modeAutoMkdir){
-//        //AUTO MKDIR
-//        if (modeAutoMkdir){
-//            //끝이 구분자로 끝나면 => 폴더로 인식
-//            if (destPath.endsWith('/')|| destPath.endsWith('\\'))
-//                FileMan.mkdirs(destPath)
-//            //확장자가 존재하면 => 부모를 폴더르 인식
-//            else if (new File(destPath).getName().contains('.'))
-//                FileMan.mkdirs(new File(destPath).getParentFile().getPath())
-//            //그외에는 무조건 폴더로 인식
-//            else
-//                FileMan.mkdirs(destPath)
-//        }else if (!new File(destPath).exists()){
-//            throw new Exception()
-//        }
-//    }
+    static boolean autoMkdirs(String destPath){
+        String destDirPath
+        //Define Last Directory
+        // - 끝이 구분자로 끝나면 => 폴더로 인식
+        if (destPath.endsWith('/')|| destPath.endsWith('\\'))
+            destDirPath = destPath
+        // - 확장자가 존재하면 => 부모를 폴더르 인식
+        else if (new File(destPath).getName().contains('.'))
+            destDirPath = new File(destPath).getParentFile().getPath()
+        // - 그외에는 무조건 폴더로 인식
+        else
+            destDirPath = destPath
+        //Do AUTO MKDIR
+        FileMan.mkdirs(destDirPath)
+        //Check Directory
+        if (!new File(destDirPath).isDirectory() && !new File(destDirPath).exists())
+            throw new Exception('There is No Directory. Maybe, It Failed To Create Directory.')
+    }
 
-//    static boolean copy(String sourcePath, String destPath, boolean modeAutoMkdir){
-//        checkDestDir()
-//        copy()
-//    }
 
     /**
      * COPY
@@ -331,7 +344,7 @@ class FileMan {
                 copy(sourceFile, destFile)
             }
         }
-        System.out.println("Done")
+        System.out.println("<Done>")
         return true
     }
 
@@ -359,7 +372,13 @@ class FileMan {
         }
         return true
     }
-    
+
+    static boolean copy(String sourcePath, String destPath, boolean modeAutoMkdir){
+        if (modeAutoMkdir)
+            autoMkdirs(destPath)
+        copy(sourcePath, destPath)
+    }
+
     /**
      * COMPRESSING
      */
@@ -372,6 +391,12 @@ class FileMan {
             else
                 zip(sourcePath, destPath)
         }
+    }
+
+    static boolean compress(String sourcePath, String destPath, boolean modeAutoMkdir){
+        if (modeAutoMkdir)
+            autoMkdirs(destPath)
+        compress(sourcePath, destPath)
     }
 
     static void zip(String sourcePath, String destPath){
@@ -404,10 +429,16 @@ class FileMan {
             }
             zos.closeEntry()
             zos.close()
-            System.out.println("Done")
+            System.out.println("<Done>")
         }catch(IOException ex){
             ex.printStackTrace()
         }
+    }
+
+    static boolean zip(String sourcePath, String destPath, boolean modeAutoMkdir){
+        if (modeAutoMkdir)
+            autoMkdirs(destPath)
+        zip(sourcePath, destPath)
     }
 
     static List<String> generateFileList(List<String> entryList, String sourcePath, String path){
@@ -430,6 +461,14 @@ class FileMan {
         destPath = getFullPath(destPath)
     }
 
+    static boolean tar(String sourcePath, String destPath, boolean modeAutoMkdir){
+        if (modeAutoMkdir)
+            autoMkdirs(destPath)
+        tar(sourcePath, destPath)
+    }
+
+
+
     /**
      * EXTRACTING
      */
@@ -445,6 +484,14 @@ class FileMan {
                 unzip(filePath, destPath)
         }
     }
+
+    static boolean extract(String sourcePath, String destPath, boolean modeAutoMkdir){
+        if (modeAutoMkdir)
+            autoMkdirs(destPath)
+        extract(sourcePath, destPath)
+    }
+
+
 
     /**
      * Extract Tar File
@@ -492,6 +539,12 @@ class FileMan {
         }
     }
 
+    static boolean untar(String sourcePath, String destPath, boolean modeAutoMkdir){
+        if (modeAutoMkdir)
+            autoMkdirs(destPath)
+        untar(sourcePath, destPath)
+    }
+
     /**
      * Extract Zip File
      * @param sourcePath
@@ -533,6 +586,12 @@ class FileMan {
                 ex.printStackTrace()
             }
         }
+    }
+
+    static boolean unzip(String sourcePath, String destPath, boolean modeAutoMkdir){
+        if (modeAutoMkdir)
+            autoMkdirs(destPath)
+        unzip(sourcePath, destPath)
     }
 
     /**
@@ -578,8 +637,12 @@ class FileMan {
                 ex.printStackTrace()
             }
         }
+    }
 
-
+    static boolean unjar(String sourcePath, String destPath, boolean modeAutoMkdir){
+        if (modeAutoMkdir)
+            autoMkdirs(destPath)
+        unjar(sourcePath, destPath)
     }
 
 
@@ -612,6 +675,18 @@ class FileMan {
 
 
 
+
+
+    /***************
+     ***************
+     *
+     * CASE INSTANCE
+     *
+     ***************
+     ***************/
+
+
+
     FileMan setSource(String filePath){
         filePath = getFullPath(filePath)
         return setSource(new File(filePath))
@@ -626,7 +701,7 @@ class FileMan {
     }
     FileMan backup(FileSetup opt){
         opt = globalOption.clone().merge(opt)
-        if (opt.modeBackup){
+        if (opt.modeAutoBackup){
             String filePath = sourceFile.getPath()
             String backupPath = (opt.backupPath) ?: "${filePath}.bak_${new Date().format('yyyyMMdd_HHmmss')}"
             return backup(backupPath)

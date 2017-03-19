@@ -1,5 +1,6 @@
 package install.task
 
+import com.jaemisseo.man.PropMan
 import groovy.sql.Sql
 import com.jaemisseo.man.util.ConnectionGenerator
 
@@ -8,12 +9,18 @@ import com.jaemisseo.man.util.ConnectionGenerator
  */
 class TaskTestJDBC extends TaskUtil{
 
+    TaskTestJDBC(PropMan propman){
+        this.propman = propman
+    }
+
+
+
     @Override
-    void run(Map prop){
+    void run(String propertyPrefix){
         //READY
-        ConnectionGenerator connGen = new ConnectionGenerator(prop)
+        ConnectionGenerator connGen = new ConnectionGenerator(propman.properties)
         Map previewMap = connGen.generateDataSourceMap()
-        previewMap.query = prop['query'] ?: "select 'Try To Check Your Query' as TEST from dual"
+        previewMap.query = propman.get('query') ?: "select 'Try To Check Your Query' as TEST from dual"
         Sql sql
         List list
 

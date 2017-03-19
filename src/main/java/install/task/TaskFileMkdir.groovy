@@ -20,8 +20,8 @@ class TaskFileMkdir extends TaskUtil{
     void run(String propertyPrefix){
 
         //Ready
-        Map buildStructureMap = getMap(propertyPrefix, 'structure')
         String destPath = getFilePath(propertyPrefix, 'dest.path')
+        Map buildStructureMap = getMap(propertyPrefix, 'structure')
 
         //DO
         println "<MKDIR>"

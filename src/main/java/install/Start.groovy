@@ -2,11 +2,12 @@ package install
 
 import com.jaemisseo.man.FileMan
 import com.jaemisseo.man.VariableMan
-import install.task.TaskAsk
-import install.task.TaskBuild
+import install.job.JobReceptionist
+import install.job.JobBuilder
+import install.job.MacGyver
 import install.task.TaskMergeProperties
 import install.task.TaskTestPort
-import install.task.TaskInstall
+import install.job.JobInstaller
 import com.jaemisseo.man.PropMan
 import com.jaemisseo.man.SqlMan
 import install.task.TaskTestJDBC
@@ -79,89 +80,42 @@ class Start {
 
         /////LOG
         logStart()
-        
-        /////-External Task
-        if (runOtherFunc(prop))
-            System.exit(0)
 
         /////Create Main Bean
         String propertiesDir = prop['properties.dir'] ?: thisPath
         PropMan propmanForBuilder
         PropMan propmanForReceptionist
         PropMan propmanForInstaller
-        SqlMan sqlman = new SqlMan()
-        FileMan fileman = new FileMan()
 
-        ///// -BUILD
+        ///// -build
         if (prop['build']){
             propmanForBuilder = getProperties(propertiesDir, "builder.properties").merge(prop)
-            (1..5).each{
-                Map map = propmanForBuilder.properties
-                VariableMan varman = new VariableMan(map)
-                map.each{ String key, def value ->
-                    if (value && value instanceof String){
-                        propmanForBuilder.set(key, varman.parse(value))
-                    }
-                }
-            }
-            new TaskBuild(propmanForBuilder).run()
+            new JobBuilder(propmanForBuilder).run()
         }
 
-        ///// -ASK
+        ///// -ask
         if (prop['ask']){
             propmanForReceptionist = getProperties(propertiesDir, "receptionist.properties").merge(prop)
-            new TaskAsk(propmanForReceptionist).run()
+            new JobReceptionist(propmanForReceptionist).run()
         }
 
-        ///// -INSTALL
+        ///// -install
         if (prop['install']){
             propmanForInstaller = getProperties(propertiesDir, "installer.properties").merge(propmanForReceptionist)
-            //Parsing  ${}
-            (1..5).each{
-                Map map = propmanForInstaller.properties
-                VariableMan varman = new VariableMan(map)
-                map.each{ String key, def value ->
-                    if (value && value instanceof String){
-                        propmanForInstaller.set(key, varman.parse(value))
-                    }
-                }
-            }
-            new TaskInstall(sqlman, propmanForInstaller, fileman).run()
+            new JobInstaller(propmanForInstaller).run()
+        }
+
+        ///// do task
+        if (true){
+            PropMan propman = new PropMan(prop)
+            new MacGyver(propman).run()
+            System.exit(0)
         }
 
         /////LOG
         logFinished()
     }
 
-
-
-    /**
-     * Run External Function
-     * @param prop
-     */
-    boolean runOtherFunc(def prop){
-        if (prop['test-db'] as boolean){
-            new TaskTestJDBC().run(prop)
-            return true
-        }
-        if (prop['test-rest'] as boolean){
-            new TaskTestREST().run(prop)
-            return true
-        }
-        if (prop['test-socket'] as boolean){
-            new TaskTestSocket().run(prop)
-            return true
-        }
-        if (prop['test-port'] as boolean){
-            new TaskTestPort().run(prop)
-            return true
-        }
-        if (prop['merge-properties'] as boolean){
-            new TaskMergeProperties(thisPath:thisPath).run(prop)
-            return true
-        }
-        return false
-    }
 
 
     void logStart(){

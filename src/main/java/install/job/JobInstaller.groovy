@@ -1,20 +1,27 @@
-package install.task
+package install.job
 
 import com.jaemisseo.man.*
 import com.jaemisseo.man.util.FileSetup
 import install.bean.ReportSql
-import install.bean.InstallGlobalOption
+import install.bean.InstallerGlobalOption
+import install.task.TaskUtil
 
 /**
  * Created by sujkim on 2017-02-17.
  */
-class TaskInstall extends TaskUtil{
+class JobInstaller extends TaskUtil{
 
-    TaskInstall(SqlMan sqlman, PropMan propman, FileMan fileman) {
-        this.sqlman = sqlman
-        this.fileman = fileman
+    JobInstaller(PropMan propman) {
+        //Job Setup
+        levelNamesProperty = 'install.level'
+
         this.propman = propman
-        this.gOpt = new InstallGlobalOption().merge(new InstallGlobalOption(
+        this.varman = new VariableMan(propman.properties)
+        parsePropMan(propman, varman, levelNamesProperty)
+        setBeforeGetProp(propman, varman)
+        this.sqlman = new SqlMan()
+        this.fileman = new FileMan()
+        this.gOpt = new InstallerGlobalOption().merge(new InstallerGlobalOption(
             modeGenerateReportText     : propman.get('report.text'),
             modeGenerateReportExcel    : propman.get('report.excel'),
             modeGenerateReportSql      : propman.get('report.sql'),
@@ -22,17 +29,10 @@ class TaskInstall extends TaskUtil{
             modeExcludeCheckBefore     : propman.get('x.check.before'),
             modeExcludeReport          : propman.get('x.report'),
             modeExcludeReportConsole   : propman.get('x.report.console'),
-            reportFileEncoding         : propman.get('report.file.encoding'),
-            reportFileLineBreak        : propman.get('report.file.linebreak'),
-            reportFileLastLineBreak    : propman.get('report.file.last.linebreak'),
+            fileSetup                  : genFileSetup(),
+            reportFileSetup            : genFileSetup("report."),
         ))
     }
-
-    InstallGlobalOption gOpt
-    FileMan fileman
-    SqlMan sqlman
-
-    String levelNamesProperty = 'install.level'
 
 
 
@@ -40,33 +40,25 @@ class TaskInstall extends TaskUtil{
      * RUN
      */
     void run(){
-        FileSetup fileSetup = generateFileSetup()
 
         //Each level by level
         eachLevel(levelNamesProperty){ String levelName ->
             String propertyPrefix = "${levelNamesProperty}.${levelName}."
             String taskName = getString(propertyPrefix, 'task')?.trim()?.toUpperCase()
             logBigTitle("${levelName}")
-
             runTask(taskName, propertyPrefix)
         }
 
-        writeReport(beforeReportList, afterReportMapList, fileSetup)
+        //Write Report
+        writeReport(beforeReportList, afterReportMapList, gOpt.reportFileSetup)
+
     }
 
 
 
-    private FileSetup generateFileSetup(){
-        FileSetup fileSetup = new FileSetup()
-        if (gOpt.reportFileEncoding)
-            fileSetup.encoding = gOpt.reportFileEncoding
-        if (gOpt.reportFileLineBreak)
-            fileSetup.lineBreak = gOpt.reportFileLineBreak
-        if (gOpt.reportFileLastLineBreak)
-            fileSetup.lastLineBreak = gOpt.reportFileLastLineBreak
-        return fileSetup
-    }
-
+    /**
+     * WRITE
+     */
     void writeReport(List beforeReportList, List afterReportMapList, FileSetup fileSetup){
         //Generate File Report
         String fileNamePrefix

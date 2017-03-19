@@ -11,6 +11,7 @@ class PropMan{
     Properties properties = new Properties()
     String nowPath
     String filePath
+    Closure beforeGetClosure
 
     PropMan(){
         init()
@@ -33,35 +34,60 @@ class PropMan{
         return this
     }
 
+    PropMan setBeforeGetProp(Closure beforeGetClosure){
+        this.beforeGetClosure = beforeGetClosure
+        return this
+    }
 
-
+    /**
+     * SET DATA
+     */
     void set(String key, def data){
         properties[key] = data
     }
 
+    /**
+     * GET DATA
+     */
     def get(String key){
         return get(key, null)
     }
 
-    def get(String key, Closure closure){
+    def get(String key, Closure beforeClosure){
         def val = properties[key]
-        if (val && closure)
-            val = closure(val)
+        if (val) {
+            if (beforeClosure || beforeGetClosure){
+                if (beforeClosure)
+                    beforeClosure(key, val)
+                else if (beforeGetClosure)
+                    beforeGetClosure(key, val)
+                val = properties[key]
+            }
+        }
         return val
     }
 
+    Boolean getBoolean(String key){
+        return (get(key, null) as Boolean)
+    }
+
     /**
-     * PARSE JSON DATA
+     * GET PARSED JSON DATA
      */
     def parse(String key){
         parse(key, null)
     }
 
-    def parse(String key, Closure closure){
-        String val = this.properties[key]
+    def parse(String key, Closure beforeClosure){
+        String val = properties[key]
         if (val){
-            if (closure)
-                val = closure(val)
+            if (beforeClosure || beforeGetClosure){
+                if (beforeClosure)
+                    beforeClosure(key, val)
+                else if (beforeGetClosure)
+                    beforeGetClosure(key, val)
+                val = properties[key]
+            }
             String valToCompare = val.trim()
             int lastIdx = valToCompare.length() -1
             if ( (valToCompare.indexOf('[') == 0 && valToCompare.lastIndexOf(']') == lastIdx) || (valToCompare.indexOf('{') == 0 && valToCompare.lastIndexOf('}') == lastIdx) ){
@@ -70,7 +96,7 @@ class PropMan{
                     return obj
             }
         }
-        return val
+        return val ?: null
     }
 
 

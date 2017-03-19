@@ -8,9 +8,14 @@ import com.jaemisseo.man.SocketMan
  */
 class TaskTestSocket extends TaskUtil{
 
+    TaskTestSocket(PropMan propman){
+        this.propman = propman
+    }
+
+
+
     @Override
-    void run(Map prop){
-        PropMan propman = new PropMan(prop)
+    void run(String propertyPrefix){
         Integer timeout = propman.get('timeout') ?: 1000
         String charset  = propman.get('charset') ?: 'euc-kr'
         String ip       = propman.get('ip') ?: '127.0.0.1'
@@ -18,7 +23,7 @@ class TaskTestSocket extends TaskUtil{
         String msg      = propman.get('msg') ?: null
         String response
 
-        logMiddleTitle('START CHECK SOCKET')
+        logMiddleTitle 'START CHECK SOCKET'
         println "<REQUEST> - CHECK"
         println " - IP      : ${ip}"
         println " - PORT    : ${port}"
@@ -45,7 +50,7 @@ class TaskTestSocket extends TaskUtil{
                 }
 
         println "<RESPONSE (Sorry, Not Supported)>\n${response}"
-        logMiddleTitle('FINISHED CHECK SOCKET')
+        logMiddleTitle 'FINISHED CHECK SOCKET'
     }
 
 //    boolean testSocketServer(){

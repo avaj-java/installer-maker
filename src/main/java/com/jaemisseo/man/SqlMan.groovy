@@ -1,5 +1,6 @@
 package com.jaemisseo.man
 
+import com.jaemisseo.man.util.SqlSetup
 import groovy.sql.Sql
 
 import java.util.regex.Matcher
@@ -10,10 +11,9 @@ import java.util.regex.Matcher
 class SqlMan extends SqlAnalMan{
 
     Sql sql
-    def dataSource = [:]
-    def option = [:]
-    def connectedDataSource = [:]
-    def connectedOption = [:]
+
+    SqlSetup gOpt = new SqlSetup()
+    SqlSetup connectedOpt = new SqlSetup()
 
     String sqlContent
     String patternToGetQuery
@@ -44,9 +44,6 @@ class SqlMan extends SqlAnalMan{
     public static final int IGNORE_CHECK = 1
     public static final int CHECK_BEFORE_AND_STOP = 2
     public static final int CHECK_RUNTIME_AND_STOP = 3
-
-    SqlMan(){
-    }
 
 
 
@@ -94,80 +91,41 @@ class SqlMan extends SqlAnalMan{
 
 
 
-    SqlMan set(def obj){
-        this.dataSource.vendor = obj.vendor
-        this.dataSource.ip = obj.ip
-        this.dataSource.port = obj.port
-        this.dataSource.db = obj.db
-        this.dataSource.user = obj.user
-        this.dataSource.password = obj.password
-        this.dataSource.url = (obj.url) ? obj.url : getUrl(obj.vendor, obj.ip, obj.port, obj.db)
-        this.dataSource.driver = (obj.driver) ? obj.driver : getDriver(obj.vendor)
-        this.option.replace = obj.replace
-        this.option.replaceTable = obj.replaceTable
-        this.option.replaceIndex = obj.replaceIndex
-        this.option.replaceSequence = obj.replaceSequence
-        this.option.replaceView = obj.replaceView
-        this.option.replaceFunction = obj.replaceFunction
-        this.option.replaceTablespace = obj.replaceTablespace
-        this.option.replaceUser = obj.replaceUser
-        this.option.replaceDatafile = obj.replaceDatafile
-        this.option.replacePassword = obj.replacePassword
+    SqlMan set(SqlSetup opt){
+        gOpt.merge(opt)
+        gOpt.url         = (opt.url) ? opt.url : getUrl(opt.vendor, opt.ip, opt.port, opt.db)
+        gOpt.driver      = (opt.driver) ? opt.driver : getDriver(opt.vendor)
         return this
     }
+
+
+
     SqlMan connect(){
         close()
-        return connect(this.dataSource)
+        return connect(gOpt)
     }
-    SqlMan connect(Map dataSourceMap){
-        Map l = dataSourceMap
-        // DataSource
-        String vendor = l.vendor ? l.vendor : dataSource.vendor
-        String ip = l.ip ? l.ip : dataSource.ip
-        String port = l.port ? l.port : dataSource.port
-        String db = l.db ? l.db : dataSource.db
-        String user = l.user ? l.user : dataSource.user
-        String password = l.password ? l.password : dataSource.password
-        String url = (l.url) ? l.url : getUrl(vendor, ip, port, db)
-        url = (url) ? url : dataSource.url
-        String driver = (l.driver) ? l.driver : getDriver(vendor)
-        driver = (driver) ? driver : dataSource.driver
-        this.sql = Sql.newInstance(url, user, password, driver)
-        this.connectedDataSource = [
-            user:user,
-            password:password,
-            url:url,
-            driver:driver
-        ]
+
+    SqlMan connect(SqlSetup localOpt){
+        SqlSetup opt = gOpt.clone().merge(localOpt)
+        opt.url    = (opt.url) ? opt.url : getUrl(localOpt.vendor, localOpt.ip, localOpt.port, localOpt.db)
+        opt.driver = (opt.driver) ? opt.driver : getDriver(localOpt.vendor)
+        this.sql = Sql.newInstance(opt.url, opt.user, opt.password, opt.driver)
+        connectedOpt = opt
         return this
     }
-    SqlMan option(){
-        return option(this.option)
+
+
+
+    SqlMan doOption(){
+        return doOption(gOpt)
     }
-    SqlMan option(Map replacementMap){
-        Map l = replacementMap
-        def replace = l.replace ? l.replace : option.replace
-        def replaceTable = l.replaceTable ? l.replaceTable : option.replaceTable
-        def replaceIndex = l.replaceIndex ? l.replaceIndex : option.replaceIndex
-        def replaceView = l.replaceView ? l.replaceView : option.replaceView
-        def replaceSequence = l.replaceSequence ? l.replaceSequence : option.replaceSequence
-        def replaceTablespace = l.replaceTablespace ? l.replaceTablespace : option.replaceTablespace
-        def replaceUser = l.replaceUser ? l.replaceUser : option.replaceUser
-        def replaceDatafile = l.replaceDatafile ? l.replaceDatafile : option.replaceDatafile
-        def replacePassword = l.replacePassword ? l.replacePassword : option.replacePassword
-        this.connectedOption = [
-            replace :replace,
-            replaceTable : replaceTable,
-            replaceIndex :replaceIndex,
-            replaceView :replaceView,
-            replaceSequence :replaceSequence,
-            replaceTablespace :replaceTablespace,
-            replaceUser :replaceUser,
-            replaceDatafile :replaceDatafile,
-            replacePassword :replacePassword
-        ]
+
+    SqlMan doOption(SqlSetup localOpt){
+        connectedOpt = gOpt.clone().merge(localOpt)
         return this
     }
+
+
 
     SqlMan close(){
         if (sql) sql.close()
@@ -200,15 +158,15 @@ class SqlMan extends SqlAnalMan{
         return this
     }
 
-    SqlMan replace(def tempOption){
-        option(tempOption)
+    SqlMan replace(SqlSetup localOpt){
+        doOption(localOpt)
         // analysis
         Matcher m = getMatchedList(this.sqlContent, this.patternToGetQuery)
         analysisResultList = getAnalysisResultList(m)
         return this
     }
 
-    SqlMan checkBefore(Map dataSourceMap){
+    SqlMan checkBefore(SqlSetup localOpt){
         def existObjectList
         def existTablespaceList
         def existUserList
@@ -216,7 +174,7 @@ class SqlMan extends SqlAnalMan{
         def resultsForUser = analysisResultList.findAll{ it.commandType.equalsIgnoreCase("CREATE") && it.objectType.equalsIgnoreCase("USER") }
         // Second Analysis
         try {
-            connect(dataSourceMap)
+            connect(localOpt)
             existObjectList = sql.rows("SELECT OBJECT_NAME, OBJECT_TYPE, OWNER AS SCHEME FROM ALL_OBJECTS")
             analysisResultList.each {
                 it.isExistOnDB = isExistOnSchemeOnDB(it, existObjectList)
@@ -251,13 +209,12 @@ class SqlMan extends SqlAnalMan{
 
 
 
-
     SqlMan run() {
-        return run([:])
+        return run(new SqlSetup())
     }
-    SqlMan run(Map dataSourceMap) {
+    SqlMan run(SqlSetup localOpt) {
         // SQL
-        runSql(dataSourceMap, analysisResultList)
+        runSql(localOpt, analysisResultList)
 
         // create report
         createReport(analysisResultList)
@@ -272,14 +229,14 @@ class SqlMan extends SqlAnalMan{
         def results = []
         // First Analysis
         m.eachWithIndex { String query, int index ->
-            results << getReplacedObject(getAnalysisObject(query), this.connectedOption, index+1)
+            results << getReplacedObject(getAnalysisObject(query), connectedOpt, index+1)
         }
         return results
     }
 
 
-    void runSql(Map dataSourceMap, List<SqlObject> analysisResultList){
-        connect(dataSourceMap)
+    void runSql(SqlSetup localOpt, List<SqlObject> analysisResultList){
+        connect(localOpt)
         sql.withTransaction{
             analysisResultList.eachWithIndex{ SqlObject result, int idx ->
                 try{
@@ -300,7 +257,7 @@ class SqlMan extends SqlAnalMan{
 
     void createReport(List<SqlObject> results){
         this.resultReportMap = [
-                database    :connectedDataSource,
+                sqlInfo     :connectedOpt.toString(),
                 pattern     :patternToGetQuery,
                 matchedCnt  :results.size(),
                 succeededCnt:results.findAll{ it.isOk }.size(),

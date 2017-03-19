@@ -22,8 +22,8 @@ class TaskFileReplace extends TaskUtil{
 
         //Ready
         List<String> filePathList = getFilePathList(propertyPrefix, 'file.path')
-        FileSetup globalOption = getFileSetup()
-        FileSetup localOption = getFileSetup(propertyPrefix)
+        FileSetup globalOption = genFileSetup()
+        FileSetup localOption = genFileSetup(propertyPrefix)
         Map replaceMap = getMap(propertyPrefix, 'file.replace')
         Map replaceLineMap = getMap(propertyPrefix, 'file.replace.line')
         Map replacePropertyMap = getMap(propertyPrefix, 'file.replace.property')

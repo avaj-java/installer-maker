@@ -17,27 +17,27 @@ class VariableMan {
      * CONSTRUCTORS
      */
     VariableMan(){
-        addVariableClosures(getBasicVariableClosureMap())
-        addFuncs(getBasicFuncMap())
+        putVariableClosures(getBasicVariableClosureMap())
+        putFuncs(getBasicFuncMap())
     }
 
-    VariableMan(Map<String, String> variableStringMapToAdd){
-        addVariables(variableStringMapToAdd)
-        addVariableClosures(getBasicVariableClosureMap())
-        addFuncs(getBasicFuncMap())
+    VariableMan(Map<String, String> variableStringMapToPut){
+        putVariables(variableStringMapToPut)
+        putVariableClosures(getBasicVariableClosureMap())
+        putFuncs(getBasicFuncMap())
     }
 
-    VariableMan(Map<String, String> variableStringMapToAdd, Map<String, Closure> funcMapToAdd){
-        addVariables(variableStringMapToAdd)
-        addFuncs(funcMapToAdd)
-        addVariableClosures(getBasicVariableClosureMap())
-        addFuncs(getBasicFuncMap())
+    VariableMan(Map<String, String> variableStringMapToPut, Map<String, Closure> funcMapToPut){
+        putVariables(variableStringMapToPut)
+        putFuncs(funcMapToPut)
+        putVariableClosures(getBasicVariableClosureMap())
+        putFuncs(getBasicFuncMap())
     }
 
     VariableMan(String charset){
         this.charset = charset
-        addVariableClosures(getBasicVariableClosureMap())
-        addFuncs(getBasicFuncMap())
+        putVariableClosures(getBasicVariableClosureMap())
+        putFuncs(getBasicFuncMap())
     }
 
     /**
@@ -110,6 +110,7 @@ class VariableMan {
      * @param variableStringMapToAdd
      * @return
      */
+    @Deprecated
     VariableMan addVariables(Map<String, String> variableStringMapToAdd){
         if (variableStringMapToAdd)
             this.variableStringMap.putAll(variableStringMapToAdd)
@@ -123,6 +124,7 @@ class VariableMan {
      * @param variableFuncMapToAdd
      * @return
      */
+    @Deprecated
     VariableMan addVariableClosures(Map<String, Closure> variableFuncMapToAdd){
         if (variableFuncMapToAdd)
             variableClosureMap.putAll(variableFuncMapToAdd)
@@ -135,8 +137,46 @@ class VariableMan {
      *  Please Refer To getBasicFuncMap()
      * @param funcMapToAdd
      */
+    @Deprecated
     VariableMan addFuncs(Map<String, Closure> funcMapToAdd){
         funcMap.putAll(funcMapToAdd)
+        return this
+    }
+    
+    /**
+     * You Can Put Variable
+     *  [ VariableName(String) : VariableValue(String) ]
+     *  Please Do Not Set These Names => 'date', 'random'
+     * @param variableStringMapToAdd
+     * @return
+     */
+    VariableMan putVariables(Map<String, String> variableStringMapToPut){
+        if (variableStringMapToPut)
+            this.variableStringMap.putAll(variableStringMapToPut)
+        return this
+    }
+
+    /**
+     * You Can Put Variable
+     *  [ VariableName(String) : Variable Function(Closure) ]
+     *  Please Refer To getBasicVariableClosureMap()
+     * @param variableFuncMapToPut
+     * @return
+     */
+    VariableMan putVariableClosures(Map<String, Closure> variableFuncMapToPut){
+        if (variableFuncMapToPut)
+            variableClosureMap.putAll(variableFuncMapToPut)
+        return this
+    }
+
+    /**
+     *  You Can Create Custom Function
+     *  [ FunctionName(String) : Function(Closure) ]
+     *  Please Refer To getBasicFuncMap()
+     * @param funcMapToPut
+     */
+    VariableMan putFuncs(Map<String, Closure> funcMapToPut){
+        funcMap.putAll(funcMapToPut)
         return this
     }
 

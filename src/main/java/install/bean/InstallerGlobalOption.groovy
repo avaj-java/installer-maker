@@ -1,11 +1,12 @@
 package install.bean
 
+import com.jaemisseo.man.util.FileSetup
 import com.jaemisseo.man.util.Option
 
 /**
  * Created by sujkim on 2017-02-19.
  */
-class BuildGlobalOption extends Option{
+class InstallerGlobalOption extends Option{
 
     Boolean modeGenerateReportText = false
     Boolean modeGenerateReportExcel = false
@@ -15,8 +16,7 @@ class BuildGlobalOption extends Option{
     Boolean modeExcludeReport
     Boolean modeExcludeReportConsole
 
-    String reportFileEncoding
-    String reportFileLineBreak = '\r\n\r\n'
-    String reportFileLastLineBreak
+    FileSetup reportFileSetup
+    FileSetup fileSetup
 
 }

@@ -8,9 +8,14 @@ import com.jaemisseo.man.RestMan
  */
 class TaskTestREST extends TaskUtil{
 
+    TaskTestREST(PropMan propman){
+        this.propman = propman
+    }
+
+
+
     @Override
-    void run(Map prop){
-        PropMan propman = new PropMan(prop)
+    void run(String propertyPrefix){
         String url      = propman.get('url')
         String type     = propman.get('type')
         String method   = propman.get('method') ?: "POST"
