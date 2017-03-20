@@ -40,6 +40,7 @@ class TaskUtil {
     public static final String TASK_EMAIL = "EMAIL"
     public static final String TASK_PORT = "PORT"
     public static final String TASK_MERGE_ROPERTIES = "MERGE_PROPERTIES"
+    public static final String TASK_GEN_SAMPLE_PROPERTIES = "GEN_SAMPLE_PROPERTIES"
 
     PropMan propman
     VariableMan varman
@@ -151,7 +152,10 @@ class TaskUtil {
                 new TaskSql(sqlman, propman, gOpt).setBeforeReporter(beforeReportList).setAfterReporter(afterReportMapList).run(propertyPrefix)
                 break
             case TASK_MERGE_ROPERTIES:
-                new TaskQuestion(propman).run(propertyPrefix)
+                new TaskMergeProperties(propman).run(propertyPrefix)
+                break
+            case TASK_GEN_SAMPLE_PROPERTIES:
+                new TaskGenSampleProperties(propman).run(propertyPrefix)
                 break
 
             case TASK_EMAIL://Not Supported Yet

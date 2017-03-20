@@ -42,6 +42,7 @@ class MacGyver extends TaskUtil {
                 'test-email': TASK_EMAIL,
                 'test-port':TASK_PORT,
                 'merge-properties':TASK_MERGE_ROPERTIES,
+                'init':TASK_GEN_SAMPLE_PROPERTIES,
         ]
 
         taskMap.each{ String command, String taskCode ->
