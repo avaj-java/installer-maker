@@ -9,12 +9,17 @@ import com.jaemisseo.man.util.FileSetup
  */
 class TaskMergeProperties extends TaskUtil{
 
+    TaskMergeProperties(PropMan propman){
+        this.propman = propman
+    }
+
+
+
     @Override
-    void run(Map prop) {
+    void run(String propertyPrefix) {
         //Ready
-        PropMan propman = new PropMan(prop)
-        String sourceFilePath               = propman.get('merge-into')
-        String specificPropertiesFilePath   = propman.get('get-value-from')
+        String sourceFilePath               = propman.get('into')
+        String specificPropertiesFilePath   = propman.get('from')
         String fileEncoding                 = propman.get('file.encoding')
         FileSetup opt = new FileSetup(modeAutoBackup: true)
         if (fileEncoding)
@@ -24,8 +29,8 @@ class TaskMergeProperties extends TaskUtil{
 
         // - Read Properties
         FileMan fileman = new FileMan(sourceFilePath).set(opt).read()
-        PropMan propmanSource = new PropMan().readFile(sourceFilePath)
-        PropMan propmanSpecific = new PropMan().readFile(specificPropertiesFilePath)
+        PropMan propmanSource = new PropMan(sourceFilePath)
+        PropMan propmanSpecific = new PropMan(specificPropertiesFilePath)
 
         //Do
         Map differentValuePropMap = propmanSpecific.diffMap(propmanSource)
@@ -55,7 +60,7 @@ class TaskMergeProperties extends TaskUtil{
         if (differentValuePropMap)
             fileman.backup().replaceProperty(differentValuePropMap).write()
         else
-            println "=> NO MERGE\n"
+            println "=> NOTHING TO MERGE\n"
 
         logMiddleTitle('FINISHED MERGE PROPERTIES')
     }
