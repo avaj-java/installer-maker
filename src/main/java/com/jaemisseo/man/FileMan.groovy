@@ -673,7 +673,34 @@ class FileMan {
         return filePathList
     }
 
-
+    static File getFileFromResource(String resourcePath){
+        //Works in IDE
+//        URL url = getClass().getResource(absolutePath);
+        URL url = Thread.currentThread().getContextClassLoader().getResource(resourcePath)
+        File file
+        if (url.toString().startsWith("jar:")){
+            //Works in JAR
+            try {
+                InputStream input = getClass().getResourceAsStream("/${resourcePath}")
+                file = File.createTempFile("tempfile", ".tmp")
+                OutputStream out = new FileOutputStream(file)
+                int len
+                byte[] bytes = new byte[1024]
+                while ((len = input.read(bytes)) != -1) {
+                    out.write(bytes, 0, len)
+                }
+                file.deleteOnExit()
+            } catch (IOException ex) {
+                ex.printStackTrace()
+            }
+        }else{
+            //Works in your IDE, but not from a JAR
+            file = new File(url.getFile())
+        }
+        if (file != null && !file.exists())
+            throw new RuntimeException("Error: File " + file + " not found!")
+        return file
+    }
 
 
 
@@ -695,7 +722,11 @@ class FileMan {
         this.sourceFile = file
         return this
     }
-    
+
+
+    /**
+     * backup
+     */
     FileMan backup(){
         return backup(globalOption)
     }
@@ -714,11 +745,19 @@ class FileMan {
         return copy(destPath)
     }
 
+
+    /**
+     * copy
+     */
     FileMan copy(String destPath){
         copy(sourceFile.path, destPath)
         return this
     }
 
+
+    /**
+     * move
+     */
     FileMan move(String destPath){
         destPath = getFullPath(destPath)
         try{
@@ -728,6 +767,9 @@ class FileMan {
         return this
     }
 
+    /**
+     * read
+     */
     FileMan read(){
         return read(sourceFile, globalOption)
     }
@@ -736,10 +778,24 @@ class FileMan {
         return read(sourceFile, fileSetup)
     }
 
+    FileMan read(File file){
+        return read(file, globalOption)
+    }
+
     FileMan read(File file, FileSetup fileSetup){
         List<String> lineList = loadFileContent(file, fileSetup)
         read(lineList)
         return this
+    }
+
+    FileMan readResource(String resourcePath){
+        File resourceFile = getFileFromResource(resourcePath)
+        return read(resourceFile, globalOption)
+    }
+
+    FileMan readFile(String filePath){
+        filePath = getFullPath(filePath)
+        return read(filePath, globalOption)
     }
 
     FileMan read(String text){
@@ -754,16 +810,34 @@ class FileMan {
         return this
     }
 
+    /**
+     * write
+     */
     FileMan write(){
-        return write(globalOption)
+        return write(sourceFile, globalOption)
     }
 
     FileMan write(FileSetup fileSetup){
+        return write(sourceFile, fileSetup)
+    }
+
+    FileMan write(String filePath){
+        return write(filePath, globalOption)
+    }
+
+    FileMan write(String filePath, FileSetup fileSetup){
+        filePath = getFullPath(filePath)
+        return write(new File(filePath), fileSetup)
+    }
+
+    FileMan write(File fileToWrite, FileSetup fileSetup){
         List<String> lineList = []
         content.eachLine{ lineList << it }
-        createNewFile(sourceFile, lineList, fileSetup)
+        createNewFile(fileToWrite, lineList, fileSetup)
         return this
     }
+
+
 
     def analysis(){
         return ""
@@ -773,7 +847,9 @@ class FileMan {
         return ""
     }
 
-
+    /**
+     * replace
+     */
     FileMan replace(Map replaceMap){
         replaceMap.each{ String target, String replacement ->
             replace(target, replacement)
@@ -793,6 +869,9 @@ class FileMan {
         return this
     }
 
+    /**
+     * replace line
+     */
     FileMan replaceLine(Map replaceLineMap){
         replaceLineMap.each{ String target, String replacement ->
             replaceLine(target, replacement)
@@ -815,6 +894,9 @@ class FileMan {
         return this
     }
 
+    /**
+     * replace property
+     */
     FileMan replaceProperty(Map replacePropertyMap){
         replacePropertyMap.each{ String target, String replacement ->
             replaceProperty(target, replacement)
@@ -923,6 +1005,8 @@ class FileMan {
     }
 
     static String getFullPath(String nowPath, String relativePath){
+        if (!relativePath)
+            return null
         if (isItStartsWithRootPath(relativePath))
             return relativePath
         if (!nowPath || !relativePath)

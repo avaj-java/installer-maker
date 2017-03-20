@@ -18,8 +18,13 @@ class PropMan{
     }
 
     PropMan(Map propMap){
-        merge(propMap)
         init()
+        merge(propMap)
+    }
+
+    PropMan(String filePath){
+        init()
+        readFile(filePath)
     }
 
 
@@ -262,12 +267,12 @@ class PropMan{
 
     PropMan mergeFile(String filePath){
         String absolutePath = getFullPath(filePath)
-        Properties properties = new PropMan().readFile(absolutePath).properties
+        Properties properties = new PropMan(absolutePath).properties
         return merge(properties)
     }
 
-    PropMan mergeResource(String filePath){
-        Properties properties = new PropMan().readResource(filePath).properties
+    PropMan mergeResource(String resourcePath){
+        Properties properties = new PropMan().readResource(resourcePath).properties
         return merge(properties)
     }
 
@@ -312,6 +317,8 @@ class PropMan{
     }
 
     String getFullPath(String standardPath, String relativePath){
+        if (!relativePath)
+            return null
         if (isItStartsWithRootPath(relativePath))
             return relativePath
         if (!standardPath)
