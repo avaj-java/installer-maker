@@ -139,8 +139,31 @@ class PropMan{
     }
 
     PropMan readResource(String absolutePath){
+        //Works in IDE
+//        URL url = getClass().getResource(absolutePath);
         URL url = Thread.currentThread().getContextClassLoader().getResource(absolutePath)
-        File file = new File(url.getFile())
+        File file
+        if (url.toString().startsWith("jar:")){
+            //Works in JAR
+            try {
+                InputStream input = getClass().getResourceAsStream("/${absolutePath}")
+                file = File.createTempFile("tempfile", ".tmp")
+                OutputStream out = new FileOutputStream(file)
+                int len
+                byte[] bytes = new byte[1024]
+                while ((len = input.read(bytes)) != -1) {
+                    out.write(bytes, 0, len)
+                }
+                file.deleteOnExit()
+            } catch (IOException ex) {
+                ex.printStackTrace()
+            }
+        }else{
+            //Works in your IDE, but not from a JAR
+            file = new File(url.getFile())
+        }
+        if (file != null && !file.exists())
+            throw new RuntimeException("Error: File " + file + " not found!")
         load(file)
         return this
     }
