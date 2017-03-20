@@ -22,4 +22,5 @@ build/
 /*.sql
 /*.txt
 /*.xlsx
+/*.properties
 /*.bak*
