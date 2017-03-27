@@ -23,15 +23,16 @@ class MacGyver extends TaskUtil {
     void run(){
 
         Map taskMap = [
-                'sql': TASK_SQL,
                 'tar': TASK_TAR,
                 'zip': TASK_ZIP,
+                'jar': TASK_JAR,
                 'untar': TASK_UNTAR,
                 'unzip': TASK_UNZIP,
                 'unjar': TASK_UNJAR,
                 'mkdir': TASK_MKDIR,
                 'copy': TASK_COPY,
                 'replace': TASK_REPLACE,
+                'sql': TASK_SQL,
                 'notice': TASK_NOTICE,
                 'q': TASK_Q,
                 'q-choice': TASK_Q_CHOICE,

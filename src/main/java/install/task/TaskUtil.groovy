@@ -19,15 +19,16 @@ class TaskUtil {
     public static final String JOB_INSTALLER = "INSTALLER"
     public static final String MACGYVER = "MACGYVER"
 
-    public static final String TASK_SQL = "SQL"
     public static final String TASK_TAR = "TAR"
     public static final String TASK_ZIP = "ZIP"
+    public static final String TASK_JAR = "JAR"
     public static final String TASK_UNTAR = "UNTAR"
     public static final String TASK_UNZIP = "UNZIP"
     public static final String TASK_UNJAR = "UNJAR"
     public static final String TASK_MKDIR = "MKDIR"
     public static final String TASK_COPY = "COPY"
     public static final String TASK_REPLACE = "REPLACE"
+    public static final String TASK_SQL = "SQL"
 
     public static final String TASK_NOTICE = "NOTICE"
     public static final String TASK_Q = "Q"
@@ -123,12 +124,16 @@ class TaskUtil {
                 new TaskQuestionYN(propman, rememberAnswerLineList).run(propertyPrefix)
                 break
 
-            case TASK_TAR://Not Supported Yet
+            case TASK_TAR:
                 new TaskFileTar(propman).run(propertyPrefix)
                 break
             case TASK_ZIP:
                 new TaskFileZip(propman).run(propertyPrefix)
                 break
+            case TASK_JAR:
+                new TaskFileJar(propman).run(propertyPrefix)
+                break
+
             case TASK_UNTAR:
                 new TaskFileUntar(propman).run(propertyPrefix)
                 break
@@ -138,6 +143,7 @@ class TaskUtil {
             case TASK_UNJAR:
                 new TaskFileUnjar(propman).run(propertyPrefix)
                 break
+
             case TASK_REPLACE:
                 new TaskFileReplace(propman).run(propertyPrefix)
                 break
@@ -157,7 +163,6 @@ class TaskUtil {
             case TASK_GEN_SAMPLE_PROPERTIES:
                 new TaskGenSampleProperties(propman).run(propertyPrefix)
                 break
-
             case TASK_EMAIL://Not Supported Yet
                 new TaskTestEMail(propman).run(propertyPrefix)
                 break
@@ -256,6 +261,10 @@ class TaskUtil {
     protected List<String> getFilePathList(String propertyPrefix, String propertyName, String extention){
         String filePath = propman.get("${propertyPrefix}${propertyName}")
         return FileMan.getFilePathList(filePath, extention)
+    }
+
+    protected String getFilePath(String propertyName){
+        return getFilePath('', propertyName)
     }
 
     protected String getFilePath(String propertyPrefix, String propertyName){
