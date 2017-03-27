@@ -17,25 +17,32 @@ class VariableMan {
      * CONSTRUCTORS
      */
     VariableMan(){
-        putVariableClosures(getBasicVariableClosureMap())
-        putFuncs(getBasicFuncMap())
+        init()
     }
 
     VariableMan(Map<String, String> variableStringMapToPut){
         putVariables(variableStringMapToPut)
-        putVariableClosures(getBasicVariableClosureMap())
-        putFuncs(getBasicFuncMap())
+        init()
     }
 
     VariableMan(Map<String, String> variableStringMapToPut, Map<String, Closure> funcMapToPut){
         putVariables(variableStringMapToPut)
         putFuncs(funcMapToPut)
-        putVariableClosures(getBasicVariableClosureMap())
-        putFuncs(getBasicFuncMap())
+        init()
     }
 
     VariableMan(String charset){
         this.charset = charset
+        init()
+    }
+
+    VariableMan(String charset, Map<String, String> variableStringMapToPut){
+        this.charset = charset
+        putVariables(variableStringMapToPut)
+        init()
+    }
+
+    void init(){
         putVariableClosures(getBasicVariableClosureMap())
         putFuncs(getBasicFuncMap())
     }
@@ -224,15 +231,17 @@ class VariableMan {
             validateFunc(content)
 
             // 2. Analysis And Run Function
-            List<String> funcs = content.split('[.]')
-            int funcStartIndex = funcs.findIndexOf{ it.indexOf('(') != -1 }
+            List<String> funcs = content.split('\\.')
+            int variableEndIndex = funcs.findIndexOf{ it.indexOf('(') != -1 }
             int endIndex = funcs.size() -1
-            if (funcStartIndex != -1){
-                String variable = funcs[0..funcStartIndex-1].join('.')
-                funcs = [variable] + funcs[funcStartIndex..endIndex]
+            if (variableEndIndex != -1){
+                String variable = funcs[0..variableEndIndex].join('.')
+                if (variableEndIndex < endIndex)
+                    funcs = [variable] + funcs[variableEndIndex+1..endIndex]
+                else
+                    funcs = [content]
             }else{
-                String variable = funcs[0..funcs.size()-1].join('.')
-                funcs = [variable]
+                funcs = [content]
             }
 
             // If There are no LEFT or RIGHT FUNCTION => Set RIGHT FUNCTION
@@ -283,20 +292,12 @@ class VariableMan {
             // 3. Replace One ${ }
             if (modeExistCodeOnly && !funcObj.substitutes){
             }else{
-                // This Condition's Logic prevent disapearance \
-                if (funcObj.substitutes.indexOf('\\') != -1)
-                    funcObj.substitutes = funcObj.substitutes.replaceAll('\\\\','\\\\\\\\')
-                // This Condition's Logic prevent Error - java.lang.IllegalArgumentException: named capturing group has 0 length name
-                if (funcObj.substitutes.indexOf('$') != -1)
-                    funcObj.substitutes = funcObj.substitutes.replaceAll('\\$','\\\\\\$')
-                //OLD
-//                String patternToGetVariable = '[$][{][^{}]*\\w+[^{}]*[}]'
-//                resultStr = resultStr.replaceFirst(patternToGetVariable, funcObj.substitutes)
-                //NEW
-                String patternPrefix = '[$][{][^{}]*(?i)'
-                String patternSurfix = '[^{}]*[}]'
-                String patternToGetVariable = "${patternPrefix}${funcObj.valueCode}${patternSurfix}"
-                resultStr = resultStr.replaceAll(patternToGetVariable, funcObj.substitutes)
+//                String patternPrefix = '[$][{][^{}]*(?i)'
+//                String patternSurfix = '[^{}]*[}]'
+                String patternToGetVariable = funcObj.oneVal.replace('$','\\$').replace('{','\\{').replace('}','\\}').replace('(','\\(').replace(')','\\)').replace('.','\\.')
+                Matcher matchedTargetList = Pattern.compile(patternToGetVariable).matcher(resultStr)
+                if (matchedTargetList.size())
+                    resultStr = matchedTargetList.replaceAll(getRightReplacement(funcObj.substitutes))
             }
             // CASE - DEBUG MODE
             if (modeDebug && funcObj.substitutes){
@@ -328,6 +329,18 @@ class VariableMan {
             println ""
         }
         return resultStr
+    }
+
+
+
+    String getRightReplacement(String replacement){
+        // This Condition's Logic prevent disapearance \
+        if (replacement.indexOf('\\') != -1)
+            replacement = replacement.replaceAll('\\\\','\\\\\\\\')
+        // This Condition's Logic prevent Error - java.lang.IllegalArgumentException: named capturing group has 0 length name
+        if (replacement.indexOf('$') != -1)
+            replacement = replacement.replaceAll('\\$','\\\\\\$')
+        return replacement
     }
 
 
@@ -523,8 +536,8 @@ class VariableMan {
 
     boolean containsIgnoreCase(List list, String value){
         value = value.toUpperCase()
-        def resultItems = list.findAll{ String item ->
-            item.toUpperCase().equals(value)
+        List resultItems = list.findAll{ String item ->
+            item.toUpperCase().contains(value)
         }
         if (resultItems && resultItems.size() > 0)
             return true
@@ -534,9 +547,9 @@ class VariableMan {
 
     boolean containsKeyIgnoreCase(Map map, String key){
         key = key.toUpperCase()
-        def resultKeys = map.keySet().findAll{ String itKey ->
-            itKey.toUpperCase().equals(key)
-        }
+        List resultKeys = map.keySet().findAll{ String itKey ->
+            itKey.toUpperCase().contains(key)
+        }.toList()
         if (resultKeys && resultKeys.size() > 0)
             return true
         else
@@ -545,9 +558,9 @@ class VariableMan {
 
     def getIgnoreCase(Map map, String key){
         key = key.toUpperCase()
-        def resultKeys = map.keySet().findAll{ String itKey ->
+        List resultKeys = map.keySet().findAll{ String itKey ->
             itKey.toUpperCase().equals(key)
-        }
+        }.toList()
         if (resultKeys && resultKeys.size() > 0){
             key = resultKeys[0]
             return map[key]
