@@ -1,18 +1,10 @@
 package install
 
-import com.jaemisseo.man.FileMan
-import com.jaemisseo.man.VariableMan
 import install.job.JobReceptionist
 import install.job.JobBuilder
 import install.job.MacGyver
-import install.task.TaskMergeProperties
-import install.task.TaskTestPort
 import install.job.JobInstaller
 import com.jaemisseo.man.PropMan
-import com.jaemisseo.man.SqlMan
-import install.task.TaskTestJDBC
-import install.task.TaskTestREST
-import install.task.TaskTestSocket
 
 class Start {
 
@@ -59,6 +51,7 @@ class Start {
     String javaHome
     String javaVersion
     String thisPath
+    String thisDir
     String nowPath
     String homePath
 
@@ -74,15 +67,16 @@ class Start {
         userName = System.getProperty('user.name')
         javaVersion = System.getProperty('java.version')
         javaHome = System.getProperty('java.home')
-        thisPath = getThisAppPath()
         nowPath = System.getProperty('user.dir')
         homePath = System.getProperty('user.home')
+        thisPath = getThisAppFile().getPath()
+        thisDir = getThisAppFile().getParentFile()
 
         /////LOG
         logStart()
 
         /////Create Main Bean
-        String propertiesDir = prop['properties.dir'] ?: thisPath
+        String propertiesDir = prop['properties.dir'] ?: thisDir
         PropMan propmanForBuilder
         PropMan propmanForReceptionist
         PropMan propmanForInstaller
@@ -137,8 +131,8 @@ class Start {
         println ""
     }
 
-    String getThisAppPath(){
-        return new File(this.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParent()
+    File getThisAppFile(){
+        return new File(this.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath())
     }
 
     PropMan getProperties(String propertiesDirPath, String propertiesFileName){
@@ -166,12 +160,15 @@ class Start {
             propman.set('java.version', javaVersion)
         if (!propman.get('java.home'))
             propman.set('java.home', javaHome)
-        if (!propman.get('installer.home'))
-            propman.set('installer.home', thisPath)
         if (!propman.get('user.dir'))
             propman.set('user.dir', nowPath)
         if (!propman.get('user.home'))
             propman.set('user.home', homePath)
+        // installer.jar path
+        if (!propman.get('this.dir'))
+            propman.set('this.dir', thisDir)
+        if (!propman.get('this.path'))
+            propman.set('this.path', thisPath)
     }
 
 
