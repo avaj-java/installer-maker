@@ -21,9 +21,9 @@ class JobReceptionist extends TaskUtil{
         parsePropMan(propman, varman, levelNamesProperty)
         setBeforeGetProp(propman, varman)
         this.gOpt = new ReceptionistGlobalOption().merge(new ReceptionistGlobalOption(
-            modeRemember        : propman.get("mode.remember.answer"),
-            remeberFilePath     : propman.get("remember.answer.file.path"),
-            rememberFileSetup   : genFileSetup("remember.answer.")
+                modeRemember        : propman.get("mode.remember.answer"),
+                remeberFilePath     : propman.get("remember.answer.file.path"),
+                rememberFileSetup   : genFileSetup("remember.answer.")
         ))
     }
 
@@ -35,13 +35,7 @@ class JobReceptionist extends TaskUtil{
     void run(){
 
         //1. READ ANSWER
-        if (gOpt.modeRemember){
-            try{
-                PropMan rememberAnswerPropman = new PropMan().readFile(gOpt.remeberFilePath).properties
-                propman.merge(rememberAnswerPropman)
-            }catch(Exception e){
-            }
-        }
+        readRemeber()
 
         //2. Each level by level
         eachLevel(levelNamesProperty){ String levelName ->
@@ -51,6 +45,23 @@ class JobReceptionist extends TaskUtil{
         }
 
         //3. WRITE ANSWER
+        writeRemember()
+
+    }
+
+
+
+    void readRemeber(){
+        if (gOpt.modeRemember){
+            try{
+                PropMan rememberAnswerPropman = new PropMan().readFile(gOpt.remeberFilePath).properties
+                propman.merge(rememberAnswerPropman)
+            }catch(Exception e){
+            }
+        }
+    }
+
+    void writeRemember(){
         if (gOpt.modeRemember){
             FileMan fileman = new FileMan(gOpt.remeberFilePath).set(gOpt.rememberFileSetup)
             try{
@@ -64,11 +75,7 @@ class JobReceptionist extends TaskUtil{
                 e.printStackTrace()
             }
         }
-
-
     }
-
-
 
 
 }

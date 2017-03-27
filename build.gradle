@@ -5,13 +5,15 @@ apply plugin: "idea"
 
 sourceCompatibility = "1.6"
 targetCompatibility = "1.6"
-version = "${version}"
-group = "${group}"
+
+String projectName = "installer"
+version = "git describe --tags".execute([], project.projectDir).text.trim()
+group = "com.jaemmisseo"
 mainClassName = "install.Start"
 
 buildscript {
     ext {
-        groovyVersion = '1.8.3'
+        groovyVersion = '2.1.3'
     }
     repositories {
         mavenCentral()
@@ -38,17 +40,18 @@ sourceSets {
     }
 }
 
-jar {
-    manifest {
-        attributes  'Title': 'Installer', 'Version': version, 'Main-Class': mainClassName
-    }
-    archiveName 'installer.jar'
-    dependsOn configurations.runtime
-    from {
-        configurations.compile.collect {it.isDirectory()? it: zipTree(it)}
-    }
-}
 
+/*****
+ * DISTZIP
+ *****/
+applicationDistribution.from([
+        "src/main/resources/binForBuilder/build",
+        "src/main/resources/binForBuilder/build.bat",
+        "src/main/resources/binForBuilder/init",
+        "src/main/resources/binForBuilder/init.bat",
+]){
+    into "bin"
+}
 
 repositories {
     jcenter()
@@ -66,7 +69,6 @@ dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.1.3'
 
     //REST
-//    compile group: 'org.restlet.jse', name: 'org.restlet.ext.apispark', version: '2.3.1'  //restlet
 //    compile 'com.sun.jersey:jersey-server:1.12-b01' //Jersey-Server
     compile 'com.sun.jersey:jersey-client:1.9.1'    //Jersey-Client
     
@@ -80,7 +82,7 @@ dependencies {
     compile "org.apache.poi:poi-ooxml-schemas:3.9"
 
     //TAR
-    compile 'org.apache.commons:commons-compress:1.4.1'
+    compile 'org.apache.commons:commons-compress:1.11'
 
     // TEST
     testCompile "junit:junit:4.11"
@@ -88,31 +90,4 @@ dependencies {
 
 task wrapper(type: Wrapper) {
     gradleVersion = '1.12'
-}
-
-
-tasks.create(name: 'hello', dependsOn: 'jar') {
-    File directory = new File("${project.rootDir}/archive")
-    if (!directory.exists()){
-        println directory.mkdirs()
-    }
-}
-
-tasks.withType(Jar) {
-//    destinationDir = file("$rootDir/build/New_libs")
-}
-
-task copyJars(type: Copy, dependsOn: jar) {
-    File directory = new File("${project.rootDir}/archive")
-    if (!directory.exists()){
-        println directory.mkdirs()
-    }
-    from "$rootDir/build/libs"
-    into "${project.rootDir}/${directory}"
-}
-
-task zip(type: Zip) {
-    from configurations.runtime.allArtifacts.files
-    from configurations.runtime
-    into (project.name + '-' + project.version)
 }
