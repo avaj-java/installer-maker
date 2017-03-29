@@ -1,3 +1,5 @@
+[![build status](http://192.168.0.208/dg/installer/badges/master/build.svg)](http://192.168.0.208/dg/installer/commits/master)
+
 -----
 # 1. How To Use Installer
 
