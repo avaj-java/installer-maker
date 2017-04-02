@@ -52,13 +52,37 @@ class JobBuilder extends TaskUtil {
     void init(){
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
-        String destPath = getFilePath('dest.path') ?: FileMan.getFullPath('./')
+        String propertiesDir = getFilePath('properties.dir') ?: FileMan.getFullPath('./')
+        String filePath
+        String destPath
+
         //DO
         println "<Init File>"
-        println "- Dest Path: ${destPath}"
-        new FileMan().readResource('sampleProperties/builder.sample.properties').write("${destPath}/builder.properties", fileSetup)
-        new FileMan().readResource('sampleProperties/receptionist.sample.properties').write("${destPath}/receptionist.properties", fileSetup)
-        new FileMan().readResource('sampleProperties/installer.sample.properties').write("${destPath}/installer.properties", fileSetup)
+        println "- Dest Path: ${propertiesDir}"
+
+        try{
+            filePath = "sampleProperties/builder.sample.properties"
+            destPath = "${propertiesDir}/builder.properties"
+            new FileMan().readResource(filePath).write(destPath, fileSetup)
+        }catch(e){
+            println "File Aready Exists. ${destPath}\n"
+        }
+
+        try{
+            filePath = "sampleProperties/receptionist.sample.properties"
+            destPath = "${propertiesDir}/receptionist.properties"
+            new FileMan().readResource(filePath).write(destPath, fileSetup)
+        }catch(e){
+            println "File Aready Exists. ${destPath}\n"
+        }
+
+        try{
+            filePath = "sampleProperties/installer.sample.properties"
+            destPath = "${propertiesDir}/installer.properties"
+            new FileMan().readResource(filePath).write(destPath, fileSetup)
+        }catch(e){
+            println "File Aready Exists. ${destPath}\n"
+        }
     }
 
     /**
