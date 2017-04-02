@@ -8,8 +8,10 @@ targetCompatibility = "1.6"
 
 String projectName = "installer"
 version = "git describe --tags".execute([], project.projectDir).text.trim()
+String libFileName = "${projectName}-${version}"
 group = "com.jaemmisseo"
 mainClassName = "install.Start"
+String installerHome = "$System.env.INSTALLER_HOME"
 
 buildscript {
     ext {
@@ -42,7 +44,43 @@ sourceSets {
 
 
 /*****
- * DISTZIP
+ * Before jar
+ *****/
+task writeVersion << {
+    new File("$buildDir/resources/main/.version").write(version)
+    new File("$buildDir/resources/main/.compiler").write("Java ${System.getProperty('java.version')}")
+    new File("$buildDir/resources/main/.date").write(new Date().toString())
+    new File("$buildDir/resources/main/.libtohome").write('../')
+}
+
+/*****
+ * jar
+ *****/
+jar {
+    dependsOn writeVersion
+    
+    /** MANIFEST **/
+    manifest {
+        attributes  'Title': 'Installer', 'Version': version, 'Main-Class': mainClassName
+    }
+
+    /** Jarfile Name **/
+    archiveName "${libFileName}.jar"
+
+    /** Extracted All Dependencies To jar **/
+//    dependsOn configurations.runtime
+//    from {
+//        configurations.compile.collect {it.isDirectory()? it: zipTree(it)}
+//    }
+
+    /** All Dependencies to lib folder in jar **/
+//    into('lib') {
+//        from configurations.runtime
+//    }
+}
+
+/*****
+ * Before distZip
  *****/
 applicationDistribution.from([
         "src/main/resources/binForBuilder/build",
@@ -52,6 +90,30 @@ applicationDistribution.from([
 ]){
     into "bin"
 }
+
+/*****
+ * Before deployLocal
+ *****/
+task extractZip(type: Copy){
+    from zipTree("$buildDir/distributions/${libFileName}.zip")
+    into "$buildDir/distributions"
+}
+
+task cleanHome(type: Delete){
+    delete installerHome
+}
+
+/*****
+ * Before deployLocal
+ * Deploy to INSTALLER_HOME
+ *****/
+task deployLocal(type: Copy){
+    dependsOn distZip, extractZip, cleanHome
+    from "$buildDir/distributions/${libFileName}"
+    into installerHome
+}
+
+
 
 repositories {
     jcenter()

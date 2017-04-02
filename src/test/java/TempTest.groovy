@@ -134,10 +134,6 @@ class TempTest {
         println varman.parse('${}as ${date(S)}${}')
         // Test - random (내장된변수)
         println varman.parse('[${date(yyyyMMddHHmmssSSS)}${random(5)}]')
-        println "/////"
-
-
-
     }
 
 }
