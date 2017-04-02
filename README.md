@@ -6,25 +6,25 @@
 ### Build
 
 1. Gradle Build
-
     - Make a ZIP file
+        
         ```sh
         gradle clean distZip
         ```
     - Make a ZIP file and Update INSTALLER_HOME
+        
         ```sh
         gradle clean deployLocal
         ```
 
 2. Deploy to Your User        
-
-    - ZIP file path      
+    - ZIP file path
+     
         ```sh
         {PROJECT_DIRECTORY}/build/distributions/installer-x.x.x.zip
         ```
 
 3. Then, Make Your User read Menuals
-
     - [1. How to install Installer](docs/eng/installer.md) 
     - [2. How to make Your Installer](docs/eng/installer_insta.md) 
 
