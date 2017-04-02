@@ -6,9 +6,6 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream
-import org.apache.commons.compress.compressors.gzip.GzipUtils
-import org.apache.commons.compress.utils.IOUtils
-import sun.misc.Regexp
 
 import java.nio.channels.FileChannel
 import java.util.jar.JarEntry
@@ -16,7 +13,6 @@ import java.util.jar.JarOutputStream
 import java.util.logging.Logger
 import java.util.regex.Matcher
 import java.util.regex.Pattern
-import java.util.zip.GZIPOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
@@ -160,42 +156,13 @@ class FileMan {
     }
 
     boolean createNewFile(File newFile, List fileContentLineList, FileSetup opt){
-        opt = getMergedOption(opt)
-        // 1) Set Values
-        File dir = new File(newFile.getParent())
-        String encoding = opt.encoding
-        Boolean autoLineBreakUse = opt.modeAutoLineBreak
-        String lineBreak = opt.lineBreak
-        String lastLineBreak = opt.lastLineBreak
-        // 2) Check Directory And Try To Create Directory
-        if ( !dir.exists() ){
-            dir.mkdirs()
-            if ( !dir.exists() )
-                throw new Exception("\n < CREATE Failed > Directory To Save File Could Not be Created", new Throwable("You Need To Check Permission Check And... Some... "))
-        }
-        // 3) Generate File
-        try{
-            newFile.withWriter(encoding){ out ->
-                // METHOD A. Auto LineBreak
-                if (autoLineBreakUse)
-                    fileContentLineList.each{ String oneLine -> out.println oneLine }
-                // METHOD B. Custom LineBreak
-                else
-                    out.print ( fileContentLineList.join(lineBreak) + ((lastLineBreak) ? lastLineBreak:'') )
-            }
-            log.info("\n - Complete - Create ${newFile.path}")
-        }catch(Exception e){
-            log.info("\n - Failed - To Create ${newFile.path}")
-            e.printStackTrace()
-            return false
-        }
-        return true
+        write(newFile, fileContentLineList, getMergedOption(opt))
     }
 
     /**
      * 특정 디렉토리의 모든 파일들을 -> 지우기
      */
-    boolean emptyDirectory(String dirPathToDelete, List excludePathList) throws Exception{
+    static boolean emptyDirectory(String dirPathToDelete, List excludePathList) throws Exception{
         File dirToDelete = new File(dirPathToDelete)
         dirToDelete.listFiles().each{ File fileToDelete ->
             // Delete
@@ -203,10 +170,9 @@ class FileMan {
                 if (fileToDelete.isDirectory()){
                     rmdir(fileToDelete, excludePathList)
                 }else{
-                    if (fileToDelete.delete())
-                        log.info("\n - Complete - Delete ${fileToDelete.path}")
-                    else
-                        log.info("\n - Failed - To Delete ${fileToDelete.path}")
+                    log.info("Deleting ${fileToDelete.path}")
+                    if (!fileToDelete.delete())
+                        log.info(" - Failed - To Delete ${fileToDelete.path}")
                 }
             }
         }
@@ -216,7 +182,7 @@ class FileMan {
     /**
      * 특정 디렉토리을 -> 완전 지우기
      */
-    boolean rmdir(final File dirToDelete, List excludePathList) {
+    static boolean rmdir(final File dirToDelete, List excludePathList) {
         if (dirToDelete.isDirectory() && !isExcludeFile(dirToDelete, excludePathList) ){
             // Delete Sub
             dirToDelete.listFiles().each{ File fileToDelete ->
@@ -225,18 +191,16 @@ class FileMan {
                     if (fileToDelete.isDirectory()){
                         rmdir(fileToDelete, excludePathList)
                     }else{
-                        if (fileToDelete.delete())
-                            log.info("\n - Complete - Delete ${fileToDelete.path}")
-                        else
-                            log.info("\n - Failed - To Delete ${fileToDelete.path}")
+                        log.info("Deleting ${fileToDelete.path}")
+                        if (!fileToDelete.delete())
+                            log.info(" - Failed - To Delete ${fileToDelete.path}")
                     }
                 }
             }
             // Delete Empty Directory
-            if (dirToDelete.delete())
-                log.info("\n - Complete - Delete ${dirToDelete.path}")
-            else
-                log.info("\n - Failed - To Delete ${dirToDelete.path}")
+            log.info("Deleting ${dirToDelete.path}")
+            if (!dirToDelete.delete())
+                log.info(" - Failed - To Delete ${dirToDelete.path}")
         }
         return true
     }
@@ -345,8 +309,61 @@ class FileMan {
         return (isFile(filePath)) ? new File(filePath).getParentFile().getPath() : filePath
     }
 
+    /**
+     * Check
+     */
+    static boolean checkPath(String sourcePath, String destPath){
+        //Check Source Path
+        if (!sourcePath)
+            throw new IOException('No Source Path, Please Set Source Path.')
+        if (!sourcePath.contains('*') && !new File(sourcePath).exists())
+            throw new IOException("Does not exist Source Path, ${sourcePath}")
+        if (isRootPath(sourcePath))
+            throw new IOException('Source Path naver be seted rootPath on FileSystem.')
+        //Check Dest Path
+        if (!destPath)
+            throw new IOException('No Dest Path, Please Set Dest Path.')
+        if (isRootPath(destPath))
+            throw new IOException('Dest Path naver be seted set rootPath on FileSystem.')
+    }
+
+    static boolean checkDir(String path, boolean modeAutoMkdir){
+//        File baseDir = new File(path).getParentFile()
+        File baseDir = new File(getLastDirectoryPath(path))
+        if (modeAutoMkdir){
+            autoMkdirs(baseDir.path)
+            if (!baseDir.exists())
+                throw new Exception("\n < Failed to CREATE Directory > Directory To Save File Could Not be Created", new Throwable("You Need To Check Permission Check And... Some... "))
+        }else{
+            if (!baseDir.exists())
+                throw new Exception("\n < Failed to WRITE File> No Directory To Save File ", new Throwable("Check Please."))
+        }
+        return true
+    }
+
+    static boolean checkFile(String path, boolean modeAutoOverWrite){
+        if (modeAutoOverWrite && new File(path).exists())
+            throw new Exception("\n < Failed to WRITE File > File Already Exists", new Throwable("Check Please."))
+        return true
+    }
+
+    static boolean checkFiles(List<String> entry, boolean modeAutoOverWrite){
+        entry.each{ String path ->
+            checkFile(new File(path).path, modeAutoOverWrite)
+        }
+        return true
+    }
+
+    static boolean checkFiles(String destPath, List<String> entry, boolean modeAutoOverWrite){
+        String rootPath = getLastDirectoryPath(destPath)
+        entry.each{ String relPath ->
+            checkFile(new File(rootPath, relPath).path, modeAutoOverWrite)
+        }
+        return true
+    }
+
     //Check File? or Directory?
-    static boolean isFile(filePath){
+    static boolean isFile(String filePath){
         // - 끝이 구분자로 끝나면 => 폴더로 인식
         if (filePath.endsWith('/')|| filePath.endsWith('\\'))
             return false
@@ -358,6 +375,15 @@ class FileMan {
             return false
     }
 
+    static boolean isRootPath(String filePath){
+        try{
+            new File(getFullPath(filePath)).getParentFile()
+            return false
+        }catch(e){
+            return true
+        }
+    }
+
     // File Path -> FileName String
     // Directory Path -> Empty String
     static String getLastFileName(String filePath){
@@ -365,6 +391,55 @@ class FileMan {
         return (isFile(filePath)) ? fromOriginDepthList[fromOriginDepthList.size()-1] : null
     }
 
+    /**
+     * WRITE
+     */
+    static boolean write(String newFilePath, String content){
+        return write(newFilePath, content, new FileSetup())
+    }
+
+    static boolean write(String newFilePath, String content, boolean modeAutoMkdir){
+        return write(newFilePath, content, new FileSetup(modeAutoMkdir:modeAutoMkdir))
+    }
+
+    static boolean write(String newFilePath, String content, FileSetup opt){
+        List<String> fileContentLineList = []
+        content.eachLine{ fileContentLineList << it }
+        return write(newFilePath, fileContentLineList, opt)
+    }
+
+    static boolean write(String newFilePath, List<String> fileContentLineList, FileSetup opt){
+        return write(new File(getFullPath(newFilePath)), fileContentLineList, opt)
+    }
+
+    static boolean write(File newFile, List<String> fileContentLineList, boolean modeAutoMkdir){
+        return write(newFile, fileContentLineList, new FileSetup(modeAutoMkdir:modeAutoMkdir))
+    }
+
+    static boolean write(File newFile, List<String> fileContentLineList, FileSetup opt){
+        //Check Path Parameter
+        checkPath('dummy*', newFile.path)
+        //Check Dest
+        String lastDirPath = newFile.getParentFile().getPath() //name not contains dot can be file on Here
+        checkDir(lastDirPath, opt.modeAutoMkdir)
+        checkFile(newFile.path, opt.modeAutoOverWrite)
+        //Write File to Dest
+        try{
+            newFile.withWriter(opt.encoding){ out ->
+                // METHOD A. Auto LineBreak
+                if (opt.modeAutoLineBreak)
+                    fileContentLineList.each{ String oneLine -> out.println oneLine }
+                // METHOD B. Custom LineBreak
+                else
+                    out.print ( fileContentLineList.join(opt.lineBreak) + ((opt.lastLineBreak)?:'') )
+            }
+            log.info(" - Complete - Create ${newFile.path} \n")
+        }catch(Exception e){
+            log.info(" - Failed - To Create ${newFile.path} \n")
+            throw new Exception(" < Failed to WRITE File >", new Throwable("You Need To Check Permission Check And... Some... "))
+        }
+        return true
+    }
 
     /**
      * COPY
@@ -374,24 +449,30 @@ class FileMan {
      * 폴더 => 폴더  (자동파일명)
      */
     static boolean copy(String sourcePath, String destPath){
+        return copy(sourcePath, destPath, new FileSetup())
+    }
+
+    static boolean copy(String sourcePath, String destPath, boolean modeAutoMkdir){
+        copy(sourcePath, destPath, new FileSetup(modeAutoMkdir: modeAutoMkdir))
+    }
+
+    static boolean copy(String sourcePath, String destPath, FileSetup opt){
+        //Check Path Parameter
         sourcePath = getFullPath(sourcePath)
         destPath = getFullPath(destPath)
-        if (!sourcePath || !destPath)
-            throw new IOException('Please Set FilePath')
+        checkPath(sourcePath, destPath)
+        //Make Entry
+        List entryList = genFileEntryList(sourcePath)
         String sourceRootPath = new File(sourcePath).getParentFile().getPath()
         String destRootPath = getLastDirectoryPath(destPath)
-        List entryList = genFileEntryList(sourcePath)
-        //Copy To Dest
-        if (isFile(sourcePath) && isFile(destPath)){
-            File sourceFile = new File(sourcePath)
-            File destFile = new File(destPath)
+        //Check Dest
+        checkDir(destPath, opt.modeAutoMkdir)
+        checkFiles(destPath, entryList, opt.modeAutoOverWrite)
+        //Copy File to Dest
+        for (String fileRelPath : entryList){
+            File sourceFile = new File(sourceRootPath, fileRelPath)
+            File destFile = new File(destRootPath, fileRelPath)
             copy(sourceFile, destFile)
-        }else{
-            for (String fileRelPath : entryList){
-                File sourceFile = new File(sourceRootPath, fileRelPath)
-                File destFile = new File(destRootPath, fileRelPath)
-                copy(sourceFile, destFile)
-            }
         }
         System.out.println("<Done>")
         return true
@@ -422,11 +503,6 @@ class FileMan {
         return true
     }
 
-    static boolean copy(String sourcePath, String destPath, boolean modeAutoMkdir){
-        if (modeAutoMkdir)
-            autoMkdirs(destPath)
-        copy(sourcePath, destPath)
-    }
 
     /**
      * MOVE
@@ -436,54 +512,135 @@ class FileMan {
      * 폴더 => 폴더  (자동파일명)
      */
     static boolean move(String sourcePath, String destPath){
+        return move(sourcePath, destPath, new FileSetup())
+    }
+
+    static boolean move(String sourcePath, String destPath, boolean modeAutoMkdir){
+        return move(sourcePath, destPath, new FileSetup(modeAutoMkdir:modeAutoMkdir))
+    }
+
+    static boolean move(String sourcePath, String destPath, FileSetup opt){
+        //Check Path Parameter
         sourcePath = getFullPath(sourcePath)
         destPath = getFullPath(destPath)
-        if (!sourcePath || !destPath)
-            return false
+        checkPath(sourcePath, destPath)
+        //Make Entry
+        List entryList = genFileEntryList(sourcePath)
+        String sourceRootPath = new File(sourcePath).getParentFile().getPath()
+        String destRootPath = getLastDirectoryPath(destPath)
+        //Check Dest
+        checkDir(destPath, opt.modeAutoMkdir)
+        checkFiles(destPath, entryList, opt.modeAutoOverWrite)
+        //Move File to Dest
         try{
             new File(sourcePath).renameTo(destPath)
         }finally{
         }
+        return true
     }
 
-    static boolean move(String sourcePath, String destPath, boolean modeAutoMkdir){
-        if (modeAutoMkdir)
-            autoMkdirs(destPath)
-        move(sourcePath, destPath)
+    /**
+     * DELETE
+     */
+    static boolean delete(String sourcePath){
+        return delete(sourcePath, new FileSetup())
     }
+
+    static boolean delete(String sourcePath, FileSetup opt){
+        //Check Path Parameter
+        sourcePath = getFullPath(sourcePath)
+        checkPath(sourcePath, 'dummy*')
+        //Make Entry
+        List entryList = genFileEntryList(sourcePath)
+        String sourceRootPath = new File(sourcePath).getParentFile().getPath()
+        //Delete File
+        return delete(entryList, sourceRootPath)
+    }
+
+    static boolean delete(List entryList, String sourceRootPath){
+        println "\nStart Deleting File"
+        try{
+            for (String file : entryList){
+                String path = sourceRootPath + File.separator + file
+                File fileToDelete = new File(path)
+                println "Deleting: ${file}"
+                if (fileToDelete.isFile()){
+                    fileToDelete.delete()
+                }else{
+                    rmdir(fileToDelete, [])
+                }
+            }
+            println "<Done>"
+
+        }catch(IOException ex){
+            println "<Error>"
+            ex.printStackTrace()
+            throw ex
+        }finally{
+        }
+        return true
+    }
+
 
     /**
      * COMPRESSING
      */
-    static void compress(String sourcePath, String destPath){
-        String fileName = new File(destPath).getName()
-        String extension = fileName.substring(fileName.lastIndexOf('.'))
-        if (extension){
-            if (extension == 'tar')
-                tar(sourcePath, destPath)
-            else if (extension == 'jar')
-                jar(sourcePath, destPath)
-            else
-                zip(sourcePath, destPath)
-        }
+    static boolean compress(String sourcePath){
+        compress(sourcePath, new File(sourcePath).getParentFile().getPath())
+    }
+
+    static boolean compress(String sourcePath, String destPath){
+        compress(sourcePath, destPath, new FileSetup())
     }
 
     static boolean compress(String sourcePath, String destPath, boolean modeAutoMkdir){
-        if (modeAutoMkdir)
-            autoMkdirs(destPath)
-        compress(sourcePath, destPath)
+        compress(sourcePath, destPath, new FileSetup(modeAutoMkdir:modeAutoMkdir))
+    }
+
+    static boolean compress(String sourcePath, String destPath, FileSetup opt){
+        String fileName = new File(destPath).getName()
+        String extension = fileName.substring(fileName.lastIndexOf('.'))?.toLowerCase()
+        if (extension){
+            if (extension == 'tar')
+                return tar(sourcePath, destPath, opt)
+            else if (extension == 'jar')
+                return jar(sourcePath, destPath, opt)
+            else
+                return zip(sourcePath, destPath, opt)
+        }
     }
 
 
     /**
      * COMPRESSING - ZIP
      */
+    static boolean zip(String sourcePath){
+        zip(sourcePath, null)
+    }
+
     static boolean zip(String sourcePath, String destPath){
+        zip(sourcePath, destPath, new FileSetup())
+    }
+
+    static boolean zip(String sourcePath, String destPath, boolean modeAutoMkdir){
+        zip(sourcePath, destPath, new FileSetup(modeAutoMkdir:modeAutoMkdir))
+    }
+
+    static boolean zip(String sourcePath, String destPath, FileSetup opt){
+        //Auto DestPath
+        destPath = getAutoDestPath(sourcePath, destPath, 'zip')
+        //Check Path Parameter
         sourcePath = getFullPath(sourcePath)
         destPath = getFullPath(destPath)
-        String sourceRootPath = new File(sourcePath).getParentFile().getPath()
+        checkPath(sourcePath, destPath)
+        //Make Entry
         List entryList = genFileEntryList(sourcePath)
-        //zip
+        String sourceRootPath = new File(sourcePath).getParentFile().getPath()
+        String destRootPath = getLastDirectoryPath(destPath)
+        //Check Dest
+        checkDir(destPath, opt.modeAutoMkdir)
+        checkFile(destPath, opt.modeAutoOverWrite)
+        //Zip Files to Dest
         return zip(entryList, sourceRootPath, destPath)
     }
 
@@ -521,20 +678,36 @@ class FileMan {
         return true
     }
 
-    static boolean zip(String sourcePath, String destPath, boolean modeAutoMkdir){
-        if (modeAutoMkdir)
-            autoMkdirs(destPath)
-        zip(sourcePath, destPath)
-    }
-
     /**
      * COMPRESSING - JAR
      */
-    static boolean jar(String sourcePath, String destPath) throws IOException{
+    static boolean jar(String sourcePath){
+        jar(sourcePath, null)
+    }
+
+    static boolean jar(String sourcePath, String destPath){
+        jar(sourcePath, destPath, new FileSetup())
+    }
+
+    static boolean jar(String sourcePath, String destPath, boolean modeAutoMkdir){
+        jar(sourcePath, destPath, new FileSetup(modeAutoMkdir:modeAutoMkdir))
+    }
+
+    static boolean jar(String sourcePath, String destPath, FileSetup opt) throws IOException{
+        //Auto DestPath
+        destPath = getAutoDestPath(sourcePath, destPath, 'zip')
+        //Check Path Parameter
         sourcePath = getFullPath(sourcePath)
         destPath = getFullPath(destPath)
-        String sourceRootPath = new File(sourcePath).getParentFile().getPath()
+        checkPath(sourcePath, destPath)
+        //Make Entry
         List entryList = genFileEntryList(sourcePath)
+        String sourceRootPath = new File(sourcePath).getParentFile().getPath()
+        String destRootPath = getLastDirectoryPath(destPath)
+        //Check Dest
+        checkDir(destPath, opt.modeAutoMkdir)
+        checkFile(destPath, opt.modeAutoOverWrite)
+        //Jar Files to Dest
         return jar(entryList, sourceRootPath, destPath)
     }
 
@@ -573,22 +746,39 @@ class FileMan {
                 jos.close()
             }
         }
-    }
-
-    static boolean jar(String sourcePath, String destPath, boolean modeAutoMkdir){
-        if (modeAutoMkdir)
-            autoMkdirs(destPath)
-        jar(sourcePath, destPath)
+        return true
     }
 
     /**
      * COMPRESSING - TAR.GZ
      */
-    static boolean tar(String sourcePath, String destPath) throws IOException{
+    static boolean tar(String sourcePath){
+        tar(sourcePath, null)
+    }
+
+    static boolean tar(String sourcePath, String destPath){
+        tar(sourcePath, destPath, new FileSetup())
+    }
+
+    static boolean tar(String sourcePath, String destPath, boolean modeAutoMkdir){
+        tar(sourcePath, destPath, new FileSetup(modeAutoMkdir:modeAutoMkdir))
+    }
+
+    static boolean tar(String sourcePath, String destPath, FileSetup opt) throws IOException{
+        //Auto DestPath
+        destPath = getAutoDestPath(sourcePath, destPath, 'zip')
+        //Check Path Parameter
         sourcePath = getFullPath(sourcePath)
         destPath = getFullPath(destPath)
-        String sourceRootPath = new File(sourcePath).getParentFile().getPath()
+        checkPath(sourcePath, destPath)
+        //Make Entry
         List entryList = genFileEntryList(sourcePath)
+        String sourceRootPath = new File(sourcePath).getParentFile().getPath()
+        String destRootPath = getLastDirectoryPath(destPath)
+        //Check Dest
+        checkDir(destPath, opt.modeAutoMkdir)
+        checkFile(destPath, opt.modeAutoOverWrite)
+        //Tar Files to Dest
         return tar(entryList, sourceRootPath, destPath)
     }
 
@@ -639,51 +829,68 @@ class FileMan {
                 taos.close()
             }
         }
+        return true
     }
 
-    static boolean tar(String sourcePath, String destPath, boolean modeAutoMkdir){
-        if (modeAutoMkdir)
-            autoMkdirs(destPath)
-        tar(sourcePath, destPath)
-    }
 
 
 
     /**
      * EXTRACTING
      */
-    static void extract(String filePath, String destPath){
-        String fileName = new File(filePath).getName()
-        String extension = fileName.substring(fileName.lastIndexOf('.'))
-        if (extension){
-            if (extension == 'tar')
-                untar(filePath, destPath)
-            if (extension == 'jar')
-                unjar(filePath, destPath)
-            else
-                unzip(filePath, destPath)
-        }
+    static boolean extract(String sourcePath){
+        extract(sourcePath, getLastDirectoryPath(sourcePath), new FileSetup())
+    }
+
+    static boolean extract(String sourcePath, String destPath){
+        extract(sourcePath, destPath, new FileSetup())
     }
 
     static boolean extract(String sourcePath, String destPath, boolean modeAutoMkdir){
-        if (modeAutoMkdir)
-            autoMkdirs(destPath)
-        extract(sourcePath, destPath)
+        extract(sourcePath, destPath, new FileSetup(modeAutoMkdir:modeAutoMkdir))
     }
 
-
+    static boolean extract(String filePath, String destPath, FileSetup opt){
+        String fileName = new File(filePath).getName()
+        String extension = fileName.substring(fileName.lastIndexOf('.'))?.toLowerCase()
+        if (extension){
+            if (extension == 'tar')
+                return untar(filePath, destPath, opt)
+            if (extension == 'jar')
+                return unjar(filePath, destPath, opt)
+            else
+                return unzip(filePath, destPath, opt)
+        }
+    }
 
     /**
      * EXTRACTING - UNTAR
      */
-    static void untar(String sourcePath){
+    static boolean untar(String sourcePath){
         untar(sourcePath, getLastDirectoryPath(sourcePath))
     }
 
-    static void untar(String sourcePath, String destPath){
+    static boolean untar(String sourcePath, String destPath){
+        untar(sourcePath, destPath, new FileSetup())
+    }
+
+    static boolean untar(String sourcePath, String destPath, boolean modeAutoMkdir){
+        untar(sourcePath, destPath, new FileSetup(modeAutoMkdir:modeAutoMkdir))
+    }
+
+    static boolean untar(String sourcePath, String destPath, FileSetup opt){
+        //Check Path Parameter
         sourcePath = getFullPath(sourcePath)
         destPath = getFullPath(destPath)
+        checkPath(sourcePath, destPath)
+        //Make Entry
         List<String> filePathList = getFilePathList(sourcePath)
+        String sourceRootPath = new File(sourcePath).getParentFile().getPath()
+        String destRootPath = getLastDirectoryPath(destPath)
+        //Check Dest
+        checkDir(destPath, opt.modeAutoMkdir)
+        checkFiles(filePathList, opt.modeAutoOverWrite)
+        //Tar File To Dest
         filePathList.each {
             byte[] buffer = new byte[BUFFER]
             try {
@@ -712,32 +919,44 @@ class FileMan {
                 }
                 /** Close the input stream **/
                 tarIn.close()
-                println "Untar Completed Successfully!!"
+                println "Untar Completed successfully!!\n"
 
             } catch (IOException ex) {
                 ex.printStackTrace()
                 throw ex
             }
         }
-    }
-
-    static boolean untar(String sourcePath, String destPath, boolean modeAutoMkdir){
-        if (modeAutoMkdir)
-            autoMkdirs(destPath)
-        untar(sourcePath, destPath)
+        return true
     }
 
     /**
      * EXTRACTING - UNZIP
      */
-    static void unzip(String sourcePath){
+    static boolean unzip(String sourcePath){
         unzip(sourcePath, getLastDirectoryPath(sourcePath))
     }
 
-    static void unzip(String sourcePath, String destPath){
+    static boolean unzip(String sourcePath, String destPath){
+        unzip(sourcePath, destPath, new FileSetup())
+    }
+
+    static boolean unzip(String sourcePath, String destPath, boolean modeAutoMkdir){
+        unzip(sourcePath, destPath, new FileSetup(modeAutoMkdir:modeAutoMkdir))
+    }
+
+    static boolean unzip(String sourcePath, String destPath, FileSetup opt){
+        //Check Path Parameter
         sourcePath = getFullPath(sourcePath)
         destPath = getFullPath(destPath)
+        checkPath(sourcePath, destPath)
+        //Make Entry
         List<String> filePathList = getFilePathList(sourcePath)
+        String sourceRootPath = new File(sourcePath).getParentFile().getPath()
+        String destRootPath = getLastDirectoryPath(destPath)
+        //Check Dest
+        checkDir(destPath, opt.modeAutoMkdir)
+        checkFiles(filePathList, opt.modeAutoOverWrite)
+        //Zip File To Dest
         filePathList.each{
             byte[] buffer = new byte[BUFFER]
             try{
@@ -763,32 +982,44 @@ class FileMan {
                 /** Close the input stream **/
                 zis.closeEntry()
                 zis.close()
-                println "Unzip Completed Successfully!!"
+                println "Unzip Completed successfully!!\n"
 
             }catch(IOException ex){
                 ex.printStackTrace()
                 throw ex
             }
         }
-    }
-
-    static boolean unzip(String sourcePath, String destPath, boolean modeAutoMkdir){
-        if (modeAutoMkdir)
-            autoMkdirs(destPath)
-        unzip(sourcePath, destPath)
+        return true
     }
 
     /**
      * EXTRACTING - UNJAR
      */
-    static void unjar(String sourcePath){
+    static boolean unjar(String sourcePath){
         unjar(sourcePath, getLastDirectoryPath(sourcePath))
     }
 
-    static void unjar(String sourcePath, String destPath){
+    static boolean unjar(String sourcePath, String destPath){
+        unjar(sourcePath, destPath, new FileSetup())
+    }
+
+    static boolean unjar(String sourcePath, String destPath, boolean modeAutoMkdir){
+        unjar(sourcePath, destPath, new FileSetup(modeAutoMkdir:modeAutoMkdir))
+    }
+
+    static boolean unjar(String sourcePath, String destPath, FileSetup opt){
+        //Check Path Parameter
         sourcePath = getFullPath(sourcePath)
         destPath = getFullPath(destPath)
+        checkPath(sourcePath, destPath)
+        //Make Entry
         List<String> filePathList = getFilePathList(sourcePath)
+        String sourceRootPath = new File(sourcePath).getParentFile().getPath()
+        String destRootPath = getLastDirectoryPath(destPath)
+        //Check Dest
+        checkDir(destPath, opt.modeAutoMkdir)
+        checkFiles(filePathList, opt.modeAutoOverWrite)
+        //Jar File To Dest
         filePathList.each{
             byte[] buffer = new byte[BUFFER]
             try{
@@ -816,24 +1047,27 @@ class FileMan {
                 }
                 /** Close the input stream **/
                 jar.close()
-                println "Unjar Completed Successfully!!"
+                println "Unjar Completed successfully!!\n"
 
             } catch (IOException ex) {
                 ex.printStackTrace()
                 throw ex
             }
         }
-    }
-
-    static boolean unjar(String sourcePath, String destPath, boolean modeAutoMkdir){
-        if (modeAutoMkdir)
-            autoMkdirs(destPath)
-        unjar(sourcePath, destPath)
+        return true
     }
 
 
 
-
+    static String getAutoDestPath(String sourcePath, String destPath, String extension){
+        if (sourcePath && !destPath){
+            String parentPath = new File(sourcePath).getParentFile().path
+            String parentName = new File(sourcePath).getParentFile().name
+            String fileName = new File(sourcePath).name.split('[.]')[0]
+            destPath = sourcePath.contains('*') ? "${parentPath}/${parentName}.${extension}": "${parentPath}/${fileName}.${extension}"
+        }
+        return destPath
+    }
 
     static List<String> genFileEntryList(String sourcePath){
         List<String> newEntryList = []
@@ -946,6 +1180,9 @@ class FileMan {
         return this
     }
 
+    boolean exists(){
+        return sourceFile.exists()
+    }
 
     /**
      * backup
@@ -978,7 +1215,7 @@ class FileMan {
 
     FileMan copy(String destPath, FileSetup opt){
         opt = getMergedOption(opt)
-        copy(sourceFile.path, destPath, opt.modeAutoMkdir)
+        copy(sourceFile.path, destPath, opt)
         return this
     }
 
@@ -1184,7 +1421,7 @@ class FileMan {
     /**
      * Check Exclude File
      */
-    boolean isExcludeFile(File targetFile, List<String> excludePathList){
+    static boolean isExcludeFile(File targetFile, List<String> excludePathList){
         List excludeCheckList = excludePathList.findAll{ String excludeItem ->
             File excludeFile = new File(excludeItem)
             return targetFile.path.equals(excludeFile.path)
