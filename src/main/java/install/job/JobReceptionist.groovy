@@ -33,7 +33,14 @@ class JobReceptionist extends TaskUtil{
      * RUN
      */
     void run(){
+    }
 
+
+
+    /**
+     * ASK
+     */
+    void ask(){
         //1. READ ANSWER
         readRemeber()
 
@@ -46,26 +53,33 @@ class JobReceptionist extends TaskUtil{
 
         //3. WRITE ANSWER
         writeRemember()
-
     }
 
 
 
-    void readRemeber(){
+    /**
+     * Read Remeber File
+     */
+    private void readRemeber(){
         if (gOpt.modeRemember){
             try{
                 PropMan rememberAnswerPropman = new PropMan().readFile(gOpt.remeberFilePath).properties
                 propman.merge(rememberAnswerPropman)
             }catch(Exception e){
+                println "No Remember File"
             }
         }
     }
 
-    void writeRemember(){
+    /**
+     * Backup & Write Remeber File
+     */
+    private void writeRemember(){
         if (gOpt.modeRemember){
             FileMan fileman = new FileMan(gOpt.remeberFilePath).set(gOpt.rememberFileSetup)
             try{
-                fileman.backup()
+                if (fileman.exists())
+                    fileman.backup()
             }catch(Exception e){
                 e.printStackTrace()
             }

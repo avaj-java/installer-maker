@@ -40,7 +40,12 @@ class JobInstaller extends TaskUtil{
      * RUN
      */
     void run(){
+    }
 
+    /**
+     * INSTALL
+     */
+    void install(){
         //Each level by level
         eachLevel(levelNamesProperty){ String levelName ->
             String propertyPrefix = "${levelNamesProperty}.${levelName}."
@@ -51,7 +56,6 @@ class JobInstaller extends TaskUtil{
 
         //Write Report
         writeReport(beforeReportList, afterReportMapList, gOpt.reportFileSetup)
-
     }
 
 
@@ -59,7 +63,7 @@ class JobInstaller extends TaskUtil{
     /**
      * WRITE
      */
-    void writeReport(List beforeReportList, List afterReportMapList, FileSetup fileSetup){
+    private void writeReport(List beforeReportList, List afterReportMapList, FileSetup fileSetup){
         //Generate File Report
         String fileNamePrefix
         String date = new Date().format('yyyyMMdd_HHmmss')
@@ -67,7 +71,7 @@ class JobInstaller extends TaskUtil{
             fileNamePrefix = 'report_analysis'
             if (gOpt.modeGenerateReportText) {
                 List<String> stringList = sqlman.getAnalysisStringResultList(beforeReportList)
-                new FileMan().createNewFile('./', "${fileNamePrefix}_${date}.txt", stringList, fileSetup)
+                FileMan.write("${fileNamePrefix}_${date}.txt", stringList, fileSetup)
             }
             if (gOpt.modeGenerateReportExcel){
                 List<ReportSql> excelReportList = beforeReportList.collect{ SqlAnalMan.SqlObject sqlObj ->
@@ -89,7 +93,7 @@ class JobInstaller extends TaskUtil{
             fileNamePrefix = 'report_result'
             if (gOpt.modeGenerateReportText){
                 List<String> stringList = sqlman.getResultList(afterReportMapList)
-                new FileMan().createNewFile('./', "${fileNamePrefix}_${date}.txt", stringList, fileSetup)
+                FileMan.write("${fileNamePrefix}_${date}.txt", stringList, fileSetup)
             }
             if (gOpt.modeGenerateReportExcel){
                 List<ReportSql> excelReportList = beforeReportList.collect{ SqlAnalMan.SqlObject sqlObj ->

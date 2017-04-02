@@ -14,10 +14,11 @@ import com.jaemisseo.man.util.QuestionSetup
  */
 class TaskUtil {
 
+    public static final String EMP_MACGYVER = "MACGYVER"
+
     public static final String JOB_BUILDER = "BUILDER"
     public static final String JOB_RECEPTIONIST = "RECEPTIONIST"
     public static final String JOB_INSTALLER = "INSTALLER"
-    public static final String MACGYVER = "MACGYVER"
 
     public static final String TASK_TAR = "TAR"
     public static final String TASK_ZIP = "ZIP"
@@ -32,16 +33,15 @@ class TaskUtil {
 
     public static final String TASK_NOTICE = "NOTICE"
     public static final String TASK_Q = "Q"
-    public static final String TASK_Q_CHOICE = "Q_CHOICE"
-    public static final String TASK_Q_YN = "Q_YN"
+    public static final String TASK_Q_CHOICE = "Q-CHOICE"
+    public static final String TASK_Q_YN = "Q-YN"
 
     public static final String TASK_JDBC = "JDBC"
     public static final String TASK_REST = "REST"
     public static final String TASK_SOCKET = "SOCKET"
     public static final String TASK_EMAIL = "EMAIL"
     public static final String TASK_PORT = "PORT"
-    public static final String TASK_MERGE_ROPERTIES = "MERGE_PROPERTIES"
-    public static final String TASK_GEN_SAMPLE_PROPERTIES = "GEN_SAMPLE_PROPERTIES"
+    public static final String TASK_MERGE_ROPERTIES = "MERGE-PROPERTIES"
 
     PropMan propman
     VariableMan varman
@@ -112,7 +112,7 @@ class TaskUtil {
         //Run Task
         switch (taskName){
             case TASK_NOTICE:
-                new TaskWelcome(propman).run(propertyPrefix)
+                new TaskNotice(propman).run(propertyPrefix)
                 break
             case TASK_Q:
                 new TaskQuestion(propman, rememberAnswerLineList).run(propertyPrefix)
@@ -159,9 +159,6 @@ class TaskUtil {
                 break
             case TASK_MERGE_ROPERTIES:
                 new TaskMergeProperties(propman).run(propertyPrefix)
-                break
-            case TASK_GEN_SAMPLE_PROPERTIES:
-                new TaskGenSampleProperties(propman).run(propertyPrefix)
                 break
             case TASK_EMAIL://Not Supported Yet
                 new TaskTestEMail(propman).run(propertyPrefix)

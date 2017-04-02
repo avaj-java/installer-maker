@@ -1,4 +1,4 @@
-package install.job
+package install.employee
 
 import com.jaemisseo.man.PropMan
 import com.jaemisseo.man.VariableMan
@@ -21,32 +21,33 @@ class MacGyver extends TaskUtil {
      * RUN
      */
     void run(){
+        List taskMap = [
+                TASK_TAR,
+                TASK_ZIP,
+                TASK_JAR,
+                TASK_UNTAR,
+                TASK_UNZIP,
+                TASK_UNJAR,
+                TASK_MKDIR,
+                TASK_COPY,
+                TASK_JDBC,
+                TASK_REST,
+                TASK_SOCKET,
+                TASK_EMAIL,
+                TASK_PORT,
+                TASK_MERGE_ROPERTIES,
 
-        Map taskMap = [
-                'tar': TASK_TAR,
-                'zip': TASK_ZIP,
-                'jar': TASK_JAR,
-                'untar': TASK_UNTAR,
-                'unzip': TASK_UNZIP,
-                'unjar': TASK_UNJAR,
-                'mkdir': TASK_MKDIR,
-                'copy': TASK_COPY,
-                'replace': TASK_REPLACE,
-                'sql': TASK_SQL,
-                'notice': TASK_NOTICE,
-                'q': TASK_Q,
-                'q-choice': TASK_Q_CHOICE,
-                'q-yn': TASK_Q_YN,
-                'test-db':TASK_JDBC,
-                'test-rest':TASK_REST,
-                'test-socket':TASK_SOCKET,
-                'test-email': TASK_EMAIL,
-                'test-port':TASK_PORT,
-                'merge-properties':TASK_MERGE_ROPERTIES,
+                TASK_REPLACE,
+                TASK_SQL,
+                TASK_NOTICE,
+                TASK_Q,
+                TASK_Q_CHOICE,
+                TASK_Q_YN,
         ]
 
-        taskMap.each{ String command, String taskCode ->
-            if (propman.get(command))
+
+        taskMap.each{ String taskCode ->
+            if (propman.get(taskCode.toLowerCase()))
                 runTask(taskCode)
         }
 

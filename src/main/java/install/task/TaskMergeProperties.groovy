@@ -18,8 +18,8 @@ class TaskMergeProperties extends TaskUtil{
     @Override
     void run(String propertyPrefix) {
         //Ready
-        String sourceFilePath               = propman.get('into')
         String specificPropertiesFilePath   = propman.get('from')
+        String sourceFilePath               = propman.get('into')
         String fileEncoding                 = propman.get('file.encoding')
         FileSetup opt = new FileSetup(modeAutoBackup: true)
         if (fileEncoding)

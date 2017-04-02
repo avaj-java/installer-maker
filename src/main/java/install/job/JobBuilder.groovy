@@ -20,7 +20,14 @@ class JobBuilder extends TaskUtil {
         parsePropMan(propman, varman, levelNamesProperty)
         setBeforeGetProp(propman, varman)
         this.gOpt = new BuilderGlobalOption().merge(new BuilderGlobalOption(
-            fileSetup   : genFileSetup()
+            fileSetup           : genFileSetup(),
+            installerName            : getValue('installer.name') ?: 'installer',
+            installerHomeToLibRelPath: getValue('installer.home.to.lib.relpath') ?: './lib',
+            installerHomeToBinRelPath: getValue('installer.home.to.bin.relpath') ?: './bin',
+            buildDir            : getFilePath('build.dir'),
+            buildTempHome       : getFilePath('build.temp.dir'),
+            buildInstallerHome  : getFilePath('build.installer.home'),
+            propertiesDir       : getValue('properties.dir') ?: './',
         ))
     }
 
@@ -31,88 +38,134 @@ class JobBuilder extends TaskUtil {
      */
     void run(){
 
-        //Gen Starter
-        setLibAndBin()
+    }
 
-        //Each level by level
+
+
+    /**
+     * INIT
+     * Generate Sample Properties Files
+     * 1. builder.properties
+     * 2. receptionist.properties
+     * 3. installer.properties
+     */
+    void init(){
+        //Ready
+        FileSetup fileSetup = gOpt.fileSetup
+        String destPath = getFilePath('dest.path') ?: FileMan.getFullPath('./')
+        //DO
+        println "<Init File>"
+        println "- Dest Path: ${destPath}"
+        new FileMan().readResource('sampleProperties/builder.sample.properties').write("${destPath}/builder.properties", fileSetup)
+        new FileMan().readResource('sampleProperties/receptionist.sample.properties').write("${destPath}/receptionist.properties", fileSetup)
+        new FileMan().readResource('sampleProperties/installer.sample.properties').write("${destPath}/installer.properties", fileSetup)
+    }
+
+    /**
+     * CLEAN
+     * Clean Build Directory
+     */
+    void clean(){
+        try{
+            FileMan.delete(gOpt.buildInstallerHome)
+            FileMan.delete(gOpt.buildTempHome)
+        }catch(e){
+        }
+    }
+
+    /**
+     * BUILD
+     */
+    void build(){
+        //1. Gen Starter
+        setLibAndBin()
+        //2. Each level by level
         eachLevel(levelNamesProperty){ String levelName ->
             String propertyPrefix = "${levelNamesProperty}.${levelName}."
             String taskName = getString(propertyPrefix, 'task')?.trim()?.toUpperCase()
             logBigTitle("${levelName}")
             runTask(taskName, propertyPrefix)
         }
-
     }
 
 
 
     /**
-     * Install Starter (Lib, Bin) - Create Dir & Copy Lib & Generate Bin
+     * Generate Install Starter (Lib, Bin)
      * ${Installer.home}/lib
      * ${Installer.home}/bin
+     *
+     *  1. Create Dir
+     *  2. Generate Lib
+     *  3. Generate Bin
      */
-    void setLibAndBin(){
+    private void setLibAndBin(){
 
         //Ready
-        FileSetup gFileSetup = gOpt.fileSetup
-        String installerHome = getFilePath('installer.home')
-        String homeToLibRelPath = getValue('installer.lib.relpath') ?: './lib'
-        String homeToBinRelPath = getValue('installer.bin.relpath') ?: './bin'
-        String binDestPath = FileMan.getFullPath(installerHome, homeToBinRelPath)
-        String binToHomeRelPath = FileMan.getRelativePath(binDestPath, installerHome)
+        FileSetup fileSetup = gOpt.fileSetup
+        String buildTempHome = gOpt.buildTempHome
+        String buildInstallerHome = gOpt.buildInstallerHome
+        String homeToBinRelPath = gOpt.installerHomeToBinRelPath
+        String homeToLibRelPath = gOpt.installerHomeToLibRelPath
+
+        String binDestPath = FileMan.getFullPath(buildInstallerHome, homeToBinRelPath)
+        String binToHomeRelPath = FileMan.getRelativePath(binDestPath, buildInstallerHome)
         String binToHomeRelPathForWin = binToHomeRelPath.replace('/','\\')
         String homeToLibRelPathForWin = homeToLibRelPath.replace('/','\\')
-        String libDir = getFilePath('this.dir')
-        String thisPath = getFilePath('this.path')
-        String thisFileName = FileMan.getLastFileName(thisPath)
-        String builderHome = "${libDir}/.."
-        String tempDir = "${builderHome}/temp"
+        String libDir = getFilePath('lib.dir')
+        String libPath = getFilePath('lib.path')
+        String thisFileName = FileMan.getLastFileName(libPath)
+        String tempNowDir = "${buildTempHome}/temp_${new Date().format('yyyyMMddHHmmssSSS')}"
         String libSourcePath = "${libDir}/*.*"
-        String libDestPath = FileMan.getFullPath(installerHome, homeToLibRelPath)
+        String libDestPath = FileMan.getFullPath(buildInstallerHome, homeToLibRelPath)
+        String libToHomeRelPath = FileMan.getRelativePath(libDestPath, buildInstallerHome)
+
         String binShSourcePath = 'binForInstaller/install'
-        String binBatSourcePath ='binForInstaller/install.bat'
+        String binBatSourcePath = 'binForInstaller/install.bat'
         String binShDestPath = "${binDestPath}/install"
         String binBatDestPath = "${binDestPath}/install.bat"
-        String tempNowDir = "${tempDir}/temp_${new Date().format('yyyyMMddHHmmssSSS')}"
 
-        //1. Copy Libs
         println """<Builder> Copy And Generate Installer Library
-         - Installer Home: ${installerHome}"
+         - Installer Home: ${buildInstallerHome}"
          - Copy Installer Lib: 
             FROM : ${libSourcePath}
             TO   : ${libDestPath}
         """
-        new FileMan(libSourcePath)
-            .set(gFileSetup)
-            .copy(libDestPath)
+
+        //1. Copy Libs
+        new FileMan(libSourcePath).set(fileSetup).copy(libDestPath, new FileSetup(modeAutoMkdir:true))
 
         //2. Convert Init Script to Script Editd By User
-        FileMan.unjar("${thisPath}", tempNowDir, true)
+        FileMan.unjar(libPath, tempNowDir, true)
         FileMan.copy("*.properties", tempNowDir)
+        FileMan.write("${tempNowDir}/.libtohome", libToHomeRelPath, fileSetup)
         FileMan.jar("${tempNowDir}/*", "${libDestPath}/${thisFileName}")
 
-        //3. Gen Bins
         println """<Builder> Generate Bin:
             SH  : ${binShDestPath}
             BAT : ${binBatDestPath}
         """
-        new FileMan()
-            .set(gFileSetup)
-            .readResource(binBatSourcePath)
-            .replaceLine([
-                'set REL_PATH_BIN_TO_HOME=' : "set REL_PATH_BIN_TO_HOME=${binToHomeRelPathForWin}",
-                'set REL_PATH_HOME_TO_LIB=' : "set REL_PATH_HOME_TO_LIB=${homeToLibRelPathForWin}"
-            ])
-            .write(binBatDestPath)
 
+        //3. Gen bin/install(sh)
         new FileMan()
-            .set(gFileSetup)
-            .readResource(binShSourcePath)
-            .replaceLine([
-                'REL_PATH_BIN_TO_HOME=' : "REL_PATH_BIN_TO_HOME=${binToHomeRelPath}",
-                'REL_PATH_HOME_TO_LIB=' : "REL_PATH_HOME_TO_LIB=${homeToLibRelPath}"
-            ])
-            .write(binShDestPath)
+        .set(fileSetup)
+        .readResource(binShSourcePath)
+        .replaceLine([
+            'REL_PATH_BIN_TO_HOME=' : "REL_PATH_BIN_TO_HOME=${binToHomeRelPath}",
+            'REL_PATH_HOME_TO_LIB=' : "REL_PATH_HOME_TO_LIB=${homeToLibRelPath}"
+        ])
+        .write(binShDestPath)
+
+        //4. Gen bin/install.bat
+        new FileMan()
+        .set(fileSetup)
+        .readResource(binBatSourcePath)
+        .replaceLine([
+            'set REL_PATH_BIN_TO_HOME=' : "set REL_PATH_BIN_TO_HOME=${binToHomeRelPathForWin}",
+            'set REL_PATH_HOME_TO_LIB=' : "set REL_PATH_HOME_TO_LIB=${homeToLibRelPathForWin}"
+        ])
+        .write(binBatDestPath)
+
     }
 
 }

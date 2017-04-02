@@ -6,9 +6,9 @@ import com.jaemisseo.man.VariableMan
 /**
  * Created by sujkim on 2017-03-18.
  */
-class TaskWelcome extends TaskUtil{
+class TaskNotice extends TaskUtil{
 
-    TaskWelcome(PropMan propman){
+    TaskNotice(PropMan propman){
         this.propman = propman
     }
 

@@ -1,8 +1,9 @@
 package install
 
+import com.jaemisseo.man.FileMan
 import install.job.JobReceptionist
 import install.job.JobBuilder
-import install.job.MacGyver
+import install.employee.MacGyver
 import install.job.JobInstaller
 import com.jaemisseo.man.PropMan
 
@@ -14,161 +15,108 @@ class Start {
      * @throws Exception
      */
     static void main(String[] args) throws Exception{
-        Map prop = [:]
-        // 1. [prop] OverWrite with External Properties
-        if (args){
-            args.each{
-                int indexEqualMark = it.indexOf('=')
-                String beforeEqualMark
-                def afterEqualMark
-                if (indexEqualMark != -1){
-                    //COMMAND: -PROP.PERTY=VALUE
-                    //RESULT: prop['PROP.PERTY'] = VALUE
-                    beforeEqualMark = (it.startsWith('-')) ? it.substring(1, indexEqualMark) : ''
-                    afterEqualMark = it.substring(indexEqualMark + 1)
-                    prop[beforeEqualMark] = (afterEqualMark) ?: ''
-                }else{
-                    //COMMAND: -PROP.PERTY
-                    //RESULT: prop['PROP.PERTY'] = true
-                    beforeEqualMark = (it.startsWith('-')) ? it.substring(1, it.length()) : ''
-                    prop[beforeEqualMark] = true
-                }
-            }
-        }
-        // 2. Start With Properties
-        new Start().start(prop)
+        Map propMap = new InstallerPropertiesGenerator().genPropertiesValueMap(args)
+        //Start With Properties Value Map
+        new Start().start(propMap)
     }
 
 
 
-
-
-    Start(){}
-
-    String osName
-    String osVersion
-    String userName
-    String javaHome
-    String javaVersion
-    String thisPath
-    String thisDir
-    String nowPath
-    String homePath
-
-
+    InstallerPropertiesGenerator propGen = new InstallerPropertiesGenerator()
+    InstallerLogGenerator logGen = new InstallerLogGenerator()
 
     /**
      * START
      * @param prop
      */
     void start(Map prop){
-        osName = System.getProperty('os.name')
-        osVersion = System.getProperty('os.version')
-        userName = System.getProperty('user.name')
-        javaVersion = System.getProperty('java.version')
-        javaHome = System.getProperty('java.home')
-        nowPath = System.getProperty('user.dir')
-        homePath = System.getProperty('user.home')
-        thisPath = getThisAppFile().getPath()
-        thisDir = getThisAppFile().getParentFile()
-
-        /////LOG
-        logStart()
 
         /////Create Main Bean
-        String propertiesDir = prop['properties.dir'] ?: thisDir
-        PropMan propmanForBuilder
-        PropMan propmanForReceptionist
-        PropMan propmanForInstaller
+        PropMan propmanDefault = propGen.genSystemDefaultProperties()
+        PropMan propmanForBuilder = propGen.genBuilderDefaultProperties()
+        PropMan propmanForReceptionist = propGen.genReceptionistDefaultProperties()
+        PropMan propmanForInstaller = propGen.genInstallerDefaultProperties()
 
-        ///// -build
-        if (prop['build']){
-            propmanForBuilder = getProperties(propertiesDir, "builder.properties").merge(prop)
-            new JobBuilder(propmanForBuilder).run()
-        }
+        String nowPath = propmanDefault.get('user.dir')
+        String libDir = propmanDefault.get('lib.dir')
+        String propertiesDir = prop['properties.dir'] ?: nowPath
+        //builder
+        String builderHome = FileMan.getFullPath(libDir, '../')
+        //installer
+        String libtohomeRelPath = FileMan.getFileFromResource('.libtohome')?.text.replaceAll('\\s*', '') ?: '../'
+        String installerHome = FileMan.getFullPath(libDir, libtohomeRelPath)
 
-        ///// -ask
-        if (prop['ask']){
-            propmanForReceptionist = getProperties(propertiesDir, "receptionist.properties").merge(prop)
-            new JobReceptionist(propmanForReceptionist).run()
-        }
+        /////LOG
+        logGen.logStart(propmanDefault)
 
-        ///// -install
-        if (prop['install']){
-            propmanForInstaller = getProperties(propertiesDir, "installer.properties").merge(propmanForReceptionist)
-            new JobInstaller(propmanForInstaller).run()
-        }
-
-        ///// do task
-        if (true){
-            PropMan propman = new PropMan(prop)
-            new MacGyver(propman).run()
+        /**
+         * BUILDER
+         */
+        ///// version
+        if (prop['version'] || prop['v']){
+            logGen.logVersion(propmanDefault)
             System.exit(0)
         }
 
-        /////LOG
-        logFinished()
-    }
-
-
-
-    void logStart(){
-        println ""
-        println "<<< WELCOME INSTALLER >>>"
-        println " - [OS]            : ${osName}, ${osVersion}"
-        println " - [USER]          : ${userName}"
-        println " - [JAVA Version]  : ${javaVersion} (${javaHome})"
-        println " - [HOME Path]     : ${homePath}"
-        println " - [INSTALLER Path]: ${thisPath}"
-        println " - [YOUR Path]     : ${nowPath}"
-
-        println ""
-    }
-
-    void logFinished(){
-        println ""
-        println "<<< FINISHED INSTALLER >>>"
-        println ""
-    }
-
-    File getThisAppFile(){
-        return new File(this.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath())
-    }
-
-    PropMan getProperties(String propertiesDirPath, String propertiesFileName){
-        PropMan propman = new PropMan()
-        //1. Try Get FileSystem's Properties OR Resource Properties
-        try{
-            propman.readFile("${propertiesDirPath}/${propertiesFileName}")
-        }catch(e){
-            propman.readResource("${propertiesFileName}")
+        ///// init
+        if (prop['init']){
+            propmanForBuilder.merge(prop)
+            new JobBuilder(propmanForBuilder).init()
         }
-        //2. Set Default Value
-        seDefaultValue(propman)
-        return propman
-    }
 
+        ///// clean
+        if (prop['clean']){
+            propmanForBuilder.merge("${propertiesDir}/builder.properties")
+                             .merge(prop)
+                             .merge(['builder.home': builderHome])
+                             .mergeNew(propmanDefault)
+            new JobBuilder(propmanForBuilder).clean()
+        }
 
-    void seDefaultValue(PropMan propman){
-        if (!propman.get('os.name'))
-            propman.set('os.name', osName)
-        if (!propman.get('os.version'))
-            propman.set('os.version', osVersion)
-        if (!propman.get('os.name'))
-            propman.set('os.name', userName)
-        if (!propman.get('java.version'))
-            propman.set('java.version', javaVersion)
-        if (!propman.get('java.home'))
-            propman.set('java.home', javaHome)
-        if (!propman.get('user.dir'))
-            propman.set('user.dir', nowPath)
-        if (!propman.get('user.home'))
-            propman.set('user.home', homePath)
-        // installer.jar path
-        if (!propman.get('this.dir'))
-            propman.set('this.dir', thisDir)
-        if (!propman.get('this.path'))
-            propman.set('this.path', thisPath)
+        ///// build
+        if (prop['build'] || prop['b']){
+            propmanForBuilder.merge("${propertiesDir}/builder.properties")
+                             .merge(prop)
+                             .merge(['builder.home': builderHome])
+                             .mergeNew(propmanDefault)
+            new JobBuilder(propmanForBuilder).build()
+        }
+
+        /**
+         * RECEPTIONIST
+         */
+        ///// ask
+        if (prop['ask']){
+            propmanForReceptionist.mergeResource("receptionist.properties")
+                                  .merge(prop)
+                                  .merge(['installer.home': installerHome])
+                                  .mergeNew(propmanDefault)
+            new JobReceptionist(propmanForReceptionist).ask()
+        }
+
+        /**
+         * INSTALLER
+         */
+        ///// install
+        if (prop['install'] || prop['i']){
+            propmanForInstaller.mergeResource("installer.properties")
+                               .merge(propmanForReceptionist)
+                               .merge(['installer.home': installerHome])
+                               .mergeNew(propmanDefault)
+            new JobInstaller(propmanForInstaller).install()
+        }
+
+        /**
+         * MACGYVER
+         */
+        ///// Doing Other Task
+        if (true){
+            PropMan propman = new PropMan(prop)
+            new MacGyver(propman).run()
+        }
+
+        /////LOG
+        logGen.logFinished()
     }
 
 

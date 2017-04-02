@@ -29,6 +29,7 @@ class TaskFileUntar extends TaskUtil{
         println "<Extract TAR File>"
         println "- Source Path: ${filePath}"
         println "- Dest Path: ${destPath}"
+
         FileMan.untar(filePath, destPath, fileSetup.modeAutoMkdir)
 
     }
