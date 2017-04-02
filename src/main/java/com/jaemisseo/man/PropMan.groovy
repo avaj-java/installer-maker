@@ -256,11 +256,9 @@ class PropMan{
         return lineList
     }
 
-
-
-
-
-
+    /**
+     * MERGE
+     */
     PropMan merge(String filePath){
         return mergeFile(filePath)
     }
@@ -277,7 +275,7 @@ class PropMan{
     }
 
     PropMan merge(PropMan otherPropman){
-        return merge( otherPropman.properties )
+        return merge( otherPropman?.properties )
     }
 
     PropMan merge(Properties otherProperties){
@@ -288,6 +286,42 @@ class PropMan{
     PropMan merge(Map propMap){
         propMap.each{
             properties[it.key] = it.value
+        }
+        return this
+    }
+
+    /**
+     * MERGE NEW
+     * Merge Only New Property
+     */
+    PropMan mergeNew(String filePath){
+        return mergeFileNew(filePath)
+    }
+
+    PropMan mergeFileNew(String filePath){
+        String absolutePath = getFullPath(filePath)
+        Properties properties = new PropMan(absolutePath).properties
+        return mergeNew(properties)
+    }
+
+    PropMan mergeResourceNew(String resourcePath){
+        Properties properties = new PropMan().readResource(resourcePath).properties
+        return mergeNew(properties)
+    }
+
+    PropMan mergeNew(PropMan otherPropman){
+        return mergeNew( otherPropman.properties )
+    }
+
+    PropMan mergeNew(Properties otherProperties){
+        Map propMap = otherProperties
+        return mergeNew( (Map) propMap )
+    }
+
+    PropMan mergeNew(Map propMap){
+        propMap.each{
+            if (properties[it.key] == null)
+                properties[it.key] = it.value
         }
         return this
     }
