@@ -342,7 +342,7 @@ class FileMan {
     }
 
     static boolean checkFile(String path, boolean modeAutoOverWrite){
-        if (modeAutoOverWrite && new File(path).exists())
+        if (!modeAutoOverWrite && new File(path).exists())
             throw new Exception("\n < Failed to WRITE File > File Already Exists", new Throwable("Check Please."))
         return true
     }
