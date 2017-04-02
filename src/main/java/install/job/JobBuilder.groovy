@@ -115,15 +115,20 @@ class JobBuilder extends TaskUtil {
         String libDir = getFilePath('lib.dir')
         String libPath = getFilePath('lib.path')
         String thisFileName = FileMan.getLastFileName(libPath)
-        String tempNowDir = "${buildTempHome}/temp_${new Date().format('yyyyMMddHHmmssSSS')}"
+        String tempNowDir = "${buildTempHome}/temp_${new Date().format('yyyyMMdd_HHmmssSSS')}"
         String libSourcePath = "${libDir}/*.*"
         String libDestPath = FileMan.getFullPath(buildInstallerHome, homeToLibRelPath)
         String libToHomeRelPath = FileMan.getRelativePath(libDestPath, buildInstallerHome)
 
-        String binShSourcePath = 'binForInstaller/install'
-        String binBatSourcePath = 'binForInstaller/install.bat'
-        String binShDestPath = "${binDestPath}/install"
-        String binBatDestPath = "${binDestPath}/install.bat"
+        String binInstallShSourcePath = 'binForInstaller/install'
+        String binInstallBatSourcePath = 'binForInstaller/install.bat'
+        String binInstallShDestPath = "${binDestPath}/install"
+        String binInstallBatDestPath = "${binDestPath}/install.bat"
+
+        String binInstallerShSourcePath = 'binForInstaller/installer'
+        String binInstallerBatSourcePath = 'binForInstaller/installer.bat'
+        String binInstallerShDestPath = "${binDestPath}/installer"
+        String binInstallerBatDestPath = "${binDestPath}/installer.bat"
 
         println """<Builder> Copy And Generate Installer Library
          - Installer Home: ${buildInstallerHome}"
@@ -141,30 +146,55 @@ class JobBuilder extends TaskUtil {
         FileMan.write("${tempNowDir}/.libtohome", libToHomeRelPath, fileSetup)
         FileMan.jar("${tempNowDir}/*", "${libDestPath}/${thisFileName}")
 
-        println """<Builder> Generate Bin:
-            SH  : ${binShDestPath}
-            BAT : ${binBatDestPath}
+        println """<Builder> Generate Bin, install:
+            SH  : ${binInstallShDestPath}
+            BAT : ${binInstallBatDestPath}
         """
 
         //3. Gen bin/install(sh)
         new FileMan()
         .set(fileSetup)
-        .readResource(binShSourcePath)
+        .readResource(binInstallShSourcePath)
         .replaceLine([
             'REL_PATH_BIN_TO_HOME=' : "REL_PATH_BIN_TO_HOME=${binToHomeRelPath}",
             'REL_PATH_HOME_TO_LIB=' : "REL_PATH_HOME_TO_LIB=${homeToLibRelPath}"
         ])
-        .write(binShDestPath)
+        .write(binInstallShDestPath)
 
         //4. Gen bin/install.bat
         new FileMan()
         .set(fileSetup)
-        .readResource(binBatSourcePath)
+        .readResource(binInstallBatSourcePath)
         .replaceLine([
             'set REL_PATH_BIN_TO_HOME=' : "set REL_PATH_BIN_TO_HOME=${binToHomeRelPathForWin}",
             'set REL_PATH_HOME_TO_LIB=' : "set REL_PATH_HOME_TO_LIB=${homeToLibRelPathForWin}"
         ])
-        .write(binBatDestPath)
+        .write(binInstallBatDestPath)
+
+        println """<Builder> Generate Bin, installer:
+            SH  : ${binInstallerShDestPath}
+            BAT : ${binInstallerBatDestPath}
+        """
+
+        //5. Gen bin/installer(sh)
+        new FileMan()
+        .set(fileSetup)
+        .readResource(binInstallerShSourcePath)
+        .replaceLine([
+            'REL_PATH_BIN_TO_HOME=' : "REL_PATH_BIN_TO_HOME=${binToHomeRelPath}",
+            'REL_PATH_HOME_TO_LIB=' : "REL_PATH_HOME_TO_LIB=${homeToLibRelPath}"
+        ])
+        .write(binInstallerShDestPath)
+
+        //6. Gen bin/installer.bat
+        new FileMan()
+        .set(fileSetup)
+        .readResource(binInstallerBatSourcePath)
+        .replaceLine([
+            'set REL_PATH_BIN_TO_HOME=' : "set REL_PATH_BIN_TO_HOME=${binToHomeRelPathForWin}",
+            'set REL_PATH_HOME_TO_LIB=' : "set REL_PATH_HOME_TO_LIB=${homeToLibRelPathForWin}"
+        ])
+        .write(binInstallerBatDestPath)
 
     }
 
