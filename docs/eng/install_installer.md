@@ -1,10 +1,5 @@
 -----
-# Needs   
-- OS: `WINDOWS`, `LINUX`, `UNIX`
-- JDK: `JDK 1.6+`
-
------
-# 1. How to install Installer
+## How to install Installer
 
 1. Unzip to where you want (installer-x.x.x.zip)
     - Windows
@@ -48,4 +43,4 @@
     installer -v
     ```
     
-##### NEXT: [2. How to make Your Installer](installer_build.md)
+## NEXT: [How to make Your Installer](installer_build.md)
