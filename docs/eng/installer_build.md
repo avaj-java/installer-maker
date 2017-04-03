@@ -1,4 +1,3 @@
-
 -----
 # 2. How to make Your Installer
 
@@ -83,20 +82,5 @@
         installer build
         ```
 
-# How to Install  
-
-1. Go to INSTALLER home path you set 
-2. 
-    ```
-    cd {BUILD_INSTALLER_HOME}    
-    ```
-    
-2. Run install in bin Directory (Default bin Directory Path is `{BUILD_INSTALLER_HOME}/bin`)
-3. 
-    ```sh
-    {BUILD_INSTALLER_HOME}/bin/install
-    ```
-    
-3. Then, Your `Receptionist ask Your User` What user wants, And `It be installed by Your Installer`  
 
 ##### NEXT: [3. How to Install Your Program with Your Installer](installer_build_install.md)
