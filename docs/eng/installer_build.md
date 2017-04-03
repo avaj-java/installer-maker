@@ -1,5 +1,5 @@
 -----
-# 2. How to make Your Installer
+## How to make Your Installer
 
 1. You need 3 properties files to make the Your Installer. 
     - `builder.properties`
@@ -14,9 +14,7 @@
     ```
 
 3. And then, Write your process into 3 properties files (ref. [properties.md](properties.md))    
-    - `builder.properties`
-           
-        Write how to make installer
+    - `builder.properties` - Write how to make installer
         
         ```properties
         build.level=1,2
@@ -30,9 +28,7 @@
         build.level.2.dest.path=${build.dir}/${installer.name}.zip
         ..
         ```
-    - `receptionist.properties`
-    
-        Write question what ask your user for how to install
+    - `receptionist.properties` - Write question what ask your user for how to install
         
         ```properties
         ask.level=0,1,2,3
@@ -58,9 +54,7 @@
         ask.level.3.property=was.contextpath
         ..
         ```
-    - `installer.properties`
-    
-        Write how to install
+    - `installer.properties` - Write how to install
         
         ```properties
         install.level=f1,f2
@@ -76,11 +70,9 @@
         ```
 
 4. Build your installer for your project
-    - build        
-        
-        ```
-        installer build
-        ```
+    ```
+    installer build
+    ```
 
 
-##### NEXT: [3. How to Install Your Program with Your Installer](installer_build_install.md)
+## NEXT: [How to Install Your Program with Your Installer](installer_build_install.md)
