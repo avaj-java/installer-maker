@@ -3,14 +3,29 @@ package com.jaemisseo.man.util
 /**
  * Created by sujkim on 2017-02-19.
  */
-class Option {
+class Option<T> {
 
-    Option clone(){
+    T clone(){
         Option oldOption = this
-        return this.class.newInstance().merge(oldOption)
+        T clonedObject = this.class.newInstance().merge(oldOption)
+        return clonedObject
     }
 
-    Option merge(Option newOption){
+    T clone(Map andPutMap){
+        T clonedObject = this.clone()
+        (clonedObject as Option).put(andPutMap)
+        return clonedObject
+    }
+
+    T put(Map filedValueMap){
+        Option oldOption = this
+        filedValueMap.each{ String filedNameToChange, def value ->
+            oldOption[filedNameToChange] = value
+        }
+        return oldOption
+    }
+
+    T merge(Option newOption){
         Option oldOption = this
         oldOption.eachFieldName{ String fieldName ->
             oldOption[fieldName] = (newOption[fieldName] != null && newOption[fieldName] != '') ? newOption[fieldName] : oldOption[fieldName]

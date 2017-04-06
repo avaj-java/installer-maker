@@ -3,7 +3,7 @@ package com.jaemisseo.man.util
 /**
  * Created by sujkim on 2017-03-17.
  */
-class SqlSetup extends Option{
+class SqlSetup extends Option<SqlSetup>{
 
     //-DataSource
     String vendor
@@ -26,5 +26,13 @@ class SqlSetup extends Option{
     def replaceUser
     def replaceDatafile
     def replacePassword
+
+    Boolean modeSqlExecute
+    Boolean modeSqlCheckBefore
+    Boolean modeSqlFileGenerate
+
+    Boolean modeSqlIgnoreErrorExecute
+    Boolean modeSqlIgnoreErrorCheckBefore
+
 
 }

@@ -19,6 +19,7 @@ class PropertiesGenerator {
             String nowKey = ''
 
             args.each{
+                it = it.replaceAll('\\^\\*', '\\*')         // Command Line(GitBash) Asterik Issue..  no use *, use ^*
                 //COMMAND1: -PROPERTY.KEY.NAME=VALUE
                 //RESULT2: valueListMap['PROPERTY.KEY.NAME'] = VALUE
                 if (it.startsWith('-')){

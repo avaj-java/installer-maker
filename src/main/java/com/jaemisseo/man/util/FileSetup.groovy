@@ -3,7 +3,7 @@ package com.jaemisseo.man.util
 /**
  * Created by sujkim on 2017-02-19.
  */
-class FileSetup extends Option {
+class FileSetup extends Option<FileSetup> {
 
     Boolean modeAutoLineBreak = true
     Boolean modeAutoMkdir = false

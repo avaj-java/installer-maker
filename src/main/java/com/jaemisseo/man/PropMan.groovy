@@ -72,6 +72,10 @@ class PropMan{
         return val
     }
 
+    String getString(String key){
+        return (get(key, null) as String)
+    }
+
     Boolean getBoolean(String key){
         return (get(key, null) as Boolean)
     }
@@ -285,7 +289,8 @@ class PropMan{
 
     PropMan merge(Map propMap){
         propMap.each{
-            properties[it.key] = it.value
+            if (it.key != null)
+                properties[it.key] = it.value
         }
         return this
     }
