@@ -23,13 +23,11 @@ class TaskFileUnjar extends TaskUtil{
         //Ready
         String filePath = getFilePath(propertyPrefix, 'file.path')
         String destPath = getFilePath(propertyPrefix, 'dest.path')
-        FileSetup fileSetup = genFileSetup(propertyPrefix)
+        FileSetup fileSetup = genMergedFileSetup(propertyPrefix)
 
         //DO
-        println "<Extract JAR File>"
-        println "- Source Path: ${filePath}"
-        println "- Dest Path: ${destPath}"
-        FileMan.unjar(filePath, destPath, fileSetup.modeAutoMkdir)
+        println "<UNJAR>"
+        FileMan.unjar(filePath, destPath, fileSetup)
 
     }
 

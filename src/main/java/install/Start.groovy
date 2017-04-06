@@ -87,10 +87,15 @@ class Start {
          */
         ///// ask
         if (prop['ask']){
-            propmanForReceptionist.mergeResource("receptionist.properties")
-                                  .merge(prop)
+            String userSetPropertiesDir = prop['properties.dir']
+            if (userSetPropertiesDir)
+                propmanForReceptionist.merge("${userSetPropertiesDir}/receptionist.properties")
+            else
+                propmanForReceptionist.mergeResource("receptionist.properties")
+            propmanForReceptionist.merge(prop)
                                   .merge(['installer.home': installerHome])
                                   .mergeNew(propmanDefault)
+
             new JobReceptionist(propmanForReceptionist).ask()
         }
 
@@ -99,8 +104,12 @@ class Start {
          */
         ///// install
         if (prop['install'] || prop['i']){
-            propmanForInstaller.mergeResource("installer.properties")
-                               .merge(propmanForReceptionist)
+            String userSetPropertiesDir = prop['properties.dir']
+            if (userSetPropertiesDir)
+                propmanForInstaller.merge("${userSetPropertiesDir}/installer.properties")
+            else
+                propmanForInstaller.mergeResource("installer.properties")
+            propmanForInstaller.merge(propmanForReceptionist)
                                .merge(['installer.home': installerHome])
                                .mergeNew(propmanDefault)
             new JobInstaller(propmanForInstaller).install()

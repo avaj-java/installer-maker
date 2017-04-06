@@ -8,6 +8,7 @@ import com.jaemisseo.man.VariableMan
 import com.jaemisseo.man.util.FileSetup
 import com.jaemisseo.man.util.SqlSetup
 import com.jaemisseo.man.util.QuestionSetup
+import install.bean.ReportSetup
 
 /**
  * Created by sujkim on 2017-03-11.
@@ -30,6 +31,7 @@ class TaskUtil {
     public static final String TASK_COPY = "COPY"
     public static final String TASK_REPLACE = "REPLACE"
     public static final String TASK_SQL = "SQL"
+    public static final String TASK_EXEC = "EXEC"
 
     public static final String TASK_NOTICE = "NOTICE"
     public static final String TASK_Q = "Q"
@@ -54,10 +56,14 @@ class TaskUtil {
     List invalidTaskList = []
     def gOpt
 
-    List beforeReportList = []
-    List afterReportMapList = []
+    List reportMapList = []
     List rememberAnswerLineList = []
 
+
+    TaskUtil setReporter(List reportMapList){
+        this.reportMapList = reportMapList
+        return this
+    }
 
 
     PropMan parsePropMan(PropMan propmanToDI, VariableMan varman){
@@ -125,55 +131,58 @@ class TaskUtil {
                 break
 
             case TASK_TAR:
-                new TaskFileTar(propman).run(propertyPrefix)
+                new TaskFileTar(propman).setReporter(reportMapList).run(propertyPrefix)
                 break
             case TASK_ZIP:
-                new TaskFileZip(propman).run(propertyPrefix)
+                new TaskFileZip(propman).setReporter(reportMapList).run(propertyPrefix)
                 break
             case TASK_JAR:
-                new TaskFileJar(propman).run(propertyPrefix)
+                new TaskFileJar(propman).setReporter(reportMapList).run(propertyPrefix)
                 break
 
             case TASK_UNTAR:
-                new TaskFileUntar(propman).run(propertyPrefix)
+                new TaskFileUntar(propman).setReporter(reportMapList).run(propertyPrefix)
                 break
             case TASK_UNZIP:
-                new TaskFileUnzip(propman).run(propertyPrefix)
+                new TaskFileUnzip(propman).setReporter(reportMapList).run(propertyPrefix)
                 break
             case TASK_UNJAR:
-                new TaskFileUnjar(propman).run(propertyPrefix)
+                new TaskFileUnjar(propman).setReporter(reportMapList).run(propertyPrefix)
                 break
 
             case TASK_REPLACE:
-                new TaskFileReplace(propman).run(propertyPrefix)
+                new TaskFileReplace(propman).setReporter(reportMapList).run(propertyPrefix)
                 break
             case TASK_COPY:
-                new TaskFileCopy(propman).run(propertyPrefix)
+                new TaskFileCopy(propman).setReporter(reportMapList).run(propertyPrefix)
                 break
             case TASK_MKDIR:
-                new TaskFileMkdir(propman).run(propertyPrefix)
+                new TaskFileMkdir(propman).setReporter(reportMapList).run(propertyPrefix)
                 break
 
+            case TASK_EXEC:
+                new TaskExec(propman).setReporter(reportMapList).run(propertyPrefix)
+                break
             case TASK_SQL:
-                new TaskSql(sqlman, propman, gOpt).setBeforeReporter(beforeReportList).setAfterReporter(afterReportMapList).run(propertyPrefix)
+                new TaskSql(propman).setReporter(reportMapList).run(propertyPrefix)
                 break
             case TASK_MERGE_ROPERTIES:
-                new TaskMergeProperties(propman).run(propertyPrefix)
+                new TaskMergeProperties(propman).setReporter(reportMapList).run(propertyPrefix)
                 break
             case TASK_EMAIL://Not Supported Yet
-                new TaskTestEMail(propman).run(propertyPrefix)
+                new TaskTestEMail(propman).setReporter(reportMapList).run(propertyPrefix)
                 break
             case TASK_SOCKET:
-                new TaskTestSocket(propman).run(propertyPrefix)
+                new TaskTestSocket(propman).setReporter(reportMapList).run(propertyPrefix)
                 break
             case TASK_REST:
-                new TaskTestREST(propman).run(propertyPrefix)
+                new TaskTestREST(propman).setReporter(reportMapList).run(propertyPrefix)
                 break
             case TASK_JDBC:
-                new TaskTestJDBC(propman).run(propertyPrefix)
+                new TaskTestJDBC(propman).setReporter(reportMapList).run(propertyPrefix)
                 break
             case TASK_PORT:
-                new TaskTestPort(propman).run(propertyPrefix)
+                new TaskTestPort(propman).setReporter(reportMapList).run(propertyPrefix)
                 break
 
             default :
@@ -278,60 +287,46 @@ class TaskUtil {
         return map
     }
 
-    protected FileSetup genFileSetup(){
-        return genFileSetup('')
-    }
-
+    /**
+     * FileSetup
+     */
     protected FileSetup genFileSetup(String propertyPrefix){
-        FileSetup defaultOpt = new FileSetup()
-        FileSetup globalOpt = defaultOpt.clone().merge(new FileSetup(
-                modeAutoLineBreak   : propman.get("mode.auto.linebreak"),
-                modeAutoBackup      : propman.get("mode.auto.backup"),
-                modeAutoMkdir       : propman.get("mode.auto.mkdir"),
-                encoding            : propman.get("file.encoding"),
-                backupPath          : propman.get("file.backup.path"),
-                lineBreak           : propman.get("file.linebreak"),
-                lastLineBreak       : propman.get("file.last.linebreak")
-        ))
-        FileSetup localOpt = globalOpt.clone().merge(new FileSetup(
-                modeAutoLineBreak   : propman.get("${propertyPrefix}mode.auto.linebreak"),
-                modeAutoBackup      : propman.get("${propertyPrefix}mode.auto.backup"),
-                modeAutoMkdir       : propman.get("${propertyPrefix}mode.auto.mkdir"),
+        return new FileSetup(
                 encoding            : propman.get("${propertyPrefix}file.encoding"),
                 backupPath          : propman.get("${propertyPrefix}file.backup.path"),
                 lineBreak           : propman.get("${propertyPrefix}file.linebreak"),
-                lastLineBreak       : propman.get("${propertyPrefix}file.last.linebreak")
-        ))
-        return localOpt
+                lastLineBreak       : propman.get("${propertyPrefix}file.last.linebreak"),
+                modeAutoLineBreak   : propman.get("${propertyPrefix}mode.auto.linebreak"),
+                modeAutoBackup      : propman.get("${propertyPrefix}mode.auto.backup"),
+                modeAutoMkdir       : propman.get("${propertyPrefix}mode.auto.mkdir"),
+                modeAutoOverWrite   : propman.get("${propertyPrefix}mode.auto.overwrite"),
+        )
     }
 
-    protected SqlSetup genSqlSetup(){
-        return genSqlSetup('')
+    protected FileSetup genGlobalFileSetup(){
+        FileSetup defaultOpt = new FileSetup()
+        FileSetup globalOpt = genFileSetup('')
+        return defaultOpt.merge(globalOpt)
     }
 
+    protected FileSetup genMergedFileSetup(String propertyPrefix){
+        FileSetup defaultOpt = new FileSetup()
+        FileSetup globalOpt = genFileSetup('')
+        FileSetup localOpt = genFileSetup(propertyPrefix)
+        return defaultOpt.merge(globalOpt).merge(localOpt)
+    }
+
+    protected FileSetup genOtherFileSetup(String propertyPrefix){
+        FileSetup defaultOpt = new FileSetup()
+        FileSetup globalOpt = genFileSetup(propertyPrefix)
+        return defaultOpt.merge(globalOpt)
+    }
+
+    /**
+     * SqlSetup
+     */
     protected SqlSetup genSqlSetup(String propertyPrefix){
-        SqlSetup defaultOpt = new SqlSetup()
-        SqlSetup globalOpt = defaultOpt.clone().merge(new SqlSetup(
-                //-DataSource
-                vendor      : propman.get("sql.vendor"),
-                ip          : propman.get("sql.ip"),
-                port        : propman.get("sql.port"),
-                db          : propman.get("sql.db"),
-                user        : propman.get("sql.user"),
-                password    : propman.get("sql.password"),
-                //-Replacement
-                replace             : propman.parse("sql.replace"),
-                replaceTable        : propman.parse("sql.replace.table"),
-                replaceIndex        : propman.parse("sql.replace.index"),
-                replaceSequence     : propman.parse("sql.replace.sequence"),
-                replaceView         : propman.parse("sql.replace.view"),
-                replaceFunction     : propman.parse("sql.replace.function"),
-                replaceTablespace   : propman.parse("sql.replace.tablespace"),
-                replaceUser         : propman.parse("sql.replace.user"),
-                replaceDatafile     : propman.parse("sql.replace.datafile"),
-                replacePassword     : propman.parse("sql.replace.password")
-        ))
-        SqlSetup localOpt = globalOpt.clone().merge(new SqlSetup(
+        return new SqlSetup(
                 //-DataSource
                 vendor      : propman.get("${propertyPrefix}sql.vendor"),
                 ip          : propman.get("${propertyPrefix}sql.ip"),
@@ -339,8 +334,6 @@ class TaskUtil {
                 db          : propman.get("${propertyPrefix}sql.db"),
                 user        : propman.get("${propertyPrefix}sql.user"),
                 password    : propman.get("${propertyPrefix}sql.password"),
-                driver      : propman.get("${propertyPrefix}sql.driver"),
-                url         : propman.get("${propertyPrefix}sql.url"),
                 //-Replacement
                 replace             : propman.parse("${propertyPrefix}sql.replace"),
                 replaceTable        : propman.parse("${propertyPrefix}sql.replace.table"),
@@ -351,15 +344,38 @@ class TaskUtil {
                 replaceTablespace   : propman.parse("${propertyPrefix}sql.replace.tablespace"),
                 replaceUser         : propman.parse("${propertyPrefix}sql.replace.user"),
                 replaceDatafile     : propman.parse("${propertyPrefix}sql.replace.datafile"),
-                replacePassword     : propman.parse("${propertyPrefix}sql.replace.password")
-        ))
-        return localOpt
+                replacePassword     : propman.parse("${propertyPrefix}sql.replace.password"),
+                modeSqlExecute                  : propman.get("${propertyPrefix}mode.sql.execute"),
+                modeSqlCheckBefore              : propman.get("${propertyPrefix}mode.sql.check.before"),
+                modeSqlFileGenerate             : propman.get("${propertyPrefix}mode.sql.file.generate"),
+                modeSqlIgnoreErrorExecute       : propman.get("${propertyPrefix}mode.sql.ignore.error.execute"),
+                modeSqlIgnoreErrorCheckBefore   : propman.get("${propertyPrefix}mode.sql.ignore.error.check.before"),
+
+        )
     }
 
-    protected QuestionSetup genQuestionSetup(){
-        return genQuestionSetup('')
+    protected SqlSetup genGlobalSqlSetup(){
+        SqlSetup defaultOpt = new SqlSetup()
+        SqlSetup globalOpt = genSqlSetup('')
+        return defaultOpt.merge(globalOpt)
     }
 
+    protected SqlSetup genMergedSqlSetup(String propertyPrefix){
+        SqlSetup defaultOpt = new SqlSetup()
+        SqlSetup globalOpt = genSqlSetup('')
+        SqlSetup localOpt = genSqlSetup(propertyPrefix)
+        return defaultOpt.merge(globalOpt).merge(localOpt)
+    }
+
+    protected SqlSetup genOtherSqlSetup(String propertyPrefix){
+        SqlSetup defaultOpt = new SqlSetup()
+        SqlSetup globalOpt = genSqlSetup(propertyPrefix)
+        return defaultOpt.merge(globalOpt)
+    }
+
+    /**
+     * QuestionSetup
+     */
     protected QuestionSetup genQuestionSetup(String propertyPrefix){
         return new QuestionSetup(
             question            : propman.get("${propertyPrefix}question"),
@@ -368,6 +384,25 @@ class TaskUtil {
             valueMap            : propman.parse("${propertyPrefix}answer.value.map"),
             validation          : propman.parse("${propertyPrefix}answer.validation"),
         )
+    }
+
+    /**
+     * ReportSetup
+     */
+    protected ReportSetup genReportSetup(String propertyPrefix){
+       return new ReportSetup(
+            modeReport         : propman.get("${propertyPrefix}mode.report"),
+            modeReportText     : propman.get("${propertyPrefix}mode.report.text"),
+            modeReportExcel    : propman.get("${propertyPrefix}mode.report.excel"),
+            modeReportConsole  : propman.get("${propertyPrefix}mode.report.console"),
+            fileSetup          : genOtherFileSetup("${propertyPrefix}report."),
+       )
+    }
+
+    protected ReportSetup genGlobalReportSetup(){
+        ReportSetup defaultOpt = new ReportSetup()
+        ReportSetup globalOpt = genReportSetup('')
+        return defaultOpt.merge(globalOpt)
     }
 
 }

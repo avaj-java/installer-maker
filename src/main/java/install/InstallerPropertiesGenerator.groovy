@@ -15,7 +15,14 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
     //Generate Properties Perspective Map
     Map genPropertiesValueMap(String[] args){
         Map valueListMap = super.genValueListMap(args)
-        return genPropertiesValueMap(valueListMap)
+        Map propertiesValueMap = genPropertiesValueMap(valueListMap)
+        //Check
+        println "- Check Arguments."
+        propertiesValueMap.each{
+            println "${it.key}=${it.value}"
+        }
+        println ""
+        return propertiesValueMap
     }
 
 
@@ -27,23 +34,31 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
         valueListMap.each{ String exPropName, def valueList ->
             List valueOrderList = valueProtocolListMap[exPropName.toUpperCase()]
             if (valueList instanceof List){
+
                 // -KEY VALUE VALUE ..
                 if (valueOrderList){
-                    valueList.eachWithIndex{ def value, int i ->
-                        String propName = valueOrderList[i]
-                        propValueMap[propName] = value
+                    if (valueOrderList.size() >= valueList.size()){
+                        valueList.eachWithIndex{ def value, int i ->
+                            String propName = valueOrderList[i]
+                            propValueMap[propName] = value
+                        }
+                    }else{
+                        throw new Exception("So Many arguments!. Check ${exPropName}'s Arguments")
                     }
                 }
+
                 // -KEY
                 if (exPropName){
                     String propName = exPropName
                     propValueMap[propName] = valueList ?: true
+
                 // VALUE VALUE ..
                 }else{
                     valueList.each{
                         propValueMap[it] = true
                     }
                 }
+
             }else{
                 // -KEY=VALUE
                 String propName = exPropName
@@ -66,7 +81,14 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
         valueOrderListMap[TaskUtil.TASK_UNJAR]  = ['file.path', 'dest.path']
         valueOrderListMap[TaskUtil.TASK_UNTAR]  = ['file.path', 'dest.path']
         valueOrderListMap[TaskUtil.TASK_COPY]   = ['file.path', 'dest.path']
-        valueOrderListMap[TaskUtil.TASK_MKDIR]  = ['structure', 'dest.path']
+
+        valueOrderListMap[TaskUtil.TASK_SOCKET] = ['file.path', 'dest.path']
+        valueOrderListMap[TaskUtil.TASK_REST]   = ['url', 'param', 'header']
+        valueOrderListMap[TaskUtil.TASK_JDBC]   = ['id', 'pw', 'ip', 'port', 'db']
+        valueOrderListMap[TaskUtil.TASK_PORT]   = ['from', 'to']
+        valueOrderListMap[TaskUtil.TASK_MERGE_ROPERTIES]   = ['from', 'into']
+        valueOrderListMap[TaskUtil.TASK_SQL]        = ['file.path']
+
         return valueOrderListMap
     }
 

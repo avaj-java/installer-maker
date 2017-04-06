@@ -23,13 +23,11 @@ class TaskFileJar extends TaskUtil{
         //Ready
         String filePath = getFilePath(propertyPrefix, 'file.path')
         String destPath = getFilePath(propertyPrefix, 'dest.path')
-        FileSetup fileSetup = genFileSetup(propertyPrefix)
+        FileSetup fileSetup = genMergedFileSetup(propertyPrefix)
 
         //DO
-        println "<Compress JAR File>"
-        println "- Source Path: ${filePath}"
-        println "- Dest Path: ${destPath}"
-        FileMan.jar(filePath, destPath, fileSetup.modeAutoMkdir)
+        println "<JAR>"
+        FileMan.jar(filePath, destPath, fileSetup)
 
     }
 

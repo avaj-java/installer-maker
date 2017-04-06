@@ -23,13 +23,11 @@ class TaskFileZip extends TaskUtil{
         //Ready
         String filePath = getFilePath(propertyPrefix, 'file.path')
         String destPath = getFilePath(propertyPrefix, 'dest.path')
-        FileSetup fileSetup = genFileSetup(propertyPrefix)
+        FileSetup fileSetup = genMergedFileSetup(propertyPrefix)
 
         //DO
-        println "<Compress ZIP File>"
-        println "- Source Path: ${filePath}"
-        println "- Dest Path: ${destPath}"
-        FileMan.zip(filePath, destPath, fileSetup.modeAutoMkdir)
+        println "<ZIP>"
+        FileMan.zip(filePath, destPath, fileSetup)
 
     }
 

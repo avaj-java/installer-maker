@@ -136,4 +136,38 @@ class TempTest {
         println varman.parse('[${date(yyyyMMddHHmmssSSS)}${random(5)}]')
     }
 
+    @Test
+    void "exec test"(){
+        //Ready
+//        String filePath = "D:\\dev_by_sj\\workspaces\\metastream-gradle\\build\\installer_myproject\\bin\\install.bat"
+        String filePath = "/D/dev_by_sj/workspaces/metastream-gradle/build/installer_myproject/bin/install"
+
+        //DO
+        println "<Run SH or BAT>"
+        StringBuffer output = new StringBuffer()
+        String command = ""
+
+        try{
+            //Check OS
+            Boolean isWin = false
+            if (isWin){
+                command = "cmd /c start ${filePath}"
+            }else{
+                command = "${filePath}"
+            }
+            //Exec
+            Process p = Runtime.getRuntime().exec(command)
+            p.waitFor()
+            //Log
+            BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()))
+            String line = ""
+            while ((line = reader.readLine())!= null) {
+                output.append(line + "\n")
+            }
+        }catch(e){
+        }
+
+        println output
+    }
+
 }

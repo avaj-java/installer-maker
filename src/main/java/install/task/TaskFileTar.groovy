@@ -23,15 +23,11 @@ class TaskFileTar extends TaskUtil{
         //Ready
         String filePath = getFilePath(propertyPrefix, 'file.path')
         String destPath = getFilePath(propertyPrefix, 'dest.path')
-        FileSetup fileSetup = genFileSetup(propertyPrefix)
-
-
+        FileSetup fileSetup = genMergedFileSetup(propertyPrefix)
 
         //DO
-        println "<Compress TAR File>"
-        println "- Source Path: ${filePath}"
-        println "- Dest Path: ${destPath}"
-        FileMan.tar(filePath, destPath, fileSetup.modeAutoMkdir)
+        println "<TAR>"
+        FileMan.tar(filePath, destPath, fileSetup)
 
     }
 

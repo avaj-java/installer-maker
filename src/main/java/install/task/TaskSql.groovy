@@ -2,38 +2,20 @@ package install.task
 
 import com.jaemisseo.man.FileMan
 import com.jaemisseo.man.PropMan
+import com.jaemisseo.man.SqlAnalMan
 import com.jaemisseo.man.SqlMan
 import com.jaemisseo.man.util.SqlSetup
-import install.bean.InstallerGlobalOption
+import install.bean.ReportSetup
+import install.bean.ReportSql
 
 /**
  * Created by sujkim on 2017-02-17.
  */
 class TaskSql extends TaskUtil{
 
-    TaskSql(SqlMan sqlman, PropMan propman, InstallerGlobalOption gOpt) {
-        this.sqlman = sqlman
+    TaskSql(PropMan propman) {
         this.propman = propman
-        this.gOpt = gOpt
     }
-
-    TaskSql setBeforeReporter(List beforeReportList){
-        this.beforeReportList = beforeReportList
-        return this
-    }
-
-    TaskSql setAfterReporter(List afterReportMapList){
-        this.afterReportMapList = afterReportMapList
-        return this
-    }
-
-    SqlMan sqlman
-    InstallerGlobalOption gOpt
-
-    List beforeReportList
-    List afterReportMapList
-
-
 
     /**
      * RUN
@@ -41,13 +23,14 @@ class TaskSql extends TaskUtil{
     void run(String propertyPrefix){
 
         //1. Default Setup
-        SqlSetup globalSqlSetup = genSqlSetup()
-        SqlSetup mergedSqlSetup = genSqlSetup(propertyPrefix)
-        sqlman.set(globalSqlSetup)
-
+        sqlman = new SqlMan()
+        SqlSetup sqlSetup = genMergedSqlSetup(propertyPrefix)
         List<String> filePathList = getFilePathList(propertyPrefix, 'file.path', 'sql')
+        ReportSetup reportSetup = genGlobalReportSetup()
+
 
         //2. Execute All SQL
+        println "<SQL>"
         filePathList.each{ String filePath ->
             String originFileName = new File(filePath).getName()
 
@@ -55,40 +38,78 @@ class TaskSql extends TaskUtil{
             sqlman.init()
                     .queryFromFile("${filePath}")
                     .command([SqlMan.ALL])
-                    .replace(mergedSqlSetup)
+                    .replace(sqlSetup)
 
             //3. Report Checking Before
-            if (!gOpt.modeExcludeCheckBefore){
-                sqlman.checkBefore(mergedSqlSetup)
-                if (!gOpt.modeExcludeReport) {
-                    if (!gOpt.modeExcludeReportConsole)
-                        sqlman.reportAnalysis()
-                    if (gOpt.modeGenerateReportText || gOpt.modeGenerateReportExcel)
-                        beforeReportList.addAll(sqlman.getAnalysisResultList())
-                }
+            if (sqlSetup.modeSqlCheckBefore){
+                sqlman.checkBefore(sqlSetup)
+                //- Add Reoprt
+                addReportBefore(reportSetup)
             }
 
             //- Generate SQL File
-            if (gOpt.modeGenerateReportSql){
-                new FileMan().createNewFile('./', "replaced_${originFileName}", sqlman.getReplacedQueryList(), gOpt.reportFileSetup)
-            }
+            if (sqlSetup.modeSqlFileGenerate)
+                FileMan.write("./replaced_${originFileName}", sqlman.getReplacedQueryList(), reportSetup.fileSetup)
 
             //4. Execute
-            if (!gOpt.modeExcludeExecuteSql){
-                sqlman.run(mergedSqlSetup)
-
-                //5. Report Result Reoprt
-                if (!gOpt.modeExcludeReport){
-                    if (!gOpt.modeExcludeReportConsole)
-                        sqlman.reportResult()
-                    if (gOpt.modeGenerateReportText || gOpt.modeGenerateReportExcel)
-                        afterReportMapList.add(sqlman.getResultReportMap())
+            if (sqlSetup.modeSqlExecute){
+                try{
+                    sqlman.run(sqlSetup)
+                }catch(e){
+                    throw e
+                }finally{
+                    //- Add Reoprt
+                    addReport(reportSetup)
                 }
             }
-
         }
 
     }
+
+    /**
+     * REPORT
+     */
+    void addReportBefore(ReportSetup reportSetup){
+        if (reportSetup.modeReport){
+            if (reportSetup.modeReportConsole)
+                sqlman.reportAnalysis()
+            if (reportSetup.modeReportText || reportSetup.modeReportExcel){
+                sqlman.getAnalysisResultList().each{ SqlAnalMan.SqlObject sqlObj ->
+                    reportMapList.add(new ReportSql(
+                            sqlFileName     : sqlObj.sqlFileName,
+                            seq             : sqlObj.seq,
+                            query           : sqlObj.query,
+//                                isExistOnDB     : sqlObj.isExistOnDB?'Y':'N',
+//                                isOk            : sqlObj.isOk?'Y':'N',
+                            warnningMessage : sqlObj.warnningMessage,
+//                                error           : sqlObj.error?.toString(),
+                    ))
+                }
+            }
+        }
+    }
+
+    void addReport(ReportSetup reportSetup){
+        if (reportSetup.modeReport){
+            if (reportSetup.modeReportConsole)
+                sqlman.reportResult()
+            if (reportSetup.modeReportText || reportSetup.modeReportExcel){
+//                Map resultMap = sqlman.getResultReportMap()
+                sqlman.getAnalysisResultList().each{ SqlAnalMan.SqlObject sqlObj ->
+                    reportMapList.add(new ReportSql(
+                            sqlFileName: sqlObj.sqlFileName,
+                            seq: sqlObj.seq,
+                            query: sqlObj.query,
+//                                    isExistOnDB     : sqlObj.isExistOnDB?'Y':'N',
+                            isOk: sqlObj.isOk ? 'Y' : 'N',
+                            warnningMessage: sqlObj.warnningMessage,
+                            error: sqlObj.error?.toString(),
+                    ))
+                }
+            }
+        }
+    }
+
 
 
 }

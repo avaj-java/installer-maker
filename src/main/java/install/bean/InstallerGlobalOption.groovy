@@ -8,15 +8,7 @@ import com.jaemisseo.man.util.Option
  */
 class InstallerGlobalOption extends Option{
 
-    Boolean modeGenerateReportText = false
-    Boolean modeGenerateReportExcel = false
-    Boolean modeGenerateReportSql = false
-    Boolean modeExcludeExecuteSql
-    Boolean modeExcludeCheckBefore
-    Boolean modeExcludeReport
-    Boolean modeExcludeReportConsole
-
-    FileSetup reportFileSetup
     FileSetup fileSetup
+    ReportSetup reportSetup
 
 }

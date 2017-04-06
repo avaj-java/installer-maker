@@ -23,14 +23,11 @@ class TaskFileUntar extends TaskUtil{
         //Ready
         String filePath = getFilePath(propertyPrefix, 'file.path')
         String destPath = getFilePath(propertyPrefix, 'dest.path')
-        FileSetup fileSetup = genFileSetup(propertyPrefix)
+        FileSetup fileSetup = genMergedFileSetup(propertyPrefix)
 
         //DO
-        println "<Extract TAR File>"
-        println "- Source Path: ${filePath}"
-        println "- Dest Path: ${destPath}"
-
-        FileMan.untar(filePath, destPath, fileSetup.modeAutoMkdir)
+        println "<UNTAR>"
+        FileMan.untar(filePath, destPath, fileSetup)
 
     }
 

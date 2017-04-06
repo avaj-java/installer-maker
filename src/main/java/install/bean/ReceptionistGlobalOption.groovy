@@ -9,7 +9,7 @@ import com.jaemisseo.man.util.Option
 class ReceptionistGlobalOption extends Option{
 
     Boolean modeRemember
-    String remeberFilePath
+    String rememberFilePath
 
     FileSetup rememberFileSetup
     FileSetup fileSetup

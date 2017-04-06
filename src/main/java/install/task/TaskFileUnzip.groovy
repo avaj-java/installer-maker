@@ -23,13 +23,11 @@ class TaskFileUnzip extends TaskUtil{
         //Ready
         String filePath = getFilePath(propertyPrefix, 'file.path')
         String destPath = getFilePath(propertyPrefix, 'dest.path')
-        FileSetup fileSetup = genFileSetup(propertyPrefix)
+        FileSetup fileSetup = genMergedFileSetup(propertyPrefix)
 
         //DO
-        println "<Extract ZIP File>"
-        println "- Source Path: ${filePath}"
-        println "- Dest Path: ${destPath}"
-        FileMan.unzip(filePath, destPath, fileSetup.modeAutoMkdir)
+        println "<UNZIP>"
+        FileMan.unzip(filePath, destPath, fileSetup)
 
     }
 

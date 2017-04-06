@@ -3,6 +3,7 @@ package install.job
 import com.jaemisseo.man.FileMan
 import com.jaemisseo.man.PropMan
 import com.jaemisseo.man.VariableMan
+import com.jaemisseo.man.util.FileSetup
 import install.bean.ReceptionistGlobalOption
 import install.task.TaskUtil
 
@@ -22,8 +23,8 @@ class JobReceptionist extends TaskUtil{
         setBeforeGetProp(propman, varman)
         this.gOpt = new ReceptionistGlobalOption().merge(new ReceptionistGlobalOption(
                 modeRemember        : propman.get("mode.remember.answer"),
-                remeberFilePath     : propman.get("remember.answer.file.path"),
-                rememberFileSetup   : genFileSetup("remember.answer.")
+                rememberFilePath    : propman.get("remember.answer.file.path"),
+                rememberFileSetup   : genMergedFileSetup("remember.answer.")
         ))
     }
 
@@ -61,9 +62,12 @@ class JobReceptionist extends TaskUtil{
      * Read Remeber File
      */
     private void readRemeber(){
-        if (gOpt.modeRemember){
+        Boolean modeRemember = gOpt.modeRemember
+        String rememberFilePath = gOpt.rememberFilePath
+
+        if (modeRemember){
             try{
-                PropMan rememberAnswerPropman = new PropMan().readFile(gOpt.remeberFilePath).properties
+                PropMan rememberAnswerPropman = new PropMan().readFile(rememberFilePath).properties
                 propman.merge(rememberAnswerPropman)
             }catch(Exception e){
                 println "No Remember File"
@@ -75,8 +79,12 @@ class JobReceptionist extends TaskUtil{
      * Backup & Write Remeber File
      */
     private void writeRemember(){
-        if (gOpt.modeRemember){
-            FileMan fileman = new FileMan(gOpt.remeberFilePath).set(gOpt.rememberFileSetup)
+        Boolean modeRemember = gOpt.modeRemember
+        String rememberFilePath = gOpt.rememberFilePath
+        FileSetup fileSetup = gOpt.rememberFileSetup
+
+        if (modeRemember){
+            FileMan fileman = new FileMan(rememberFilePath).set(fileSetup)
             try{
                 if (fileman.exists())
                     fileman.backup()

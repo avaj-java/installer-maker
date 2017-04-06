@@ -3,6 +3,7 @@ package install.job
 import com.jaemisseo.man.*
 import com.jaemisseo.man.util.FileSetup
 import install.bean.BuilderGlobalOption
+import install.bean.ReportSetup
 import install.task.TaskUtil
 
 /**
@@ -20,12 +21,15 @@ class JobBuilder extends TaskUtil {
         parsePropMan(propman, varman, levelNamesProperty)
         setBeforeGetProp(propman, varman)
         this.gOpt = new BuilderGlobalOption().merge(new BuilderGlobalOption(
-            fileSetup           : genFileSetup(),
+            fileSetup           : genGlobalFileSetup(),
+            reportSetup         : genReportSetup(),
+
             installerName            : getValue('installer.name') ?: 'installer',
             installerHomeToLibRelPath: getValue('installer.home.to.lib.relpath') ?: './lib',
             installerHomeToBinRelPath: getValue('installer.home.to.bin.relpath') ?: './bin',
             buildDir            : getFilePath('build.dir'),
-            buildTempHome       : getFilePath('build.temp.dir'),
+            buildTempDir        : getFilePath('build.temp.dir'),
+            buildDistDir        : getFilePath('build.dist.dir'),
             buildInstallerHome  : getFilePath('build.installer.home'),
             propertiesDir       : getValue('properties.dir') ?: './',
         ))
@@ -52,6 +56,7 @@ class JobBuilder extends TaskUtil {
     void init(){
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
+        fileSetup.modeAutoOverWrite = false
         String propertiesDir = getFilePath('properties.dir') ?: FileMan.getFullPath('./')
         String filePath
         String destPath
@@ -92,7 +97,8 @@ class JobBuilder extends TaskUtil {
     void clean(){
         try{
             FileMan.delete(gOpt.buildInstallerHome)
-            FileMan.delete(gOpt.buildTempHome)
+            FileMan.delete(gOpt.buildDistDir)
+            FileMan.delete(gOpt.buildTempDir)
         }catch(e){
         }
     }
@@ -101,14 +107,49 @@ class JobBuilder extends TaskUtil {
      * BUILD
      */
     void build(){
+
+        ReportSetup reportSetup = gOpt.reportSetup
+
         //1. Gen Starter
         setLibAndBin()
+
         //2. Each level by level
         eachLevel(levelNamesProperty){ String levelName ->
-            String propertyPrefix = "${levelNamesProperty}.${levelName}."
-            String taskName = getString(propertyPrefix, 'task')?.trim()?.toUpperCase()
-            logBigTitle("${levelName}")
-            runTask(taskName, propertyPrefix)
+            try{
+                String propertyPrefix = "${levelNamesProperty}.${levelName}."
+                String taskName = getString(propertyPrefix, 'task')?.trim()?.toUpperCase()
+                logBigTitle("${levelName}")
+                runTask(taskName, propertyPrefix)
+            }catch(e){
+                //Write Report
+                writeReport(reportMapList, reportSetup)
+                throw e
+            }
+        }
+
+        //3. Distribute Zip
+        distributeZip()
+
+        //Write Report
+        writeReport(reportMapList, reportSetup)
+    }
+
+    /**
+     * WRITE Report
+     */
+    private void writeReport(List reportMapList, ReportSetup reportSetup){
+        //Generate File Report
+        String fileNamePrefix
+        String date = new Date().format('yyyyMMdd_HHmmss')
+        if (reportMapList){
+            fileNamePrefix = 'report_analysis'
+            if (reportSetup.modeReportText) {
+//                List<String> stringList = sqlman.getAnalysisStringResultList(reportMapList)
+//                FileMan.write("${fileNamePrefix}_${date}.txt", stringList, opt)
+            }
+            if (reportSetup.modeReportExcel){
+                new ReportMan().write("${fileNamePrefix}_${date}.xlsx", reportMapList, 'sqlFileName')
+            }
         }
     }
 
@@ -116,8 +157,8 @@ class JobBuilder extends TaskUtil {
 
     /**
      * Generate Install Starter (Lib, Bin)
-     * ${Installer.home}/lib
-     * ${Installer.home}/bin
+     * ${build.installer.home}/lib
+     * ${build.installer.home}/bin
      *
      *  1. Create Dir
      *  2. Generate Lib
@@ -127,7 +168,8 @@ class JobBuilder extends TaskUtil {
 
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
-        String buildTempHome = gOpt.buildTempHome
+        String buildTempDir = gOpt.buildTempDir
+        String buildDistDir = gOpt.buildDistDir
         String buildInstallerHome = gOpt.buildInstallerHome
         String homeToBinRelPath = gOpt.installerHomeToBinRelPath
         String homeToLibRelPath = gOpt.installerHomeToLibRelPath
@@ -139,7 +181,7 @@ class JobBuilder extends TaskUtil {
         String libDir = getFilePath('lib.dir')
         String libPath = getFilePath('lib.path')
         String thisFileName = FileMan.getLastFileName(libPath)
-        String tempNowDir = "${buildTempHome}/temp_${new Date().format('yyyyMMdd_HHmmssSSS')}"
+        String tempNowDir = "${buildTempDir}/temp_${new Date().format('yyyyMMdd_HHmmssSSS')}"
         String libSourcePath = "${libDir}/*.*"
         String libDestPath = FileMan.getFullPath(buildInstallerHome, homeToLibRelPath)
         String libToHomeRelPath = FileMan.getRelativePath(libDestPath, buildInstallerHome)
@@ -162,13 +204,14 @@ class JobBuilder extends TaskUtil {
         """
 
         //1. Copy Libs
-        new FileMan(libSourcePath).set(fileSetup).copy(libDestPath, new FileSetup(modeAutoMkdir:true))
+        FileSetup opt = new FileSetup(modeAutoMkdir:true, modeAutoOverWrite:true)
+        new FileMan(libSourcePath).set(fileSetup).copy(libDestPath, opt)
 
         //2. Convert Init Script to Script Editd By User
-        FileMan.unjar(libPath, tempNowDir, true)
-        FileMan.copy("*.properties", tempNowDir)
-        FileMan.write("${tempNowDir}/.libtohome", libToHomeRelPath, fileSetup)
-        FileMan.jar("${tempNowDir}/*", "${libDestPath}/${thisFileName}")
+        FileMan.unjar(libPath, tempNowDir, opt)
+        FileMan.copy("*.properties", tempNowDir, opt)
+        FileMan.write("${tempNowDir}/.libtohome", libToHomeRelPath, opt)
+        FileMan.jar("${tempNowDir}/*", "${libDestPath}/${thisFileName}", opt)
 
         println """<Builder> Generate Bin, install:
             SH  : ${binInstallShDestPath}
@@ -219,7 +262,23 @@ class JobBuilder extends TaskUtil {
             'set REL_PATH_HOME_TO_LIB=' : "set REL_PATH_HOME_TO_LIB=${homeToLibRelPathForWin}"
         ])
         .write(binInstallerBatDestPath)
+    }
 
+    /**
+     * Distribute Zip
+     * From: ${build.installer.home}
+     *   To: ${build.dist.dir}
+     */
+    void distributeZip(){
+        //Ready
+        FileSetup fileSetup = gOpt.fileSetup
+        String installerName = gOpt.installerName
+        String buildTempDir = gOpt.buildTempDir
+        String buildDistDir = gOpt.buildDistDir
+        String buildInstallerHome = gOpt.buildInstallerHome
+
+        //Zip
+        FileMan.zip(buildInstallerHome, "${buildDistDir}/${installerName}.zip", fileSetup)
     }
 
 }

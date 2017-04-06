@@ -12,10 +12,12 @@ class BuilderGlobalOption extends Option{
     String installerHomeToLibRelPath
     String installerHomeToBinRelPath
     String buildDir
-    String buildTempHome
+    String buildTempDir
+    String buildDistDir
     String buildInstallerHome
     String propertiesDir
 
     FileSetup fileSetup
+    ReportSetup reportSetup
 
 }

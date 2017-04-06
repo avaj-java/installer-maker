@@ -22,18 +22,18 @@ class TaskFileReplace extends TaskUtil{
 
         //Ready
         List<String> filePathList = getFilePathList(propertyPrefix, 'file.path')
-        FileSetup globalOption = genFileSetup()
-        FileSetup localOption = genFileSetup(propertyPrefix)
+        FileSetup localOption = genMergedFileSetup(propertyPrefix)
         Map replaceMap = getMap(propertyPrefix, 'file.replace')
         Map replaceLineMap = getMap(propertyPrefix, 'file.replace.line')
         Map replacePropertyMap = getMap(propertyPrefix, 'file.replace.property')
 
         //Do
+        println "<REPLACE>"
         filePathList.each{ String filePath ->
             new FileMan(filePath)
-                        .set( globalOption )
+                        .set( localOption )
                         //BACKUP
-                        .backup( localOption )
+                        .backup()
                         //READ
                         .read()
                         //REPLACE
@@ -41,7 +41,7 @@ class TaskFileReplace extends TaskUtil{
                         .replaceLine( replaceLineMap )
                         .replaceProperty( replacePropertyMap )
                         //WRITE
-                        .write( localOption )
+                        .write( localOption.clone([modeAutoOverWrite:true]) )
                         //REPORT
                         .report()
         }
