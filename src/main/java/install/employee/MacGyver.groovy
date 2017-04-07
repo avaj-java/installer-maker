@@ -2,12 +2,13 @@ package install.employee
 
 import com.jaemisseo.man.PropMan
 import com.jaemisseo.man.VariableMan
+import install.job.JobUtil
 import install.task.TaskUtil
 
 /**
  * Created by sujkim on 2017-02-17.
  */
-class MacGyver extends TaskUtil {
+class MacGyver extends JobUtil {
 
     MacGyver(PropMan propman){
         this.propman = propman
@@ -20,7 +21,7 @@ class MacGyver extends TaskUtil {
     /**
      * RUN
      */
-    void run(){
+    void run(String propertyPrefix){
         List taskMap = [
                 TASK_TAR,
                 TASK_ZIP,

@@ -121,7 +121,7 @@ class Start {
         ///// Doing Other Task
         if (true){
             PropMan propman = new PropMan(prop)
-            new MacGyver(propman).run()
+            new MacGyver(propman).run('')
         }
 
         /////LOG

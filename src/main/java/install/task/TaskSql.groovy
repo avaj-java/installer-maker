@@ -52,16 +52,9 @@ class TaskSql extends TaskUtil{
                 FileMan.write("./replaced_${originFileName}", sqlman.getReplacedQueryList(), reportSetup.fileSetup)
 
             //4. Execute
-            if (sqlSetup.modeSqlExecute){
-                try{
-                    sqlman.run(sqlSetup)
-                }catch(e){
-                    throw e
-                }finally{
-                    //- Add Reoprt
-                    addReport(reportSetup)
-                }
-            }
+            if (sqlSetup.modeSqlExecute)
+                sqlman.run(sqlSetup)
+
         }
 
     }
@@ -89,24 +82,27 @@ class TaskSql extends TaskUtil{
         }
     }
 
-    void addReport(ReportSetup reportSetup){
-        if (reportSetup.modeReport){
-            if (reportSetup.modeReportConsole)
-                sqlman.reportResult()
-            if (reportSetup.modeReportText || reportSetup.modeReportExcel){
-//                Map resultMap = sqlman.getResultReportMap()
-                sqlman.getAnalysisResultList().each{ SqlAnalMan.SqlObject sqlObj ->
-                    reportMapList.add(new ReportSql(
-                            sqlFileName: sqlObj.sqlFileName,
-                            seq: sqlObj.seq,
-                            query: sqlObj.query,
-//                                    isExistOnDB     : sqlObj.isExistOnDB?'Y':'N',
-                            isOk: sqlObj.isOk ? 'Y' : 'N',
-                            warnningMessage: sqlObj.warnningMessage,
-                            error: sqlObj.error?.toString(),
-                    ))
-                }
-            }
+
+    void reportWithConsole(ReportSetup reportSetup, List reportMapList){
+        sqlman.reportResult()
+    }
+
+    void reportWithText(ReportSetup reportSetup, List reportMapList){
+
+    }
+
+    void reportWithExcel(ReportSetup reportSetup, List reportMapList){
+//        Map resultMap = sqlman.getResultReportMap()
+        sqlman.getAnalysisResultList().each{ SqlAnalMan.SqlObject sqlObj ->
+            reportMapList.add(new ReportSql(
+                    sqlFileName: sqlObj.sqlFileName,
+                    seq: sqlObj.seq,
+                    query: sqlObj.query,
+//                    isExistOnDB     : sqlObj.isExistOnDB?'Y':'N',
+                    isOk: sqlObj.isOk ? 'Y' : 'N',
+                    warnningMessage: sqlObj.warnningMessage,
+                    error: sqlObj.error?.toString(),
+            ))
         }
     }
 

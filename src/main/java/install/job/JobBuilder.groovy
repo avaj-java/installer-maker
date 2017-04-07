@@ -9,7 +9,7 @@ import install.task.TaskUtil
 /**
  * Created by sujkim on 2017-02-17.
  */
-class JobBuilder extends TaskUtil {
+class JobBuilder extends JobUtil{
 
     JobBuilder(PropMan propman){
         //Job Setup
@@ -33,15 +33,6 @@ class JobBuilder extends TaskUtil {
             buildInstallerHome  : getFilePath('build.installer.home'),
             propertiesDir       : getValue('properties.dir') ?: './',
         ))
-    }
-
-
-
-    /**
-     * RUN
-     */
-    void run(){
-
     }
 
 
@@ -134,23 +125,29 @@ class JobBuilder extends TaskUtil {
         writeReport(reportMapList, reportSetup)
     }
 
+
+
     /**
      * WRITE Report
      */
     private void writeReport(List reportMapList, ReportSetup reportSetup){
+
         //Generate File Report
-        String fileNamePrefix
-        String date = new Date().format('yyyyMMdd_HHmmss')
         if (reportMapList){
-            fileNamePrefix = 'report_analysis'
+            String date = new Date().format('yyyyMMdd_HHmmss')
+            String fileNamePrefix = 'report_analysis'
+
             if (reportSetup.modeReportText) {
 //                List<String> stringList = sqlman.getAnalysisStringResultList(reportMapList)
 //                FileMan.write("${fileNamePrefix}_${date}.txt", stringList, opt)
             }
+
             if (reportSetup.modeReportExcel){
                 new ReportMan().write("${fileNamePrefix}_${date}.xlsx", reportMapList, 'sqlFileName')
             }
+
         }
+
     }
 
 

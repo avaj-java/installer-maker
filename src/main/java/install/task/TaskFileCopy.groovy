@@ -25,42 +25,11 @@ class TaskFileCopy extends TaskUtil{
         String filePath = getFilePath(propertyPrefix, 'file.path')
         String destPath = getFilePath(propertyPrefix, 'dest.path')
         FileSetup fileSetup = genMergedFileSetup(propertyPrefix)
-        ReportSetup reportSetup = genGlobalReportSetup()
 
         //DO
         println "<COPY>"
-        try{
-            FileMan.copy(filePath, destPath, fileSetup)
-        }catch(e){
-            throw e
-        }finally{
-            //- Add Reoprt
-            addReport(reportSetup)
-        }
+        FileMan.copy(filePath, destPath, fileSetup)
 
-    }
-
-    /**
-     * REPORT
-     */
-    void addReport(ReportSetup reportSetup){
-        if (reportSetup.modeReport){
-            if (reportSetup.modeReportConsole)
-                sqlman.reportResult()
-            if (reportSetup.modeReportText || reportSetup.modeReportExcel){
-//                sqlman.getAnalysisResultList().each{ SqlAnalMan.SqlObject sqlObj ->
-//                    reportMapList.add(new ReportSql(
-//                            sqlFileName: sqlObj.sqlFileName,
-//                            seq: sqlObj.seq,
-//                            query: sqlObj.query,
-////                                    isExistOnDB     : sqlObj.isExistOnDB?'Y':'N',
-//                            isOk: sqlObj.isOk ? 'Y' : 'N',
-//                            warnningMessage: sqlObj.warnningMessage,
-//                            error: sqlObj.error?.toString(),
-//                    ))
-//                }
-            }
-        }
     }
 
 }

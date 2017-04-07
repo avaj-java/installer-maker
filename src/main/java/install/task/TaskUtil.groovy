@@ -13,13 +13,7 @@ import install.bean.ReportSetup
 /**
  * Created by sujkim on 2017-03-11.
  */
-class TaskUtil {
-
-    public static final String EMP_MACGYVER = "MACGYVER"
-
-    public static final String JOB_BUILDER = "BUILDER"
-    public static final String JOB_RECEPTIONIST = "RECEPTIONIST"
-    public static final String JOB_INSTALLER = "INSTALLER"
+class TaskUtil{
 
     public static final String TASK_TAR = "TAR"
     public static final String TASK_ZIP = "ZIP"
@@ -50,11 +44,6 @@ class TaskUtil {
     SqlMan sqlman
     FileMan fileman
     QuestionMan qman
-
-    String levelNamesProperty = ''
-    List validTaskList = []
-    List invalidTaskList = []
-    def gOpt
 
     List reportMapList = []
     List rememberAnswerLineList = []
@@ -96,99 +85,63 @@ class TaskUtil {
         return propmanToSet
     }
 
-    void run(){
-        run('')
+
+
+    /**
+     * 1. START
+     */
+    void start(String propertyPrefix){
+        try{
+            run(propertyPrefix)
+        }catch(e){
+            throw e
+        }finally{
+            report(propertyPrefix)
+        }
     }
 
+    /**
+     * 2. RUN
+     */
     void run(String propertyPrefix){
+        //TODO: Override And Implement
         println "It is Empty Task. Implement This method."
     }
 
-    void runTask(String taskName){
-        runTask(taskName, '')
-    }
+    /**
+     * 3. REPORT
+     */
+    void report(){
+        ReportSetup reportSetup = genMergedReportSetup()
+        if (reportSetup.modeReport){
 
-    void runTask(String taskName, String propertyPrefix){
-        //Check Valid Task
-        if ( !taskName || (validTaskList && !validTaskList.contains(taskName)) || (invalidTaskList && invalidTaskList.contains(taskName)) ){
-            throw new Exception(" 'Sorry, This is Not my task, [${taskName}]. I Can Not do this.' ")
-            return
-        }
+            if (reportSetup.modeReportConsole)
+                reportWithConsole(reportSetup, reportMapList)
 
-        //Run Task
-        switch (taskName){
-            case TASK_NOTICE:
-                new TaskNotice(propman).run(propertyPrefix)
-                break
-            case TASK_Q:
-                new TaskQuestion(propman, rememberAnswerLineList).run(propertyPrefix)
-                break
-            case TASK_Q_CHOICE:
-                new TaskQuestionChoice(propman, rememberAnswerLineList).run(propertyPrefix)
-                break
-            case TASK_Q_YN:
-                new TaskQuestionYN(propman, rememberAnswerLineList).run(propertyPrefix)
-                break
+            if (reportSetup.modeReportText)
+                reportWithText(reportSetup, reportMapList)
 
-            case TASK_TAR:
-                new TaskFileTar(propman).setReporter(reportMapList).run(propertyPrefix)
-                break
-            case TASK_ZIP:
-                new TaskFileZip(propman).setReporter(reportMapList).run(propertyPrefix)
-                break
-            case TASK_JAR:
-                new TaskFileJar(propman).setReporter(reportMapList).run(propertyPrefix)
-                break
+            if (reportSetup.modeReportExcel)
+                reportWithExcel(reportSetup, reportMapList)
 
-            case TASK_UNTAR:
-                new TaskFileUntar(propman).setReporter(reportMapList).run(propertyPrefix)
-                break
-            case TASK_UNZIP:
-                new TaskFileUnzip(propman).setReporter(reportMapList).run(propertyPrefix)
-                break
-            case TASK_UNJAR:
-                new TaskFileUnjar(propman).setReporter(reportMapList).run(propertyPrefix)
-                break
-
-            case TASK_REPLACE:
-                new TaskFileReplace(propman).setReporter(reportMapList).run(propertyPrefix)
-                break
-            case TASK_COPY:
-                new TaskFileCopy(propman).setReporter(reportMapList).run(propertyPrefix)
-                break
-            case TASK_MKDIR:
-                new TaskFileMkdir(propman).setReporter(reportMapList).run(propertyPrefix)
-                break
-
-            case TASK_EXEC:
-                new TaskExec(propman).setReporter(reportMapList).run(propertyPrefix)
-                break
-            case TASK_SQL:
-                new TaskSql(propman).setReporter(reportMapList).run(propertyPrefix)
-                break
-            case TASK_MERGE_ROPERTIES:
-                new TaskMergeProperties(propman).setReporter(reportMapList).run(propertyPrefix)
-                break
-            case TASK_EMAIL://Not Supported Yet
-                new TaskTestEMail(propman).setReporter(reportMapList).run(propertyPrefix)
-                break
-            case TASK_SOCKET:
-                new TaskTestSocket(propman).setReporter(reportMapList).run(propertyPrefix)
-                break
-            case TASK_REST:
-                new TaskTestREST(propman).setReporter(reportMapList).run(propertyPrefix)
-                break
-            case TASK_JDBC:
-                new TaskTestJDBC(propman).setReporter(reportMapList).run(propertyPrefix)
-                break
-            case TASK_PORT:
-                new TaskTestPort(propman).setReporter(reportMapList).run(propertyPrefix)
-                break
-
-            default :
-                break
         }
     }
+
+    void reportWithConsole(ReportSetup reportSetup, List reportMapList){
+        //TODO: Override And Implement
+    }
+
+    void reportWithText(ReportSetup reportSetup, List reportMapList){
+        //TODO: Override And Implement
+    }
+
+    void reportWithExcel(ReportSetup reportSetup, List reportMapList){
+        //TODO: Override And Implement
+    }
+
+
+
+
 
 
 
@@ -403,6 +356,13 @@ class TaskUtil {
         ReportSetup defaultOpt = new ReportSetup()
         ReportSetup globalOpt = genReportSetup('')
         return defaultOpt.merge(globalOpt)
+    }
+
+    protected ReportSetup genMergedReportSetup(String propertyPrefix){
+        ReportSetup defaultOpt = new ReportSetup()
+        ReportSetup globalOpt = genReportSetup('')
+        ReportSetup localOpt = genReportSetup(propertyPrefix)
+        return defaultOpt.merge(globalOpt).merge(localOpt)
     }
 
 }

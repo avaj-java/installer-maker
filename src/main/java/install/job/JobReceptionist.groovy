@@ -10,7 +10,7 @@ import install.task.TaskUtil
 /**
  * Created by sujkim on 2017-02-17.
  */
-class JobReceptionist extends TaskUtil{
+class JobReceptionist extends JobUtil{
 
     JobReceptionist(PropMan propman){
         //Job Setup
@@ -26,14 +26,6 @@ class JobReceptionist extends TaskUtil{
                 rememberFilePath    : propman.get("remember.answer.file.path"),
                 rememberFileSetup   : genMergedFileSetup("remember.answer.")
         ))
-    }
-
-
-
-    /**
-     * RUN
-     */
-    void run(){
     }
 
 

@@ -1,8 +1,6 @@
 package install.task
 
-import com.jaemisseo.man.FileMan
 import com.jaemisseo.man.PropMan
-import com.jaemisseo.man.util.FileSetup
 
 /**
  * Created by sujkim on 2017-04-04.
