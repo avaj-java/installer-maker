@@ -312,10 +312,10 @@ class TaskUtil{
                 backupPath          : propman.get("${propertyPrefix}file.backup.path"),
                 lineBreak           : propman.get("${propertyPrefix}file.linebreak"),
                 lastLineBreak       : propman.get("${propertyPrefix}file.last.linebreak"),
-                modeAutoLineBreak   : propman.get("${propertyPrefix}mode.auto.linebreak"),
-                modeAutoBackup      : propman.get("${propertyPrefix}mode.auto.backup"),
-                modeAutoMkdir       : propman.get("${propertyPrefix}mode.auto.mkdir"),
-                modeAutoOverWrite   : propman.get("${propertyPrefix}mode.auto.overwrite"),
+                modeAutoLineBreak   : propman.getBoolean("${propertyPrefix}mode.auto.linebreak"),
+                modeAutoBackup      : propman.getBoolean("${propertyPrefix}mode.auto.backup"),
+                modeAutoMkdir       : propman.getBoolean("${propertyPrefix}mode.auto.mkdir"),
+                modeAutoOverWrite   : propman.getBoolean("${propertyPrefix}mode.auto.overwrite"),
         )
     }
 
@@ -407,10 +407,10 @@ class TaskUtil{
      */
     protected ReportSetup genReportSetup(String propertyPrefix){
        return new ReportSetup(
-            modeReport         : propman.get("${propertyPrefix}mode.report"),
-            modeReportText     : propman.get("${propertyPrefix}mode.report.text"),
-            modeReportExcel    : propman.get("${propertyPrefix}mode.report.excel"),
-            modeReportConsole  : propman.get("${propertyPrefix}mode.report.console"),
+            modeReport         : propman.getBoolean("${propertyPrefix}mode.report"),
+            modeReportText     : propman.getBoolean("${propertyPrefix}mode.report.text"),
+            modeReportExcel    : propman.getBoolean("${propertyPrefix}mode.report.excel"),
+            modeReportConsole  : propman.getBoolean("${propertyPrefix}mode.report.console"),
             fileSetup          : genOtherFileSetup("${propertyPrefix}report."),
        )
     }
@@ -429,3 +429,4 @@ class TaskUtil{
     }
 
 }
+                                                                                                
