@@ -430,7 +430,7 @@ class FileMan {
         checkPath('dummy*', destPath)
         //Check Dest
         String lastDirPath = newFile.getParentFile().getPath() //name not contains dot can be file on Here
-        checkDir(destPath, opt.modeAutoMkdir)
+        checkDir(lastDirPath, opt.modeAutoMkdir)
         checkFile(destPath, opt.modeAutoOverWrite)
         //Write File to Dest
         File file = new File(destPath)

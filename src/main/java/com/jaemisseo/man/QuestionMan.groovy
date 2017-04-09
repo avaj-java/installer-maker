@@ -118,7 +118,7 @@ class QuestionMan {
                 break
             case QUESTION_TYPE_CHOICE:
                 resultClosure = { String answer, QuestionSetup opt ->
-                    return answer && (opt.valueMap.containsKey(answer) || opt.descriptionMap.containsKey(answer))
+                    return answer && ( (opt.valueMap && opt.valueMap.containsKey(answer)) || (opt.descriptionMap && opt.descriptionMap.containsKey(answer)) )
                 }
                 break
             default:
