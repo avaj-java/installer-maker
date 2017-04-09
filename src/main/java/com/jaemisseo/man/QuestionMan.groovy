@@ -54,7 +54,7 @@ class QuestionMan {
         nowOpt = gOpt.clone().merge(lOpt)
         String yourAnswer
         String question = nowOpt.question
-        String recommandAnswer = nowOpt.recommandAnswer
+        String recommandAnswer = nowOpt.recommandAnswer ?: ''
         Map descriptionMap = nowOpt.descriptionMap
 
         //Ask Question
