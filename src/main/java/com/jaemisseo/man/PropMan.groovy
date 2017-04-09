@@ -77,7 +77,8 @@ class PropMan{
     }
 
     Boolean getBoolean(String key){
-        return (get(key, null) as Boolean)
+        String value = get(key, null)
+        return (!value) ? null : (value != '0' && value != 'false') ? true : false
     }
 
     /**

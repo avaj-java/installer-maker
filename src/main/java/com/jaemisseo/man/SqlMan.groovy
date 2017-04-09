@@ -70,7 +70,7 @@ class SqlMan extends SqlAnalMan{
         List<String> warningList = getWarningList(analysisList)
         List<String> analysisStringList = analysisList.collect{
             """
-            [${it.sqlFileName}] ${it.seq} ${it.warnningMessage}         
+            [${it.sqlFileName}] ${it.seq} ${it.warnningMessage?:''}         
             ${it.query}
             """
         }
@@ -183,13 +183,14 @@ class SqlMan extends SqlAnalMan{
                     if ( !(it.commandType.equalsIgnoreCase('INSERT') || it.commandType.equalsIgnoreCase('UPDATE')) )
                         it.warnningMessage = WARN_MSG_2
                 }else{
-                    if ( it.commandType.equalsIgnoreCase('INSERT')
+//                    println "${it.objectName} / ${it.objectType}"
+                    if (it.objectType.equalsIgnoreCase('TABLE')){
+                        if (it.commandType.equalsIgnoreCase('INSERT')
                         || it.commandType.equalsIgnoreCase('UPDATE')
                         || it.commandType.equalsIgnoreCase('DELETE')
                         || it.commandType.equalsIgnoreCase('COMMENT')){
-                        it.warnningMessage = WARN_MSG_1
-                    }else{
-                        it.warnningMessage = ''
+                            it.warnningMessage = WARN_MSG_1
+                        }
                     }
                 }
             }

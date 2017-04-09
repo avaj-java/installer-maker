@@ -21,7 +21,7 @@ class SqlAnalMan {
         Integer seq
         String query
         boolean isExistOnDB
-        boolean isOk
+        Boolean isOk
         String warnningMessage
         Exception error
 
