@@ -48,10 +48,10 @@ class JobUtil extends TaskUtil{
 
     void runTask(String taskName, String propertyPrefix){
         //Check Valid Task
-        if ( !taskName || (validTaskList && !validTaskList.contains(taskName)) || (invalidTaskList && invalidTaskList.contains(taskName)) ){
+        if (!taskName)
+            throw new Exception(" 'No Task Name. ${propertyPrefix}task=???. Please Check Task.' ")
+        if ( (validTaskList && !validTaskList.contains(taskName)) || (invalidTaskList && invalidTaskList.contains(taskName)) )
             throw new Exception(" 'Sorry, This is Not my task, [${taskName}]. I Can Not do this.' ")
-            return
-        }
 
         //Run Task
         switch (taskName){
