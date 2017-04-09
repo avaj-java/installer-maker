@@ -15,7 +15,7 @@ class JobReceptionist extends JobUtil{
     JobReceptionist(PropMan propman){
         //Job Setup
         levelNamesProperty = 'ask.level'
-        validTaskList = [TASK_NOTICE, TASK_Q, TASK_Q_CHOICE, TASK_Q_YN]
+        validTaskList = [TASK_NOTICE, TASK_Q, TASK_Q_CHOICE, TASK_Q_YN, TASK_SET]
 
         this.propman = propman
         this.varman = new VariableMan(propman.properties)

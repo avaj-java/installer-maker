@@ -31,6 +31,8 @@ class MacGyver extends JobUtil {
                 TASK_UNJAR,
                 TASK_MKDIR,
                 TASK_COPY,
+
+                TASK_GROOVYRANGE,
                 TASK_JDBC,
                 TASK_REST,
                 TASK_SOCKET,
@@ -44,6 +46,7 @@ class MacGyver extends JobUtil {
                 TASK_Q,
                 TASK_Q_CHOICE,
                 TASK_Q_YN,
+                TASK_SET,
         ]
 
 

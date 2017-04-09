@@ -15,8 +15,10 @@ import install.task.TaskNotice
 import install.task.TaskQuestion
 import install.task.TaskQuestionChoice
 import install.task.TaskQuestionYN
+import install.task.TaskSet
 import install.task.TaskSql
 import install.task.TaskTestEMail
+import install.task.TaskTestGroovyRange
 import install.task.TaskTestJDBC
 import install.task.TaskTestPort
 import install.task.TaskTestREST
@@ -56,13 +58,16 @@ class JobUtil extends TaskUtil{
                 new TaskNotice(propman).start(propertyPrefix)
                 break
             case TaskUtil.TASK_Q:
-                new TaskQuestion(propman, rememberAnswerLineList).start(propertyPrefix)
+                new TaskQuestion(propman).setRememberAnswerLineList(rememberAnswerLineList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_Q_CHOICE:
-                new TaskQuestionChoice(propman, rememberAnswerLineList).start(propertyPrefix)
+                new TaskQuestionChoice(propman).setRememberAnswerLineList(rememberAnswerLineList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_Q_YN:
-                new TaskQuestionYN(propman, rememberAnswerLineList).start(propertyPrefix)
+                new TaskQuestionYN(propman).setRememberAnswerLineList(rememberAnswerLineList).start(propertyPrefix)
+                break
+            case TaskUtil.TASK_SET:
+                new TaskSet(propman).start(propertyPrefix)
                 break
 
             case TaskUtil.TASK_TAR:
@@ -115,6 +120,9 @@ class JobUtil extends TaskUtil{
                 break
             case TaskUtil.TASK_JDBC:
                 new TaskTestJDBC(propman).setReporter(reportMapList).start(propertyPrefix)
+                break
+            case TaskUtil.TASK_GROOVYRANGE:
+                new TaskTestGroovyRange(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_PORT:
                 new TaskTestPort(propman).setReporter(reportMapList).start(propertyPrefix)

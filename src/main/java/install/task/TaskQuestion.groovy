@@ -9,10 +9,9 @@ import com.jaemisseo.man.util.QuestionSetup
  */
 class TaskQuestion extends TaskUtil{
 
-    TaskQuestion(PropMan propman, List rememberAnswerLineList){
+    TaskQuestion(PropMan propman){
         this.propman = propman
         this.qman = new QuestionMan()
-        this.rememberAnswerLineList = rememberAnswerLineList
     }
 
 
@@ -20,32 +19,22 @@ class TaskQuestion extends TaskUtil{
     void run(String propertyPrefix){
 
         //Get Properties
-        def conditionIfObj      = propman.parse("${propertyPrefix}if")
         QuestionSetup opt       = genQuestionSetup(propertyPrefix)
 
         //Ask Question
-        if (propman.match(conditionIfObj)){
-            //Get Answer
-            String yourAnswer = qman.question(opt)
+        //Get Answer
+        String yourAnswer = qman.question(opt)
 
-            //Remeber 'answer'
-            rememberAnswerLineList.add("${propertyPrefix}answer=${yourAnswer}")
+        //Remeber 'answer'
+        rememberAnswerLineList.add("${propertyPrefix}answer.default=${yourAnswer}")
 
-            //Set 'answer' and 'value'
-            String value = qman.getValue()
-            propman.set("${propertyPrefix}answer", yourAnswer)
-            propman.set("${propertyPrefix}value", value)
+        //Set 'answer' and 'value'
+        String value = qman.getValue()
+        propman.set("${propertyPrefix}answer", yourAnswer)
+        propman.set("${propertyPrefix}value", value)
 
-            //Set Some Property
-            def property = propman.parse("${propertyPrefix}property")
-            if (property instanceof String){
-                propman.set(property, value)
-            }else if (property instanceof Map){
-                (property as Map).each{ String propName, def propValue ->
-                    propman.set(propName, propValue)
-                }
-            }
-        }
+        //Set Some Property
+        setPropValue(propertyPrefix)
 
     }
 

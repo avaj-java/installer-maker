@@ -39,7 +39,6 @@ class JobInstaller extends JobUtil{
             try{
                 String propertyPrefix = "${levelNamesProperty}.${levelName}."
                 String taskName = getString(propertyPrefix, 'task')?.trim()?.toUpperCase()
-                logBigTitle("${levelName}")
                 runTask(taskName, propertyPrefix)
             }catch(e){
                 //Write Report

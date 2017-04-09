@@ -14,7 +14,6 @@ class JobBuilder extends JobUtil{
     JobBuilder(PropMan propman){
         //Job Setup
         levelNamesProperty = 'build.level'
-        invalidTaskList = [TASK_SQL]
 
         this.propman = propman
         this.varman = new VariableMan(propman.properties)
@@ -109,7 +108,6 @@ class JobBuilder extends JobUtil{
             try{
                 String propertyPrefix = "${levelNamesProperty}.${levelName}."
                 String taskName = getString(propertyPrefix, 'task')?.trim()?.toUpperCase()
-                logBigTitle("${levelName}")
                 runTask(taskName, propertyPrefix)
             }catch(e){
                 //Write Report

@@ -31,7 +31,9 @@ class TaskUtil{
     public static final String TASK_Q = "Q"
     public static final String TASK_Q_CHOICE = "Q-CHOICE"
     public static final String TASK_Q_YN = "Q-YN"
+    public static final String TASK_SET = "SET"
 
+    public static final String TASK_GROOVYRANGE = "GROOVYRANGE"
     public static final String TASK_JDBC = "JDBC"
     public static final String TASK_REST = "REST"
     public static final String TASK_SOCKET = "SOCKET"
@@ -53,6 +55,13 @@ class TaskUtil{
         this.reportMapList = reportMapList
         return this
     }
+
+    TaskUtil setRememberAnswerLineList(List rememberAnswerLineList){
+        this.rememberAnswerLineList = rememberAnswerLineList
+        return this
+    }
+
+
 
 
     PropMan parsePropMan(PropMan propmanToDI, VariableMan varman){
@@ -91,6 +100,12 @@ class TaskUtil{
      * 1. START
      */
     void start(String propertyPrefix){
+
+        if ( !isTrueCondition(propertyPrefix) )
+            return
+
+        descript(propertyPrefix)
+
         try{
             run(propertyPrefix)
         }catch(e){
@@ -98,6 +113,7 @@ class TaskUtil{
         }finally{
             report(propertyPrefix)
         }
+
     }
 
     /**
@@ -111,7 +127,7 @@ class TaskUtil{
     /**
      * 3. REPORT
      */
-    void report(){
+    void report(String propertyPrefix){
         ReportSetup reportSetup = genMergedReportSetup()
         if (reportSetup.modeReport){
 
@@ -171,8 +187,10 @@ class TaskUtil{
         List<String> resultList = []
         List<String> list = propman.get(levelNamesProperty).split("\\s*,\\s*")
         list.each{ String levelName ->
-            if (levelName.contains('-')){
+            if (levelName.contains('-')) {
                 resultList += getListWithDashRange(levelName as String)
+            }else if (levelName.contains('..')){
+                resultList += getListWithDotDotRange(levelName as String)
             }else{
                 resultList << levelName
             }
@@ -196,6 +214,24 @@ class TaskUtil{
         }
         return resultList
     }
+
+    protected List<String> getListWithDotDotRange(String dashRnage){
+        List<String> resultList = []
+        List<String> split = dashRnage.split('[.][.]')
+        String rangeStart = split[0]
+        String rangeEnd = split[1]
+        if (rangeStart.isNumber() && rangeEnd.isNumber())
+            (Integer.parseInt(rangeStart)..Integer.parseInt(rangeEnd)).each{
+                resultList << it.toString()
+            }
+        else{
+            (rangeStart..rangeEnd).each{
+                resultList << it.toString()
+            }
+        }
+        return resultList
+    }
+
 
     protected def getValue(String propertyName){
         return getValue("", propertyName)
@@ -239,6 +275,33 @@ class TaskUtil{
         Map map = propman.parse("${propertyPrefix}${propertyName}")
         return map
     }
+
+    protected void setPropValue(String propertyPrefix){
+        //Set Some Property
+        def property = propman.parse("${propertyPrefix}property")
+        if (property instanceof String){
+            def value = propman.get("${propertyPrefix}value")
+            propman.set(property, value)
+        }else if (property instanceof Map){
+            (property as Map).each{ String propName, def propValue ->
+                propman.set(propName, propValue)
+            }
+        }
+    }
+
+    protected boolean isTrueCondition(String propertyPrefix){
+        def conditionIfObj = propman.parse("${propertyPrefix}if")
+        boolean isTrue = propman.match(conditionIfObj)
+        return isTrue
+    }
+
+    protected void descript(String propertyPrefix){
+        String descriptString = propman.get("${propertyPrefix}descript")
+        descriptString = descriptString ?: propertyPrefix
+        logBigTitle(descriptString)
+    }
+
+
 
     /**
      * FileSetup
@@ -332,7 +395,7 @@ class TaskUtil{
     protected QuestionSetup genQuestionSetup(String propertyPrefix){
         return new QuestionSetup(
             question            : propman.get("${propertyPrefix}question"),
-            recommandAnswer     : propman.get("${propertyPrefix}answer"),
+            recommandAnswer     : propman.get("${propertyPrefix}answer.default"),
             descriptionMap      : propman.parse("${propertyPrefix}answer.description.map"),
             valueMap            : propman.parse("${propertyPrefix}answer.value.map"),
             validation          : propman.parse("${propertyPrefix}answer.validation"),
