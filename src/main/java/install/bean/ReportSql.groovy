@@ -37,14 +37,14 @@ class ReportSql extends Option{
 //    @ReportColumn(index=1, headerName="EXIST")
     String isExistOnDB
 
-    @ReportColumn(index=2, headerName="OK")
+    @ReportColumn(index=2, headerName="EXECUTION")
     String isOk
 
     @ReportColumnHighlightStyle(condition='not($${1}${dataStartRow}="")', range=ReportMan.RANGE_DATA_ALL, background=HSSFColor.RED.index)
-    @ReportColumn(index=1, headerName="WARN", width=5000)
+    @ReportColumn(index=1, headerName="WARN BEFORE", width=5000)
     String warnningMessage
 
     @ReportColumnHighlightStyle(condition='not($${4}${dataStartRow}="")', range=ReportMan.RANGE_DATA_ALL, background=HSSFColor.RED.index)
-    @ReportColumn(index=4, headerName="ERROR", width=20000)
+    @ReportColumn(index=4, headerName="ERROR AFTER", width=20000)
     String error
 }

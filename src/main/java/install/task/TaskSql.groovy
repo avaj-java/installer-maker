@@ -8,6 +8,8 @@ import com.jaemisseo.man.util.SqlSetup
 import install.bean.ReportSetup
 import install.bean.ReportSql
 
+import java.sql.SQLException
+
 /**
  * Created by sujkim on 2017-02-17.
  */
@@ -42,9 +44,15 @@ class TaskSql extends TaskUtil{
 
             //3. Report Checking Before
             if (sqlSetup.modeSqlCheckBefore){
-                sqlman.checkBefore(sqlSetup)
-                //- Add Reoprt
-                addReportBefore(reportSetup)
+                try {
+                    sqlman.checkBefore(sqlSetup)
+                }catch(e){
+                    println "<ERROR> Checking Before Execution"
+                    throw new SQLException('Error, Checking Before Execution.')
+                }finally{
+                    //- Add Reoprt
+//                    addReportBefore(reportSetup)
+                }
             }
 
             //- Generate SQL File
@@ -99,7 +107,7 @@ class TaskSql extends TaskUtil{
                     seq: sqlObj.seq,
                     query: sqlObj.query,
 //                    isExistOnDB     : sqlObj.isExistOnDB?'Y':'N',
-                    isOk: sqlObj.isOk ? 'Y' : 'N',
+                    isOk: (sqlObj.isOk == null) ? '' : (sqlObj.isOk) ? 'Complete' : 'Failed',
                     warnningMessage: sqlObj.warnningMessage,
                     error: sqlObj.error?.toString(),
             ))
