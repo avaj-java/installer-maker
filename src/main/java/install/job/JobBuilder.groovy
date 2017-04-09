@@ -14,10 +14,11 @@ class JobBuilder extends JobUtil{
     JobBuilder(PropMan propman){
         //Job Setup
         levelNamesProperty = 'build.level'
+        levelNamePrefix = 'b'
 
         this.propman = propman
         this.varman = new VariableMan(propman.properties)
-        parsePropMan(propman, varman, levelNamesProperty)
+        parsePropMan(propman, varman, levelNamePrefix)
         setBeforeGetProp(propman, varman)
         this.gOpt = new BuilderGlobalOption().merge(new BuilderGlobalOption(
             fileSetup           : genGlobalFileSetup(),
@@ -106,7 +107,7 @@ class JobBuilder extends JobUtil{
         //2. Each level by level
         eachLevel(levelNamesProperty){ String levelName ->
             try{
-                String propertyPrefix = "${levelNamesProperty}.${levelName}."
+                String propertyPrefix = "${levelNamePrefix}.${levelName}."
                 String taskName = getString(propertyPrefix, 'task')?.trim()?.toUpperCase()
                 runTask(taskName, propertyPrefix)
             }catch(e){

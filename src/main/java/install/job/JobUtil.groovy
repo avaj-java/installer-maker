@@ -35,6 +35,7 @@ class JobUtil extends TaskUtil{
     public static final String JOB_INSTALLER = "INSTALLER"
 
     String levelNamesProperty = ''
+    String levelNamePrefix = ''
     List validTaskList = []
     List invalidTaskList = []
     def gOpt

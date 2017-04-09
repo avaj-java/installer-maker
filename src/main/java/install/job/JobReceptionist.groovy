@@ -15,11 +15,13 @@ class JobReceptionist extends JobUtil{
     JobReceptionist(PropMan propman){
         //Job Setup
         levelNamesProperty = 'ask.level'
+        levelNamePrefix = 'a'
+
         validTaskList = [TASK_NOTICE, TASK_Q, TASK_Q_CHOICE, TASK_Q_YN, TASK_SET]
 
         this.propman = propman
         this.varman = new VariableMan(propman.properties)
-        parsePropMan(propman, varman, levelNamesProperty)
+        parsePropMan(propman, varman, levelNamePrefix)
         setBeforeGetProp(propman, varman)
         this.gOpt = new ReceptionistGlobalOption().merge(new ReceptionistGlobalOption(
                 modeRemember        : propman.get("mode.remember.answer"),
@@ -39,7 +41,7 @@ class JobReceptionist extends JobUtil{
 
         //2. Each level by level
         eachLevel(levelNamesProperty){ String levelName ->
-            String propertyPrefix = "${levelNamesProperty}.${levelName}."
+            String propertyPrefix = "${levelNamePrefix}.${levelName}."
             String taskName = getString(propertyPrefix, 'task')?.trim()?.toUpperCase()
             runTask(taskName, propertyPrefix)
         }
@@ -58,6 +60,7 @@ class JobReceptionist extends JobUtil{
         String rememberFilePath = gOpt.rememberFilePath
 
         if (modeRemember){
+            logBigTitle('LOAD Remembered Your Answer ')
             try{
                 PropMan rememberAnswerPropman = new PropMan().readFile(rememberFilePath).properties
                 propman.merge(rememberAnswerPropman)
@@ -76,6 +79,7 @@ class JobReceptionist extends JobUtil{
         FileSetup fileSetup = gOpt.rememberFileSetup
 
         if (modeRemember){
+            logBigTitle('SAVE Your Answer')
             FileMan fileman = new FileMan(rememberFilePath).set(fileSetup)
             try{
                 if (fileman.exists())

@@ -14,10 +14,11 @@ class JobInstaller extends JobUtil{
     JobInstaller(PropMan propman) {
         //Job Setup
         levelNamesProperty = 'install.level'
+        levelNamePrefix = 'i'
 
         this.propman = propman
         this.varman = new VariableMan(propman.properties)
-        parsePropMan(propman, varman, levelNamesProperty)
+        parsePropMan(propman, varman, levelNamePrefix)
         setBeforeGetProp(propman, varman)
         this.gOpt = new InstallerGlobalOption().merge(new InstallerGlobalOption(
                 fileSetup                  : genGlobalFileSetup(),
@@ -37,7 +38,7 @@ class JobInstaller extends JobUtil{
         //Each level by level
         eachLevel(levelNamesProperty){ String levelName ->
             try{
-                String propertyPrefix = "${levelNamesProperty}.${levelName}."
+                String propertyPrefix = "${levelNamePrefix}.${levelName}."
                 String taskName = getString(propertyPrefix, 'task')?.trim()?.toUpperCase()
                 runTask(taskName, propertyPrefix)
             }catch(e){
