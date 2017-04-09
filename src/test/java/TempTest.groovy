@@ -1,4 +1,5 @@
 import com.jaemisseo.man.FileMan
+import com.jaemisseo.man.PropMan
 import com.jaemisseo.man.VariableMan
 import groovy.json.JsonSlurper
 import install.task.TaskTestPort
@@ -168,6 +169,25 @@ class TempTest {
         }
 
         println output
+    }
+
+    @Test
+    void "as Boolean"(){
+        println "1" as Boolean
+        println "0" as Boolean
+        println "true" as Boolean
+        println "false" as Boolean
+        println null as Boolean
+        println "" as Boolean
+        println "tue" as Boolean
+        println "flse" as Boolean
+
+        PropMan propman = new PropMan([aaa:'', bbb:null])
+
+        println propman.getBoolean('aaa')
+        println propman.getBoolean('bbb')
+        println propman.getBoolean('ddd')
+
     }
 
 }

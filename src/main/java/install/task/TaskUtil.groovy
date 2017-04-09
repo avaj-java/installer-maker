@@ -361,11 +361,11 @@ class TaskUtil{
                 replaceUser         : propman.parse("${propertyPrefix}sql.replace.user"),
                 replaceDatafile     : propman.parse("${propertyPrefix}sql.replace.datafile"),
                 replacePassword     : propman.parse("${propertyPrefix}sql.replace.password"),
-                modeSqlExecute                  : propman.get("${propertyPrefix}mode.sql.execute"),
-                modeSqlCheckBefore              : propman.get("${propertyPrefix}mode.sql.check.before"),
-                modeSqlFileGenerate             : propman.get("${propertyPrefix}mode.sql.file.generate"),
-                modeSqlIgnoreErrorExecute       : propman.get("${propertyPrefix}mode.sql.ignore.error.execute"),
-                modeSqlIgnoreErrorCheckBefore   : propman.get("${propertyPrefix}mode.sql.ignore.error.check.before"),
+                modeSqlExecute                  : propman.getBoolean("${propertyPrefix}mode.sql.execute"),
+                modeSqlCheckBefore              : propman.getBoolean("${propertyPrefix}mode.sql.check.before"),
+                modeSqlFileGenerate             : propman.getBoolean("${propertyPrefix}mode.sql.file.generate"),
+                modeSqlIgnoreErrorExecute       : propman.getBoolean("${propertyPrefix}mode.sql.ignore.error.execute"),
+                modeSqlIgnoreErrorCheckBefore   : propman.getBoolean("${propertyPrefix}mode.sql.ignore.error.check.before"),
 
         )
     }

@@ -117,6 +117,7 @@ class JobBuilder extends JobUtil{
         }
 
         //3. Distribute Zip
+        logBigTitle('AUTO ZIP')
         distributeZip()
 
         //Write Report

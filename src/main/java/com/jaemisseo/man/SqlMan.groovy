@@ -3,6 +3,7 @@ package com.jaemisseo.man
 import com.jaemisseo.man.util.SqlSetup
 import groovy.sql.Sql
 
+import java.sql.SQLException
 import java.util.regex.Matcher
 
 /**
@@ -178,10 +179,18 @@ class SqlMan extends SqlAnalMan{
             existObjectList = sql.rows("SELECT OBJECT_NAME, OBJECT_TYPE, OWNER AS SCHEME FROM ALL_OBJECTS")
             analysisResultList.each {
                 it.isExistOnDB = isExistOnSchemeOnDB(it, existObjectList)
-                if ( it.isExistOnDB && !(it.commandType.equalsIgnoreCase('INSERT') || it.commandType.equalsIgnoreCase('UPDATE')) ){
-                    it.warnningMessage = WARN_MSG_2
+                if (it.isExistOnDB){
+                    if ( !(it.commandType.equalsIgnoreCase('INSERT') || it.commandType.equalsIgnoreCase('UPDATE')) )
+                        it.warnningMessage = WARN_MSG_2
                 }else{
-                    it.warnningMessage = ''
+                    if ( it.commandType.equalsIgnoreCase('INSERT')
+                        || it.commandType.equalsIgnoreCase('UPDATE')
+                        || it.commandType.equalsIgnoreCase('DELETE')
+                        || it.commandType.equalsIgnoreCase('COMMENT')){
+                        it.warnningMessage = WARN_MSG_1
+                    }else{
+                        it.warnningMessage = ''
+                    }
                 }
             }
             if (resultsForTablespace) {
@@ -204,6 +213,12 @@ class SqlMan extends SqlAnalMan{
         }finally{
             close()
         }
+        
+        //Error Check
+        List warnList = analysisResultList.findAll{ it.warnningMessage }
+        if ( !localOpt.modeSqlIgnoreErrorCheckBefore && warnList )
+            throw new SQLException(warnList[0].warnningMessage)
+
         return this
     }
 
@@ -246,6 +261,8 @@ class SqlMan extends SqlAnalMan{
                 }catch(Exception e){
                     result.isOk = false
                     result.error = e
+                    if (!localOpt.modeSqlIgnoreErrorExecute)
+                        throw e
                 }
             }
         }
@@ -296,16 +313,18 @@ class SqlMan extends SqlAnalMan{
      * Report 'SQL Result' With Console
      */
     SqlMan reportResult(){
-        println ""
-        println ""
-        println "///// REPORT"
-        resultReportMap.each{
+        if (resultReportMap){
             println ""
-            println it
+            println ""
+            println "///// REPORT"
+            resultReportMap.each{
+                println ""
+                println it
+            }
+            println ""
+            println ""
+            println ""
         }
-        println ""
-        println ""
-        println ""
         return this
     }
 
