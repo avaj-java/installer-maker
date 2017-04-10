@@ -44,21 +44,21 @@ class TempTest {
 
     @Test
     void "compress extract"(){
-        String sourcePath = 'D:\\dev_by_sj\\Dropbox\\workspacesForCompany\\installer\\build\\libs\\lib\\temp\\*'
-        String destPath = 'D:\\dev_by_sj\\Dropbox\\workspacesForCompany\\installer\\build\\libs\\test.zip'
-        FileMan.zip(sourcePath, destPath, true)
-
-        String sourcePath2 = 'D:\\dev_by_sj\\Dropbox\\workspacesForCompany\\installer\\build\\libs\\lib\\temp\\*'
-        String destPath2 = 'D:\\dev_by_sj\\Dropbox\\workspacesForCompany\\installer\\build\\libs\\test.jar'
-        FileMan.jar(sourcePath2, destPath2, true)
-
-        String sourcePath3 = 'D:\\dev_by_sj\\Dropbox\\workspacesForCompany\\installer\\build\\libs\\lib\\temp\\*'
-        String destPath3 = 'D:\\dev_by_sj\\Dropbox\\workspacesForCompany\\installer\\build\\libs\\test.tar.gz'
-        FileMan.tar(sourcePath3, destPath3, true)
-
-        FileMan.unzip(destPath)
-        FileMan.unjar(destPath2)
-        FileMan.untar(destPath3)
+//        String sourcePath = 'D:\\dev_by_sj\\Dropbox\\workspacesForCompany\\installer\\build\\libs\\lib\\temp\\*'
+//        String destPath = 'D:\\dev_by_sj\\Dropbox\\workspacesForCompany\\installer\\build\\libs\\test.zip'
+//        FileMan.zip(sourcePath, destPath, true)
+//
+//        String sourcePath2 = 'D:\\dev_by_sj\\Dropbox\\workspacesForCompany\\installer\\build\\libs\\lib\\temp\\*'
+//        String destPath2 = 'D:\\dev_by_sj\\Dropbox\\workspacesForCompany\\installer\\build\\libs\\test.jar'
+//        FileMan.jar(sourcePath2, destPath2, true)
+//
+//        String sourcePath3 = 'D:\\dev_by_sj\\Dropbox\\workspacesForCompany\\installer\\build\\libs\\lib\\temp\\*'
+//        String destPath3 = 'D:\\dev_by_sj\\Dropbox\\workspacesForCompany\\installer\\build\\libs\\test.tar.gz'
+//        FileMan.tar(sourcePath3, destPath3, true)
+//
+//        FileMan.unzip(destPath)
+//        FileMan.unjar(destPath2)
+//        FileMan.untar(destPath3)
     }
 
     @Test
@@ -182,7 +182,7 @@ class TempTest {
         println "tue" as Boolean
         println "flse" as Boolean
 
-        PropMan propman = new PropMan([aaa:'', bbb:null])
+        PropMan propman = new PropMan([aaa:''])
 
         println propman.getBoolean('aaa')
         println propman.getBoolean('bbb')
