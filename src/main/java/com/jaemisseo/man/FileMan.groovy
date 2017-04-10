@@ -1136,6 +1136,10 @@ class FileMan {
             String parentName = new File(sourcePath).getParentFile().name
             String fileName = new File(sourcePath).name.split('[.]')[0]
             destPath = sourcePath.contains('*') ? "${parentPath}/${parentName}.${extension}": "${parentPath}/${fileName}.${extension}"
+        }else if (sourcePath && destPath && !isFile(destPath)){
+            String parentName = new File(sourcePath).getParentFile().name
+            String fileName = new File(sourcePath).name.split('[.]')[0]
+            destPath = sourcePath.contains('*') ? "${destPath}/${parentName}.${extension}": "${destPath}/${fileName}.${extension}"
         }
         return destPath
     }
