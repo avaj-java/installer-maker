@@ -5,7 +5,6 @@ import com.jaemisseo.man.PropMan
 import com.jaemisseo.man.VariableMan
 import com.jaemisseo.man.util.FileSetup
 import install.bean.ReceptionistGlobalOption
-import install.task.TaskUtil
 
 /**
  * Created by sujkim on 2017-02-17.
@@ -14,7 +13,7 @@ class JobReceptionist extends JobUtil{
 
     JobReceptionist(PropMan propman){
         //Job Setup
-        levelNamesProperty = 'ask.level'
+        levelNamesProperty = 'a.level'
         levelNamePrefix = 'a'
 
         validTaskList = [TASK_NOTICE, TASK_Q, TASK_Q_CHOICE, TASK_Q_YN, TASK_SET]
@@ -40,7 +39,7 @@ class JobReceptionist extends JobUtil{
         readRemeber()
 
         //2. Each level by level
-        eachLevel(levelNamesProperty){ String levelName ->
+        eachLevel(levelNamesProperty, levelNamePrefix, 'receptionist.properties'){ String levelName ->
             String propertyPrefix = "${levelNamePrefix}.${levelName}."
             String taskName = getString(propertyPrefix, 'task')?.trim()?.toUpperCase()
             runTask(taskName, propertyPrefix)

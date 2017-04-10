@@ -1,5 +1,6 @@
 package install.job
 
+import com.jaemisseo.man.FileMan
 import install.task.TaskExec
 import install.task.TaskFileCopy
 import install.task.TaskFileJar
@@ -39,6 +40,55 @@ class JobUtil extends TaskUtil{
     List validTaskList = []
     List invalidTaskList = []
     def gOpt
+
+
+
+    //Do level by level
+    protected void eachLevel(String levelNamesProperty, String executorName, String fileName, Closure closure){
+        //1. Try to get levels from level property
+        List<String> levelList = getSpecificLevelList(levelNamesProperty) ?: geLinetOrderedLevelList(fileName, executorName)
+        //3. Do Each Tasks
+        levelList.each{ String levelName ->
+            closure(levelName)
+        }
+    }
+
+    protected List<String> getSpecificLevelList(String levelNamesProperty){
+        List<String> resultList = []
+        String levelNames = propman.get(levelNamesProperty)
+        List<String> list = levelNames?.split("\\s*,\\s*")
+        //Each Specific Levels
+        list.each{ String levelName ->
+            if (levelName.contains('-')) {
+                resultList += getListWithDashRange(levelName as String)
+            }else if (levelName.contains('..')){
+                resultList += getListWithDotDotRange(levelName as String)
+            }else{
+                resultList << levelName
+            }
+        }
+        return resultList
+    }
+
+    protected List<String> geLinetOrderedLevelList(String fileName, String executorName){
+        Map levelNameMap = [:]
+        String userSetPropertiesDir = propman.get('properties.dir')
+        File scriptFile = (userSetPropertiesDir) ? new File("${userSetPropertiesDir}/${fileName}") : FileMan.getFileFromResource(fileName)
+        scriptFile.text.eachLine{ String line ->
+            String propertyName = line.split('[=]')[0]
+            List<String> propElementList = propertyName.split('[.]').toList()
+            if (propElementList && propElementList.size() > 2){
+                String executorElementName = propElementList[0]
+                String levelElementName = propElementList[1]
+                if (executorElementName.equals(executorName)
+                && !propertyName.equals(levelNamesProperty)
+                && !levelNameMap[levelElementName]){
+                    levelNameMap[levelElementName] = true
+                }
+            }
+        }
+        return levelNameMap.keySet().toList()
+    }
 
 
 

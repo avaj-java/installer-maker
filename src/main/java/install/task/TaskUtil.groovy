@@ -176,27 +176,7 @@ class TaskUtil{
         println '=================================================='
     }
 
-    //Do level by level
-    protected void eachLevel(String levelNamesProperty, Closure closure){
-        getLevelList(levelNamesProperty).each{ String levelName ->
-            closure(levelName)
-        }
-    }
 
-    protected List<String> getLevelList(String levelNamesProperty){
-        List<String> resultList = []
-        List<String> list = propman.get(levelNamesProperty).split("\\s*,\\s*")
-        list.each{ String levelName ->
-            if (levelName.contains('-')) {
-                resultList += getListWithDashRange(levelName as String)
-            }else if (levelName.contains('..')){
-                resultList += getListWithDotDotRange(levelName as String)
-            }else{
-                resultList << levelName
-            }
-        }
-        return resultList
-    }
 
     protected List<String> getListWithDashRange(String dashRnage){
         List<String> resultList = []

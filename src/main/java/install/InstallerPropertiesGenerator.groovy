@@ -124,6 +124,12 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
         return new PropMan().readResource('defaultProperties/installer.default.properties')
     }
 
+    PropMan genMacgyverDefaultProperties(){
+        return new PropMan().readResource('defaultProperties/macgyver.default.properties')
+    }
+
+
+
 
 
     File getThisAppFile(){

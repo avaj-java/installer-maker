@@ -36,6 +36,7 @@ class Start {
         PropMan propmanForBuilder = propGen.genBuilderDefaultProperties()
         PropMan propmanForReceptionist = propGen.genReceptionistDefaultProperties()
         PropMan propmanForInstaller = propGen.genInstallerDefaultProperties()
+        PropMan propmanForMacgyver = propGen.genMacgyverDefaultProperties()
 
         String nowPath = propmanDefault.get('user.dir')
         String libDir = propmanDefault.get('lib.dir')
@@ -118,10 +119,22 @@ class Start {
         /**
          * MACGYVER
          */
-        ///// Doing Other Task
+        ///// macgyver
+        if (prop['macgyver'] || prop['m']){
+            String userSetPropertiesDir = prop['properties.dir']
+            if (userSetPropertiesDir)
+                propmanForMacgyver.merge("${userSetPropertiesDir}/macgyver.properties")
+            else
+                propmanForMacgyver.mergeResource("macgyver.properties")
+            propmanForMacgyver.merge(prop)
+                              .mergeNew(propmanDefault)
+            new MacGyver(propmanForMacgyver).doSomething()
+        }
+
+        ///// Doing Other Task with Command Line Options
         if (true){
             PropMan propman = new PropMan(prop)
-            new MacGyver(propman).run('')
+            new MacGyver(propman).run()
         }
 
         /////LOG

@@ -1,10 +1,10 @@
 package install.job
 
-import com.jaemisseo.man.*
-import com.jaemisseo.man.util.FileSetup
+import com.jaemisseo.man.PropMan
+import com.jaemisseo.man.ReportMan
+import com.jaemisseo.man.VariableMan
 import install.bean.InstallerGlobalOption
 import install.bean.ReportSetup
-import install.task.TaskUtil
 
 /**
  * Created by sujkim on 2017-02-17.
@@ -13,7 +13,7 @@ class JobInstaller extends JobUtil{
 
     JobInstaller(PropMan propman) {
         //Job Setup
-        levelNamesProperty = 'install.level'
+        levelNamesProperty = 'i.level'
         levelNamePrefix = 'i'
 
         this.propman = propman
@@ -36,7 +36,7 @@ class JobInstaller extends JobUtil{
         ReportSetup reportSetup = gOpt.reportSetup
 
         //Each level by level
-        eachLevel(levelNamesProperty){ String levelName ->
+        eachLevel(levelNamesProperty, levelNamePrefix, 'installer.properties'){ String levelName ->
             try{
                 String propertyPrefix = "${levelNamePrefix}.${levelName}."
                 String taskName = getString(propertyPrefix, 'task')?.trim()?.toUpperCase()

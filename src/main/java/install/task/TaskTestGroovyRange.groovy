@@ -20,4 +20,21 @@ class TaskTestGroovyRange extends TaskUtil{
 
     }
 
+    List<String> getLevelList(String levelNamesProperty){
+        List<String> resultList = []
+        List<String> list = propman.get(levelNamesProperty).split("\\s*,\\s*")
+        //Each Specific Levels
+        list.each{ String levelName ->
+            if (levelName.contains('-')) {
+                resultList += getListWithDashRange(levelName as String)
+            }else if (levelName.contains('..')){
+                resultList += getListWithDotDotRange(levelName as String)
+            }else{
+                resultList << levelName
+            }
+        }
+        return resultList
+    }
+
+
 }

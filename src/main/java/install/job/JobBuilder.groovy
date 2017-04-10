@@ -1,10 +1,12 @@
 package install.job
 
-import com.jaemisseo.man.*
+import com.jaemisseo.man.FileMan
+import com.jaemisseo.man.PropMan
+import com.jaemisseo.man.ReportMan
+import com.jaemisseo.man.VariableMan
 import com.jaemisseo.man.util.FileSetup
 import install.bean.BuilderGlobalOption
 import install.bean.ReportSetup
-import install.task.TaskUtil
 
 /**
  * Created by sujkim on 2017-02-17.
@@ -13,7 +15,7 @@ class JobBuilder extends JobUtil{
 
     JobBuilder(PropMan propman){
         //Job Setup
-        levelNamesProperty = 'build.level'
+        levelNamesProperty = 'b.level'
         levelNamePrefix = 'b'
 
         this.propman = propman
@@ -105,7 +107,7 @@ class JobBuilder extends JobUtil{
         setLibAndBin()
 
         //2. Each level by level
-        eachLevel(levelNamesProperty){ String levelName ->
+        eachLevel(levelNamesProperty, levelNamePrefix, 'builder.properties'){ String levelName ->
             try{
                 String propertyPrefix = "${levelNamePrefix}.${levelName}."
                 String taskName = getString(propertyPrefix, 'task')?.trim()?.toUpperCase()
@@ -206,7 +208,9 @@ class JobBuilder extends JobUtil{
 
         //2. Convert Init Script to Script Editd By User
         FileMan.unjar(libPath, tempNowDir, opt)
-        FileMan.copy("*.properties", tempNowDir, opt)
+        FileMan.copy("builder.properties", tempNowDir, opt)
+        FileMan.copy("receptionist.properties", tempNowDir, opt)
+        FileMan.copy("installer.properties", tempNowDir, opt)
         FileMan.write("${tempNowDir}/.libtohome", libToHomeRelPath, opt)
         FileMan.jar("${tempNowDir}/*", "${libDestPath}/${thisFileName}", opt)
 
