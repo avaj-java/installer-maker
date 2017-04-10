@@ -1,5 +1,5 @@
-image: frekele/gradle:3.4.1-jdk7
-#image: skobow/docker-gradle-git
+#image: frekele/gradle:3.4.1-jdk7
+image: skobow/docker-gradle-git
 stages:
   - build
 before_script:
