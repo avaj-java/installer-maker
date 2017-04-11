@@ -9,10 +9,10 @@ before_script:
 build:
   stage: build
   script:
-    - gradle clean build
+    - gradle clean deployLocal
   artifacts:
     paths:
-      - build/libs/*.jar
+      - build/distributions/*.zip
     expire_in: 1 week
   only:
     - master
