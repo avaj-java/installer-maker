@@ -30,6 +30,7 @@ class ReportSql extends Option{
     @ReportColumn(index=0, headerName="SEQ")
     Integer seq
 
+    @ReportColumnDataStyle(wrapText=true)
     @ReportColumn(index=3, headerName="QUERY", width=13000)
     String query
 
