@@ -92,6 +92,13 @@ class JobUtil extends TaskUtil{
 
 
 
+
+
+    void runTaskByPrefix(String propertyPrefix) {
+        String taskName = getString("${propertyPrefix}task")?.trim()?.toUpperCase()
+        runTask(taskName, propertyPrefix)
+    }
+
     void runTask(String taskName){
         runTask(taskName, '')
     }
@@ -106,77 +113,77 @@ class JobUtil extends TaskUtil{
         //Run Task
         switch (taskName){
             case TaskUtil.TASK_NOTICE:
-                new TaskNotice(propman).start(propertyPrefix)
+                new TaskNotice().setPropman(propman).start(propertyPrefix)
                 break
             case TaskUtil.TASK_Q:
-                new TaskQuestion(propman).setRememberAnswerLineList(rememberAnswerLineList).start(propertyPrefix)
+                new TaskQuestion().setPropman(propman).setRememberAnswerLineList(rememberAnswerLineList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_Q_CHOICE:
-                new TaskQuestionChoice(propman).setRememberAnswerLineList(rememberAnswerLineList).start(propertyPrefix)
+                new TaskQuestionChoice().setPropman(propman).setRememberAnswerLineList(rememberAnswerLineList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_Q_YN:
-                new TaskQuestionYN(propman).setRememberAnswerLineList(rememberAnswerLineList).start(propertyPrefix)
+                new TaskQuestionYN().setPropman(propman).setRememberAnswerLineList(rememberAnswerLineList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_SET:
-                new TaskSet(propman).start(propertyPrefix)
+                new TaskSet().setPropman(propman).start(propertyPrefix)
                 break
 
             case TaskUtil.TASK_TAR:
-                new TaskFileTar(propman).setReporter(reportMapList).start(propertyPrefix)
+                new TaskFileTar().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_ZIP:
-                new TaskFileZip(propman).setReporter(reportMapList).start(propertyPrefix)
+                new TaskFileZip().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_JAR:
-                new TaskFileJar(propman).setReporter(reportMapList).start(propertyPrefix)
+                new TaskFileJar().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
 
             case TaskUtil.TASK_UNTAR:
-                new TaskFileUntar(propman).setReporter(reportMapList).start(propertyPrefix)
+                new TaskFileUntar().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_UNZIP:
-                new TaskFileUnzip(propman).setReporter(reportMapList).start(propertyPrefix)
+                new TaskFileUnzip().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_UNJAR:
-                new TaskFileUnjar(propman).setReporter(reportMapList).start(propertyPrefix)
+                new TaskFileUnjar().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
 
             case TaskUtil.TASK_REPLACE:
-                new TaskFileReplace(propman).setReporter(reportMapList).start(propertyPrefix)
+                new TaskFileReplace().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_COPY:
-                new TaskFileCopy(propman).setReporter(reportMapList).start(propertyPrefix)
+                new TaskFileCopy().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_MKDIR:
-                new TaskFileMkdir(propman).setReporter(reportMapList).start(propertyPrefix)
+                new TaskFileMkdir().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
 
             case TaskUtil.TASK_EXEC:
-                new TaskExec(propman).setReporter(reportMapList).start(propertyPrefix)
+                new TaskExec().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_SQL:
-                new TaskSql(propman).setReporter(reportMapList).start(propertyPrefix)
+                new TaskSql().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_MERGE_ROPERTIES:
-                new TaskMergeProperties(propman).setReporter(reportMapList).start(propertyPrefix)
+                new TaskMergeProperties().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_EMAIL://Not Supported Yet
-                new TaskTestEMail(propman).setReporter(reportMapList).start(propertyPrefix)
+                new TaskTestEMail().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_SOCKET:
-                new TaskTestSocket(propman).setReporter(reportMapList).start(propertyPrefix)
+                new TaskTestSocket().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_REST:
-                new TaskTestREST(propman).setReporter(reportMapList).start(propertyPrefix)
+                new TaskTestREST().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_JDBC:
-                new TaskTestJDBC(propman).setReporter(reportMapList).start(propertyPrefix)
+                new TaskTestJDBC().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_GROOVYRANGE:
-                new TaskTestGroovyRange(propman).setReporter(reportMapList).start(propertyPrefix)
+                new TaskTestGroovyRange().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_PORT:
-                new TaskTestPort(propman).setReporter(reportMapList).start(propertyPrefix)
+                new TaskTestPort().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
 
             default :

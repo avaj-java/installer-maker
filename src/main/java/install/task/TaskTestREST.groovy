@@ -15,27 +15,34 @@ class TaskTestREST extends TaskUtil{
 
 
     @Override
-    void run(String propertyPrefix){
-        String url      = propman.get('url')
-        String type     = propman.get('type')
-        String method   = propman.get('method') ?: "POST"
-        String accept   = propman.get('accept')
-        Map paramMap    = propman.parse('param')
-        Map headerMap   = propman.parse('header')
+    void run(){
+        String url      = get('url')
+        String method   = get('method') ?: "POST"
+        String type     = get('type')
+        String accept   = get('accept')
+        Map paramMap    = parse('param')
+        Map headerMap   = parse('header')
+
+        //REQUEST & GET RESPONSE
+        RestMan restman = new RestMan().addHeader(headerMap)
+        if (type)
+            restman.setType(type)
+        if (accept)
+            restman.setAccept(accept)
 
         logMiddleTitle 'START CHECK REST'
 
         println "<REQUEST> - CHECK"
         println " - URL       : ${url}"
         println " - METHOD    : ${method}"
+        println " - TYPE      : ${restman.type}"
+        println " - ACCEPT    : ${restman.accept}"
         println " - PARAMETER : ${paramMap}"
         println " - HEADER    : ${headerMap}"
         println ""
 
-        //REQUEST & GET RESPONSE
-        String response = new RestMan()
-                                .addHeader(headerMap)
-                                .request(url, paramMap, method)
+        String response =  restman.request(url, method, paramMap)
+
 
         //LOG
         println "<RESPONSE>\n${response}"

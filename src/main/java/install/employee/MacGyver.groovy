@@ -28,32 +28,11 @@ class MacGyver extends JobUtil {
      */
     void run(){
         List taskMap = [
-                TASK_TAR,
-                TASK_ZIP,
-                TASK_JAR,
-                TASK_UNTAR,
-                TASK_UNZIP,
-                TASK_UNJAR,
-                TASK_MKDIR,
-                TASK_COPY,
-
-                TASK_GROOVYRANGE,
-                TASK_JDBC,
-                TASK_REST,
-                TASK_SOCKET,
-                TASK_EMAIL,
-                TASK_PORT,
-                TASK_MERGE_ROPERTIES,
-
-                TASK_REPLACE,
-                TASK_SQL,
-                TASK_NOTICE,
-                TASK_Q,
-                TASK_Q_CHOICE,
-                TASK_Q_YN,
-                TASK_SET,
+            TASK_TAR, TASK_ZIP, TASK_JAR, TASK_UNTAR, TASK_UNZIP, TASK_UNJAR,
+            TASK_MKDIR, TASK_COPY, TASK_GROOVYRANGE, TASK_MERGE_ROPERTIES, TASK_REPLACE, TASK_SQL,
+            TASK_JDBC, TASK_REST, TASK_SOCKET, TASK_EMAIL, TASK_PORT,
+            TASK_NOTICE, TASK_Q, TASK_Q_CHOICE, TASK_Q_YN, TASK_SET,
         ]
-
 
         taskMap.each{ String taskCode ->
             if (propman.get(taskCode.toLowerCase()))
@@ -73,9 +52,7 @@ class MacGyver extends JobUtil {
         //Each level by level
         eachLevel(levelNamesProperty, levelNamePrefix, 'macgyver.properties'){ String levelName ->
             try{
-                String propertyPrefix = "${levelNamePrefix}.${levelName}."
-                String taskName = getString(propertyPrefix, 'task')?.trim()?.toUpperCase()
-                runTask(taskName, propertyPrefix)
+                runTaskByPrefix("${levelNamePrefix}.${levelName}.")
             }catch(e){
                 //Write Report
                 writeReport(reportMapList, reportSetup)

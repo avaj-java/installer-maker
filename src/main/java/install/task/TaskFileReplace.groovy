@@ -9,40 +9,27 @@ import com.jaemisseo.man.util.FileSetup
  */
 class TaskFileReplace extends TaskUtil{
 
-    TaskFileReplace(PropMan propman){
-        this.propman = propman
-    }
-
-
-
-    /**
-     * RUN
-     */
-    void run(String propertyPrefix){
+    @Override
+    void run(){
 
         //Ready
-        List<String> filePathList = getFilePathList(propertyPrefix, 'file.path')
-        FileSetup localOption = genMergedFileSetup(propertyPrefix)
-        Map replaceMap = getMap(propertyPrefix, 'file.replace')
-        Map replaceLineMap = getMap(propertyPrefix, 'file.replace.line')
-        Map replacePropertyMap = getMap(propertyPrefix, 'file.replace.property')
+        List<String> filePathList = getFilePathList('file.path')
+        FileSetup fileSetup = genMergedFileSetup()
+        Map replaceMap = getMap('file.replace')
+        Map replaceLineMap = getMap('file.replace.line')
+        Map replacePropertyMap = getMap('file.replace.property')
 
         //Do
         println "<REPLACE>"
         filePathList.each{ String filePath ->
             new FileMan(filePath)
-                        .set( localOption )
-                        //BACKUP
+                        .set( fileSetup )
                         .backup()
-                        //READ
                         .read()
-                        //REPLACE
                         .replace( replaceMap )
                         .replaceLine( replaceLineMap )
                         .replaceProperty( replacePropertyMap )
-                        //WRITE
-                        .write( localOption.clone([modeAutoOverWrite:true]) )
-                        //REPORT
+                        .write( fileSetup.clone([modeAutoOverWrite:true]) )
                         .report()
         }
 

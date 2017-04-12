@@ -7,17 +7,11 @@ import com.jaemisseo.man.PropMan
  */
 class TaskTestPort extends TaskUtil{
 
-    TaskTestPort(PropMan propman){
-        this.propman = propman
-    }
-
-
-
     @Override
-    void run(String propertyPrefix){
+    void run(){
         //Ready
-        def rangeFrom   = (propman.get('port') ?: propman.get('from') ?: 0) as int
-        def rangeTo     = (propman.get('to') ?: rangeFrom) as int
+        def rangeFrom   = (get('port') ?: get('from') ?: 0) as int
+        def rangeTo     = (get('to') ?: rangeFrom) as int
         // - No Reverse
         if (rangeFrom > rangeTo){
             def temp = rangeTo
@@ -42,11 +36,11 @@ class TaskTestPort extends TaskUtil{
         for (int port=rangeFrom; port<=rangeTo; port++){
             try{
                 Socket s = new Socket("127.0.0.1", port)
-                System.out.println(port + " is Being Used")
+                println(port + " is Being Used")
                 portMap[port] = "is Being Used"
                 s.close()
             }catch (Exception e){
-                System.out.println(port + " is No Use")
+                println(port + " is No Use")
                 portMap[port] = null
             }
         }

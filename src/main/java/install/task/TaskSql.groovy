@@ -15,25 +15,21 @@ import java.sql.SQLException
  */
 class TaskSql extends TaskUtil{
 
-    TaskSql(PropMan propman) {
-        this.propman = propman
-    }
-
-    /**
-     * RUN
-     */
-    void run(String propertyPrefix){
+    @Override
+    void run(){
 
         //1. Default Setup
         sqlman = new SqlMan()
-        SqlSetup sqlSetup = genMergedSqlSetup(propertyPrefix)
-        List<String> filePathList = getFilePathList(propertyPrefix, 'file.path', 'sql')
+        SqlSetup sqlSetup = genMergedSqlSetup()
+        List<String> filePathList = getFilePathList('file.path', 'sql')
         ReportSetup reportSetup = genGlobalReportSetup()
 
 
         //2. Execute All SQL
         println "<SQL>"
+
         filePathList.each{ String filePath ->
+
             String originFileName = new File(filePath).getName()
 
             //2. Generate Query Replaced With New Object Name
@@ -49,9 +45,6 @@ class TaskSql extends TaskUtil{
                 }catch(e){
                     println "<ERROR> Checking Before Execution"
                     throw new SQLException('Error, Checking Before Execution.')
-                }finally{
-                    //- Add Reoprt
-//                    addReportBefore(reportSetup)
                 }
             }
 
@@ -67,38 +60,17 @@ class TaskSql extends TaskUtil{
 
     }
 
-    /**
-     * REPORT
-     */
-    void addReportBefore(ReportSetup reportSetup){
-        if (reportSetup.modeReport){
-            if (reportSetup.modeReportConsole)
-                sqlman.reportAnalysis()
-            if (reportSetup.modeReportText || reportSetup.modeReportExcel){
-                sqlman.getAnalysisResultList().each{ SqlAnalMan.SqlObject sqlObj ->
-                    reportMapList.add(new ReportSql(
-                            sqlFileName     : sqlObj.sqlFileName,
-                            seq             : sqlObj.seq,
-                            query           : sqlObj.query,
-//                                isExistOnDB     : sqlObj.isExistOnDB?'Y':'N',
-//                                isOk            : sqlObj.isOk?'Y':'N',
-                            warnningMessage : sqlObj.warnningMessage,
-//                                error           : sqlObj.error?.toString(),
-                    ))
-                }
-            }
-        }
-    }
-
-
+    @Override
     void reportWithConsole(ReportSetup reportSetup, List reportMapList){
         sqlman.reportResult()
     }
 
+    @Override
     void reportWithText(ReportSetup reportSetup, List reportMapList){
 
     }
 
+    @Override
     void reportWithExcel(ReportSetup reportSetup, List reportMapList){
 //        Map resultMap = sqlman.getResultReportMap()
         sqlman.getAnalysisResultList().each{ SqlAnalMan.SqlObject sqlObj ->

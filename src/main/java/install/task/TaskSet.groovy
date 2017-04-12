@@ -9,17 +9,10 @@ import com.jaemisseo.man.util.QuestionSetup
  */
 class TaskSet extends TaskUtil{
 
-    TaskSet(PropMan propman){
-        this.propman = propman
-    }
-
-
-
-    void run(String propertyPrefix){
-
+    @Override
+    void run(){
         //Set Some Property
-        setPropValue(propertyPrefix)
-
+        setPropValue()
     }
 
 }

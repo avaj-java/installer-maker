@@ -7,29 +7,22 @@ import com.jaemisseo.man.PropMan
  */
 class TaskExec extends TaskUtil{
 
-    TaskExec (PropMan propman){
-        this.propman = propman
-    }
-
-
-
-    /**
-     * RUN
-     */
-    void run(String propertyPrefix){
+    @Override
+    void run(){
 
         //Ready
-        String shFilePath = getFilePath(propertyPrefix, 'sh.file.path')
-        String batFilePath = getFilePath(propertyPrefix, 'bat.file.path')
+        String shFilePath = getFilePath('sh.file.path')
+        String batFilePath = getFilePath('bat.file.path')
 
-        //DOｓ                        ｓ
+        //DO
         println "<Run SH or BAT>"
         StringBuffer output = new StringBuffer()
         String command
 
         try{
             //Check OS
-            boolean isWin = propman.getString('os.name').contains('Win')
+            boolean isWin = getString('os.name').contains('Win')
+            //Gen Command
             command = (isWin) ? "cmd /c start ${batFilePath}" : "${shFilePath}"
             //Exec
             Process p = Runtime.getRuntime().exec(command)

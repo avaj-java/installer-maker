@@ -47,9 +47,14 @@ class TaskUtil{
     FileMan fileman
     QuestionMan qman
 
+    String propertyPrefix = ''
     List reportMapList = []
     List rememberAnswerLineList = []
 
+    TaskUtil setPropman(PropMan propman){
+        this.propman = propman
+        return this
+    }
 
     TaskUtil setReporter(List reportMapList){
         this.reportMapList = reportMapList
@@ -101,13 +106,15 @@ class TaskUtil{
      */
     void start(String propertyPrefix){
 
-        if ( !isTrueCondition(propertyPrefix) )
+        this.propertyPrefix = propertyPrefix
+
+        if ( !checkCondition(propertyPrefix) )
             return
 
         descript(propertyPrefix)
 
         try{
-            run(propertyPrefix)
+            run()
         }catch(e){
             throw e
         }finally{
@@ -119,7 +126,7 @@ class TaskUtil{
     /**
      * 2. RUN
      */
-    void run(String propertyPrefix){
+    void run(){
         //TODO: Override And Implement
         println "It is Empty Task. Implement This method."
     }
@@ -213,50 +220,47 @@ class TaskUtil{
     }
 
 
-    protected def getValue(String propertyName){
-        return getValue("", propertyName)
+
+    protected void set(String propertyName, def value){
+        propman.set("${propertyPrefix}${propertyName}", value)
     }
 
-    protected def getValue(String propertyPrefix, String propertyName){
-        return propman.get("${propertyPrefix}${propertyName}") ?: ''
+    protected def get(String propertyName){
+        return propman.get("${propertyPrefix}${propertyName}") ?: propman.get(propertyName)
+    }
+
+    protected def parse(String propertyName){
+        return propman.parse("${propertyPrefix}${propertyName}")  ?: propman.parse(propertyName)
     }
 
     protected String getString(String propertyName){
-        return getString("", propertyName)
+        return propman.getString("${propertyPrefix}${propertyName}") ?: propman.getString(propertyName) ?: ''
     }
 
-    protected String getString(String propertyPrefix, String propertyName){
-        return propman.get("${propertyPrefix}${propertyName}") ?: ''
+    protected Boolean getBoolean(String propertyName){
+        return propman.getBoolean("${propertyPrefix}${propertyName}") ?: propman.getBoolean(propertyName)
     }
 
-    protected List<String> getFilePathList(String propertyPrefix, String propertyName){
-        return getFilePathList(propertyPrefix, propertyName, '')
+    protected List<String> getFilePathList(String propertyName){
+        return getFilePathList(propertyName, '')
     }
 
-    protected List<String> getFilePathList(String propertyPrefix, String propertyName, String extention){
-        String filePath = propman.get("${propertyPrefix}${propertyName}")
+    protected List<String> getFilePathList(String propertyName, String extention){
+        String filePath = get(propertyName)
         return FileMan.getFilePathList(filePath, extention)
     }
 
     protected String getFilePath(String propertyName){
-        return getFilePath('', propertyName)
-    }
-
-    protected String getFilePath(String propertyPrefix, String propertyName){
-        String filePath = propman.get("${propertyPrefix}${propertyName}")
+        String filePath = get(propertyName)
         return FileMan.getFullPath(filePath)
     }
 
     protected Map getMap(String propertyName){
-        return getMap("", propertyName)
-    }
-
-    protected Map getMap(String propertyPrefix, String propertyName){
-        Map map = propman.parse("${propertyPrefix}${propertyName}")
+        Map map = parse(propertyName)
         return map
     }
 
-    protected void setPropValue(String propertyPrefix){
+    protected void setPropValue(){
         //Set Some Property
         def property = propman.parse("${propertyPrefix}property")
         if (property instanceof String){
@@ -269,16 +273,16 @@ class TaskUtil{
         }
     }
 
-    protected boolean isTrueCondition(String propertyPrefix){
+    protected boolean checkCondition(String propertyPrefix){
         def conditionIfObj = propman.parse("${propertyPrefix}if")
         boolean isTrue = propman.match(conditionIfObj)
         return isTrue
     }
 
     protected void descript(String propertyPrefix){
-        String descriptString = propman.get("${propertyPrefix}descript")
-        descriptString = descriptString ?: propertyPrefix
-        logBigTitle(descriptString)
+        String descriptionString = propman.get("${propertyPrefix}desc")
+        descriptionString = descriptionString ?: propertyPrefix
+        logBigTitle(descriptionString)
     }
 
 
@@ -305,7 +309,7 @@ class TaskUtil{
         return defaultOpt.merge(globalOpt)
     }
 
-    protected FileSetup genMergedFileSetup(String propertyPrefix){
+    protected FileSetup genMergedFileSetup(){
         FileSetup defaultOpt = new FileSetup()
         FileSetup globalOpt = genFileSetup('')
         FileSetup localOpt = genFileSetup(propertyPrefix)
@@ -356,7 +360,7 @@ class TaskUtil{
         return defaultOpt.merge(globalOpt)
     }
 
-    protected SqlSetup genMergedSqlSetup(String propertyPrefix){
+    protected SqlSetup genMergedSqlSetup(){
         SqlSetup defaultOpt = new SqlSetup()
         SqlSetup globalOpt = genSqlSetup('')
         SqlSetup localOpt = genSqlSetup(propertyPrefix)
@@ -372,7 +376,7 @@ class TaskUtil{
     /**
      * QuestionSetup
      */
-    protected QuestionSetup genQuestionSetup(String propertyPrefix){
+    protected QuestionSetup genQuestionSetup(){
         return new QuestionSetup(
             question            : propman.get("${propertyPrefix}question"),
             recommandAnswer     : propman.get("${propertyPrefix}answer.default"),

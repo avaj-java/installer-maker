@@ -9,21 +9,13 @@ import com.jaemisseo.man.util.FileSetup
  */
 class TaskFileMkdir extends TaskUtil{
 
-    TaskFileMkdir(PropMan propman){
-        this.propman = propman
-    }
-
-
-
-    /**
-     * RUN
-     */
-    void run(String propertyPrefix){
+    @Override
+    void run(){
 
         //Ready
-        String destPath = getFilePath(propertyPrefix, 'dest.path')
-        Map buildStructureMap = getMap(propertyPrefix, 'structure')
-        FileSetup fileSetup = genMergedFileSetup(propertyPrefix)
+        String destPath = getFilePath('dest.path')
+        Map buildStructureMap = getMap('structure')
+        FileSetup fileSetup = genMergedFileSetup()
 
         //DO
         println "<MKDIR>"

@@ -8,16 +8,11 @@ import com.jaemisseo.man.VariableMan
  */
 class TaskNotice extends TaskUtil{
 
-    TaskNotice(PropMan propman){
-        this.propman = propman
-    }
-
-
-
-    void run(String propertyPrefix){
+    @Override
+    void run(){
 
         //Get Message
-        String msg = propman.get("${propertyPrefix}msg")
+        String msg = get("msg")
 
         //Show You Welcome Message
         println msg

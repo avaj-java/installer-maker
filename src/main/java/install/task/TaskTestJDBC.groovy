@@ -9,18 +9,12 @@ import com.jaemisseo.man.util.ConnectionGenerator
  */
 class TaskTestJDBC extends TaskUtil{
 
-    TaskTestJDBC(PropMan propman){
-        this.propman = propman
-    }
-
-
-
     @Override
-    void run(String propertyPrefix){
+    void run(){
         //READY
         ConnectionGenerator connGen = new ConnectionGenerator(propman.properties)
         Map previewMap = connGen.generateDataSourceMap()
-        previewMap.query = propman.get('query') ?: "select 'Try To Check Your Query' as TEST from dual"
+        previewMap.query = get('query') ?: "select 'Try To Check Your Query' as TEST from dual"
         Sql sql
         List list
 

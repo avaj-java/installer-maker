@@ -8,19 +8,13 @@ import com.jaemisseo.man.SocketMan
  */
 class TaskTestSocket extends TaskUtil{
 
-    TaskTestSocket(PropMan propman){
-        this.propman = propman
-    }
-
-
-
     @Override
-    void run(String propertyPrefix){
-        Integer timeout = propman.get('timeout') ?: 1000
-        String charset  = propman.get('charset') ?: 'euc-kr'
-        String ip       = propman.get('ip') ?: '127.0.0.1'
-        String port     = propman.get('port') ?: '5000'
-        String msg      = propman.get('msg') ?: null
+    void run(){
+        Integer timeout = get('timeout') ?: 1000
+        String charset  = get('charset') ?: 'euc-kr'
+        String ip       = get('ip') ?: '127.0.0.1'
+        String port     = get('port') ?: '5000'
+        String msg      = get('msg') ?: null
         String response
 
         logMiddleTitle 'START CHECK SOCKET'

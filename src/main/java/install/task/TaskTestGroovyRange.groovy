@@ -7,22 +7,16 @@ import com.jaemisseo.man.PropMan
  */
 class TaskTestGroovyRange extends TaskUtil{
 
-    TaskTestGroovyRange(PropMan propman){
-        this.propman = propman
+    @Override
+    void run(){
+        println getLevelList("range").join(', ')
     }
 
 
 
-    void run(String propertyPrefix){
-
-        List<String> levelList = getLevelList("${propertyPrefix}range")
-        println levelList.join(', ')
-
-    }
-
-    List<String> getLevelList(String levelNamesProperty){
+    List<String> getLevelList(String rangePropertyName){
         List<String> resultList = []
-        List<String> list = propman.get(levelNamesProperty).split("\\s*,\\s*")
+        List<String> list = get(rangePropertyName).split("\\s*,\\s*")
         //Each Specific Levels
         list.each{ String levelName ->
             if (levelName.contains('-')) {

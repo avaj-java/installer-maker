@@ -9,21 +9,12 @@ import com.jaemisseo.man.util.FileSetup
  */
 class TaskMergeProperties extends TaskUtil{
 
-    TaskMergeProperties(PropMan propman){
-        this.propman = propman
-    }
-
-
-
     @Override
-    void run(String propertyPrefix) {
+    void run() {
         //Ready
-        String specificPropertiesFilePath   = propman.get('from')
-        String sourceFilePath               = propman.get('into')
-        String fileEncoding                 = propman.get('file.encoding')
-        FileSetup opt = new FileSetup(modeAutoBackup: true)
-        if (fileEncoding)
-            opt.encoding = fileEncoding
+        String specificPropertiesFilePath   = get('from')
+        String sourceFilePath               = get('into')
+        FileSetup opt                       = genMergedFileSetup().put([modeAutoBackup:true])
 
         logMiddleTitle('START MERGE PROPERTIES')
 

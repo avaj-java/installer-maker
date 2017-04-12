@@ -10,21 +10,13 @@ import install.bean.ReportSetup
  */
 class TaskFileCopy extends TaskUtil{
 
-    TaskFileCopy(PropMan propman){
-        this.propman = propman
-    }
-
-
-
-    /**
-     * RUN
-     */
-    void run(String propertyPrefix){
+    @Override
+    void run(){
 
         //Ready
-        String filePath = getFilePath(propertyPrefix, 'file.path')
-        String destPath = getFilePath(propertyPrefix, 'dest.path')
-        FileSetup fileSetup = genMergedFileSetup(propertyPrefix)
+        String filePath = getFilePath('file.path')
+        String destPath = getFilePath('dest.path')
+        FileSetup fileSetup = genMergedFileSetup()
 
         //DO
         println "<COPY>"

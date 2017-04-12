@@ -26,14 +26,14 @@ class JobBuilder extends JobUtil{
             fileSetup           : genGlobalFileSetup(),
             reportSetup         : genReportSetup(),
 
-            installerName            : getValue('installer.name') ?: 'installer',
-            installerHomeToLibRelPath: getValue('installer.home.to.lib.relpath') ?: './lib',
-            installerHomeToBinRelPath: getValue('installer.home.to.bin.relpath') ?: './bin',
+            installerName            : getString('installer.name') ?: 'installer',
+            installerHomeToLibRelPath: getString('installer.home.to.lib.relpath') ?: './lib',
+            installerHomeToBinRelPath: getString('installer.home.to.bin.relpath') ?: './bin',
             buildDir            : getFilePath('build.dir'),
             buildTempDir        : getFilePath('build.temp.dir'),
             buildDistDir        : getFilePath('build.dist.dir'),
             buildInstallerHome  : getFilePath('build.installer.home'),
-            propertiesDir       : getValue('properties.dir') ?: './',
+            propertiesDir       : getString('properties.dir') ?: './',
         ))
     }
 
@@ -109,9 +109,7 @@ class JobBuilder extends JobUtil{
         //2. Each level by level
         eachLevel(levelNamesProperty, levelNamePrefix, 'builder.properties'){ String levelName ->
             try{
-                String propertyPrefix = "${levelNamePrefix}.${levelName}."
-                String taskName = getString(propertyPrefix, 'task')?.trim()?.toUpperCase()
-                runTask(taskName, propertyPrefix)
+                runTaskByPrefix("${levelNamePrefix}.${levelName}.")
             }catch(e){
                 //Write Report
                 writeReport(reportMapList, reportSetup)

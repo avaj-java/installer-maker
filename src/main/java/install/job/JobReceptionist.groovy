@@ -15,7 +15,6 @@ class JobReceptionist extends JobUtil{
         //Job Setup
         levelNamesProperty = 'a.level'
         levelNamePrefix = 'a'
-
         validTaskList = [TASK_NOTICE, TASK_Q, TASK_Q_CHOICE, TASK_Q_YN, TASK_SET]
 
         this.propman = propman
@@ -23,9 +22,9 @@ class JobReceptionist extends JobUtil{
         parsePropMan(propman, varman, levelNamePrefix)
         setBeforeGetProp(propman, varman)
         this.gOpt = new ReceptionistGlobalOption().merge(new ReceptionistGlobalOption(
-                modeRemember        : propman.get("mode.remember.answer"),
-                rememberFilePath    : propman.get("remember.answer.file.path"),
-                rememberFileSetup   : genMergedFileSetup("remember.answer.")
+                modeRemember        : getBoolean("mode.remember.answer"),
+                rememberFilePath    : getString("remember.answer.file.path"),
+                rememberFileSetup   : genOtherFileSetup("remember.answer.")
         ))
     }
 
@@ -40,9 +39,7 @@ class JobReceptionist extends JobUtil{
 
         //2. Each level by level
         eachLevel(levelNamesProperty, levelNamePrefix, 'receptionist.properties'){ String levelName ->
-            String propertyPrefix = "${levelNamePrefix}.${levelName}."
-            String taskName = getString(propertyPrefix, 'task')?.trim()?.toUpperCase()
-            runTask(taskName, propertyPrefix)
+            runTaskByPrefix("${levelNamePrefix}.${levelName}.")
         }
 
         //3. WRITE ANSWER

@@ -38,9 +38,7 @@ class JobInstaller extends JobUtil{
         //Each level by level
         eachLevel(levelNamesProperty, levelNamePrefix, 'installer.properties'){ String levelName ->
             try{
-                String propertyPrefix = "${levelNamePrefix}.${levelName}."
-                String taskName = getString(propertyPrefix, 'task')?.trim()?.toUpperCase()
-                runTask(taskName, propertyPrefix)
+                runTaskByPrefix("${levelNamePrefix}.${levelName}.")
             }catch(e){
                 //Write Report
                 writeReport(reportMapList, reportSetup)

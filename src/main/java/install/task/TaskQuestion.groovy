@@ -9,17 +9,12 @@ import com.jaemisseo.man.util.QuestionSetup
  */
 class TaskQuestion extends TaskUtil{
 
-    TaskQuestion(PropMan propman){
-        this.propman = propman
-        this.qman = new QuestionMan()
-    }
-
-
-
-    void run(String propertyPrefix){
+    @Override
+    void run(){
 
         //Get Properties
-        QuestionSetup opt       = genQuestionSetup(propertyPrefix)
+        qman = new QuestionMan()
+        QuestionSetup opt = genQuestionSetup()
 
         //Ask Question
         //Get Answer
@@ -28,13 +23,12 @@ class TaskQuestion extends TaskUtil{
         //Remeber 'answer'
         rememberAnswerLineList.add("${propertyPrefix}answer.default=${yourAnswer}")
 
-        //Set 'answer' and 'value'
-        String value = qman.getValue()
-        propman.set("${propertyPrefix}answer", yourAnswer)
-        propman.set("${propertyPrefix}value", value)
+        //Set 'answer' and 'value' Property
+        set('answer', yourAnswer)
+        set('value', qman.getValue())
 
         //Set Some Property
-        setPropValue(propertyPrefix)
+        setPropValue()
 
     }
 
