@@ -18,6 +18,7 @@ public @interface ReportSheetDataStyle {
     int fontHeightInPoints() default -1
     boolean bold() default false
     boolean italic() default false
+    boolean wrapText() default false
     short alignment() default (short) -1
     short verticalAlignment() default (short) -1
     short fillForegroundColor() default (short) -1

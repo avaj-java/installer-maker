@@ -91,6 +91,7 @@ class ReportMan {
         short fontHeightInPoints
         boolean bold
         boolean italic
+        boolean wrapText
         short alignment
         short verticalAlignment
         short fillForegroundColor
@@ -476,7 +477,7 @@ class ReportMan {
                 cellStyle.setFont(font)
             }
             //POI STYLE
-            List styleList = ['alignment', 'verticalAlignment', 'fillForegroundColor', 'fillBackgroundColor', 'borderTop', 'borderBottom', 'borderLeft', 'borderRight']
+            List styleList = ['alignment', 'verticalAlignment', 'fillForegroundColor', 'fillBackgroundColor', 'borderTop', 'borderBottom', 'borderLeft', 'borderRight', 'wrapText']
             List fontList = ['color', 'fontHeightInPoints', 'bold', 'italic']
             styleList.each{ String prop ->
                 if ((styleOpt[prop] instanceof Short && styleOpt[prop] > -1)
@@ -577,6 +578,7 @@ class ReportMan {
                 fontHeightInPoints  : (short)ant.fontHeightInPoints(),
                 bold                : ant.bold(),
                 italic              : ant.italic(),
+                wrapText            : ant.wrapText(),
                 alignment           : ant.alignment(),
                 verticalAlignment   : ant.verticalAlignment(),
                 fillForegroundColor : ant.fillForegroundColor(),

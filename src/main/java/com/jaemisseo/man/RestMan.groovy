@@ -3,6 +3,9 @@ package com.jaemisseo.man
 import com.sun.jersey.api.client.Client
 import com.sun.jersey.api.client.ClientResponse
 import com.sun.jersey.api.client.WebResource
+import com.sun.jersey.core.util.MultivaluedMapImpl
+
+import javax.ws.rs.core.MediaType
 
 /**
  * Created by sujkim on 2017-03-10.
@@ -15,12 +18,24 @@ class RestMan {
     static final String DELETE = 'DELETE'
 
     String url = "http://192.168.0.55:19070/erwin_mart9g/getLibraryDepth"
-    String type = "*/*"
-    String method
-    Map headerMap = [:]
-    Map parameterMap = [:]
+    String method = POST
+    String type = MediaType.APPLICATION_FORM_URLENCODED
+    String accept = MediaType.APPLICATION_JSON
+
+    Map<String, List<String>> headerMap = [:]
+    Map<String, List<String>> parameterMap = [:]
 
 
+
+    RestMan setType(String type){
+        this.type = type
+        return this
+    }
+
+    RestMan setAccept(String accept){
+        this.accept = accept
+        return this
+    }
 
     RestMan setMethod(String method){
         this.method = method
@@ -35,7 +50,14 @@ class RestMan {
     }
 
     RestMan addParameter(String key, String value){
-        parameterMap[key] = value
+        if (parameterMap[key]){
+            if (parameterMap[key] instanceof List)
+                parameterMap[key] << value
+            else
+                parameterMap[key] << [parameterMap[key], value]
+        }else{
+            parameterMap[key] = [value]
+        }
         return this
     }
 
@@ -47,7 +69,14 @@ class RestMan {
     }
 
     RestMan addHeader(String key, String value){
-        headerMap[key] = value
+        if (headerMap[key]){
+            if (headerMap[key] instanceof List)
+                headerMap[key] << value
+            else
+                headerMap[key] << [headerMap[key], value]
+        }else{
+            headerMap[key] = [value]
+        }
         return this
     }
 
@@ -56,58 +85,70 @@ class RestMan {
     /**
      * GET
      */
-    def get(String url, String jsonParam) {
-        return request(url, GET, jsonParam)
+    def get(String url, Map paramMap) {
+        return request(url, GET, paramMap)
     }
 
     /**
      * POST
      */
-    def post(String url, String jsonParam) {
-        return request(url, POST, jsonParam)
+    def post(String url, Map paramMap) {
+        return request(url, POST, paramMap)
     }
 
     /**
      * PUT
      */
-    def put(String url, String jsonParam){
-        return request(url, PUT, jsonParam)
+    def put(String url, Map paramMap){
+        return request(url, PUT, paramMap)
     }
 
     /**
      * DELETE
      */
-    def delete(String url, String jsonParam){
-        return request(url, DELETE, jsonParam)
+    def delete(String url, Map paramMap){
+        return request(url, DELETE, paramMap)
     }
 
     /**
      * REQUEST
      */
-    String request(String url, String jsonParam){
-        request(url, jsonParam, method)
+    String request(String url, Map paramMap){
+        return request(url, method, paramMap)
     }
 
-    String request(String url, String jsonParam, String method){
+    String request(String url, String method, Map paramMap){
+        //Generate MultiValueMap
+        return addParameter(paramMap).request(url, method)
+    }
+
+    String request(String url, String method){
+        //Generate MultiValueMap
+        MultivaluedMapImpl paramMultiMap = new MultivaluedMapImpl()
+        paramMultiMap.putAll(parameterMap)
+        return request(url, paramMultiMap, method)
+    }
+
+    String request(String url, MultivaluedMapImpl paramMutliMap, String method){
         String responseString
         try {
             ClientResponse response
             Client client = Client.create()
             WebResource webResource = client.resource(url)
-            WebResource.Builder builder = webResource.type(type)
+            WebResource.Builder builder = webResource.type(type).accept(accept)
             header(builder, headerMap)
 
             //REQUEST
             if (!method)
-                response = builder.post(ClientResponse.class, jsonParam)
+                response = builder.post(ClientResponse.class, paramMutliMap)
             else if (method == GET)
                 response = builder.get(ClientResponse.class)
             else if (method == POST)
-                response = builder.post(ClientResponse.class, jsonParam)
+                response = builder.post(ClientResponse.class, paramMutliMap)
             else if (method == PUT)
-                response = builder.put(ClientResponse.class, jsonParam)
+                response = builder.put(ClientResponse.class, paramMutliMap)
             else if (method == DELETE)
-                response = builder.delete(ClientResponse.class, jsonParam)
+                response = builder.delete(ClientResponse.class, paramMutliMap)
 
             //CHECK ERROR
             checkError(response)
