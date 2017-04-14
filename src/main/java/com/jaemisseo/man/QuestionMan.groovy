@@ -17,6 +17,31 @@ class QuestionMan {
     QuestionSetup gOpt = new QuestionSetup()
     QuestionSetup nowOpt
     String yourAnswer
+    List<String> validAnswerList = []
+    List<String> invalidAnswerList = []
+
+
+    QuestionMan(){
+    }
+
+    QuestionMan(QuestionSetup opt){
+        set(opt)
+    }
+
+    QuestionMan(List<String> validAnswerList){
+        setValidAnswer(validAnswerList)
+    }
+
+    QuestionMan(List<String> validAnswerList, List<String> invalidAnswerList){
+        setValidAnswer(validAnswerList)
+        setInvalidAnswer(invalidAnswerList)
+    }
+
+    QuestionMan(QuestionSetup opt, List<String> validAnswerList, List<String> invalidAnswerList){
+        set(opt)
+        setValidAnswer(validAnswerList)
+        setInvalidAnswer(invalidAnswerList)
+    }
 
     /**
      * SET
@@ -24,6 +49,52 @@ class QuestionMan {
     QuestionMan set(QuestionSetup opt){
         gOpt.merge(opt)
         nowOpt = gOpt
+        return this
+    }
+
+    /**
+     * VALIDLIST
+     */
+    QuestionMan setValidAnswer(String validAnswer){
+        this.validAnswerList = [validAnswer]
+        return this
+    }
+
+    QuestionMan setValidAnswer(List<String> validAnswerList){
+        this.validAnswerList = validAnswerList
+        return this
+    }
+
+    QuestionMan addValidAnswer(String validAnswer){
+        this.validAnswerList << validAnswer
+        return this
+    }
+
+    QuestionMan addValidAnswer(List<String> validAnswerList){
+        this.validAnswerList.addAll(validAnswerList)
+        return this
+    }
+
+    /**
+     * INVALIDLIST
+     */
+    QuestionMan setInvalidAnswer(String invalidAnswer){
+        this.invalidAnswerList = [invalidAnswer]
+        return this
+    }
+
+    QuestionMan setInvalidAnswer(List<String> invalidAnswerList){
+        this.invalidAnswerList = invalidAnswerList
+        return this
+    }
+
+    QuestionMan addInvalidAnswer(String invalidAnswer){
+        this.invalidAnswerList << invalidAnswer
+        return this
+    }
+
+    QuestionMan addInvalidAnswer(List<String> invalidAnswerList){
+        this.invalidAnswerList.addAll(invalidAnswerList)
         return this
     }
 
@@ -83,6 +154,7 @@ class QuestionMan {
 
             //Valid Answer ?
             isOk = (validAnswerClosure && validAnswerClosure(yourAnswer, nowOpt)) || (!validAnswerClosure)
+            isOk = (validAnswerList.contains(yourAnswer) || isOk) && !invalidAnswerList.contains(yourAnswer)
 
             //Check Answer
             println "=> ${yourAnswer}\n"

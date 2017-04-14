@@ -1,6 +1,7 @@
 package com.jaemisseo.man
 
 import com.jaemisseo.man.util.FileSetup
+import com.jaemisseo.man.util.UndoPropertiesObject
 import groovy.json.JsonSlurper
 
 /**
@@ -9,9 +10,16 @@ import groovy.json.JsonSlurper
 class PropMan{
 
     Properties properties = new Properties()
+    Properties lastCommitProperties  = new Properties()
+    List<UndoPropertiesObject> undoStackList = []
+    int headIndex = -1
+
     String nowPath
     String filePath
     Closure beforeGetClosure
+
+
+
 
     PropMan(){
         init()
@@ -437,5 +445,84 @@ class PropMan{
             return object
     }
 
+
+    /**
+     * UNDO MANAGER
+     */
+    PropMan undo(){
+        checkout(headIndex - 1)
+        return this
+    }
+
+    PropMan redo(){
+        checkout(headIndex + 1)
+        return this
+    }
+
+    PropMan checkout(int checkIndex){
+        if (checkIndex < 0){
+            headIndex = -1
+            properties = new Properties()
+            lastCommitProperties = properties.clone()
+
+        }else if (checkIndex == headIndex){
+            properties = lastCommitProperties.clone()
+
+        }else if (undoStackList && -1 < checkIndex && checkIndex < undoStackList.size()){
+            properties = new Properties()
+            properties.putAll(gen(checkIndex))
+            lastCommitProperties = properties.clone()
+            headIndex = checkIndex
+        }
+        return this
+    }
+
+    PropMan commit(){
+        //CASE headIndex is Not Top Index
+        //Delete Greater than headIndex
+        if (isNotHeadLast())
+            undoStackList = (headIndex != -1) ? undoStackList[0..headIndex] : []
+
+        //CASE headIndex is Top Index
+        if (isHeadLast()){
+            undoStackList << new UndoPropertiesObject().gap(lastCommitProperties, properties)
+            headIndex = undoStackList.size() - 1
+            lastCommitProperties = properties.clone()
+        }
+        return this
+    }
+
+    PropMan rollback(){
+        checkout(headIndex)
+        return this
+    }
+
+    Map gen(int index){
+        Map resultMap = [:]
+        List<UndoPropertiesObject> tempStackList
+        if (undoStackList && index < undoStackList.size()){
+            tempStackList = undoStackList[0..index]
+            tempStackList.each{
+                it.insertedMap.each{
+                    resultMap[it.key] = it.value
+                }
+                it.deletedMap.each{
+                    resultMap.remove(it.key)
+                }
+                it.updatedAfterMap.each{
+                    resultMap[it.key] = it.value
+                }
+            }
+        }
+        return resultMap
+    }
+
+    boolean isNotHeadLast(){
+        return (headIndex < undoStackList.size() - 1)
+    }
+
+    boolean isHeadLast(){
+        return (headIndex == undoStackList.size() - 1)
+    }
 
 }
