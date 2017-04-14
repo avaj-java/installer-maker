@@ -16,7 +16,7 @@ import java.sql.SQLException
 class TaskSql extends TaskUtil{
 
     @Override
-    void run(){
+    Integer run(){
 
         //1. Default Setup
         sqlman = new SqlMan()
@@ -58,6 +58,7 @@ class TaskSql extends TaskUtil{
 
         }
 
+        return STATUS_TASK_DONE
     }
 
     @Override

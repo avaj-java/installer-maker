@@ -15,6 +15,14 @@ import install.bean.ReportSetup
  */
 class TaskUtil{
 
+
+
+    public static final Integer STATUS_NOTHING = 0
+    public static final Integer STATUS_TASK_DONE = 1
+    public static final Integer STATUS_TASK_RUN_FAILED = 2
+    public static final Integer STATUS_UNDO_QUESTION = 3
+    public static final Integer STATUS_REDO_QUESTION = 4
+
     public static final String TASK_TAR = "TAR"
     public static final String TASK_ZIP = "ZIP"
     public static final String TASK_JAR = "JAR"
@@ -47,9 +55,12 @@ class TaskUtil{
     FileMan fileman
     QuestionMan qman
 
+    Integer status
     String propertyPrefix = ''
     List reportMapList = []
     List rememberAnswerLineList = []
+    String undoSign = '<'
+    String redoSign = '>'
 
     TaskUtil setPropman(PropMan propman){
         this.propman = propman
@@ -104,8 +115,8 @@ class TaskUtil{
     /**
      * 1. START
      */
-    void start(String propertyPrefix){
-
+    Integer start(String propertyPrefix){
+        status = STATUS_NOTHING
         this.propertyPrefix = propertyPrefix
 
         if ( !checkCondition(propertyPrefix) )
@@ -114,19 +125,29 @@ class TaskUtil{
         descript(propertyPrefix)
 
         try{
-            run()
+            status = run()
+//            switch(status){
+//                case STATUS_UNDO_QUESTION:
+//                    break;
+//
+//                default:
+//                    break;
+//            }
+
         }catch(e){
             throw e
         }finally{
-            report(propertyPrefix)
+            if (status != STATUS_UNDO_QUESTION)
+                report(propertyPrefix)
         }
 
+        return status
     }
 
     /**
      * 2. RUN
      */
-    void run(){
+    Integer run(){
         //TODO: Override And Implement
         println "It is Empty Task. Implement This method."
     }
@@ -217,6 +238,16 @@ class TaskUtil{
             }
         }
         return resultList
+    }
+
+    boolean checkUndoQuestion(String yourAnswer){
+        //'Please Show Preview Question'
+        return yourAnswer.equals(undoSign)
+    }
+
+    boolean checkRedoQuestion(String yourAnswer){
+        //'Please Show Preview Question'
+        return yourAnswer.equals(redoSign)
     }
 
 
@@ -413,4 +444,3 @@ class TaskUtil{
     }
 
 }
-                                                                                                

@@ -10,7 +10,7 @@ import com.jaemisseo.man.util.ConnectionGenerator
 class TaskTestJDBC extends TaskUtil{
 
     @Override
-    void run(){
+    Integer run(){
         //READY
         ConnectionGenerator connGen = new ConnectionGenerator(propman.properties)
         Map previewMap = connGen.generateDataSourceMap()
@@ -51,6 +51,8 @@ class TaskTestJDBC extends TaskUtil{
         list.each{ println it }
 
         logMiddleTitle 'FINISHED CHECK DB'
+
+        return STATUS_TASK_DONE
     }
 
 

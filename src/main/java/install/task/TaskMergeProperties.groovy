@@ -10,7 +10,7 @@ import com.jaemisseo.man.util.FileSetup
 class TaskMergeProperties extends TaskUtil{
 
     @Override
-    void run() {
+    Integer run() {
         //Ready
         String specificPropertiesFilePath   = get('from')
         String sourceFilePath               = get('into')
@@ -54,6 +54,8 @@ class TaskMergeProperties extends TaskUtil{
             println "=> NOTHING TO MERGE\n"
 
         logMiddleTitle('FINISHED MERGE PROPERTIES')
+
+        return STATUS_TASK_DONE
     }
 
 }

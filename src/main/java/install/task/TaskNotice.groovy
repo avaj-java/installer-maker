@@ -9,7 +9,7 @@ import com.jaemisseo.man.VariableMan
 class TaskNotice extends TaskUtil{
 
     @Override
-    void run(){
+    Integer run(){
 
         //Get Message
         String msg = get("msg")
@@ -17,5 +17,6 @@ class TaskNotice extends TaskUtil{
         //Show You Welcome Message
         println msg
 
+        return STATUS_TASK_DONE
     }
 }

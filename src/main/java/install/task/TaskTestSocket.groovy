@@ -9,7 +9,7 @@ import com.jaemisseo.man.SocketMan
 class TaskTestSocket extends TaskUtil{
 
     @Override
-    void run(){
+    Integer run(){
         Integer timeout = get('timeout') ?: 1000
         String charset  = get('charset') ?: 'euc-kr'
         String ip       = get('ip') ?: '127.0.0.1'
@@ -45,6 +45,8 @@ class TaskTestSocket extends TaskUtil{
 
         println "<RESPONSE (Sorry, Not Supported)>\n${response}"
         logMiddleTitle 'FINISHED CHECK SOCKET'
+
+        return STATUS_TASK_DONE
     }
 
 //    boolean testSocketServer(){

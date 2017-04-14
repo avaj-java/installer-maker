@@ -11,7 +11,7 @@ import install.bean.ReportSetup
 class TaskFileCopy extends TaskUtil{
 
     @Override
-    void run(){
+    Integer run(){
 
         //Ready
         String filePath = getFilePath('file.path')
@@ -22,6 +22,7 @@ class TaskFileCopy extends TaskUtil{
         println "<COPY>"
         FileMan.copy(filePath, destPath, fileSetup)
 
+        return STATUS_TASK_DONE
     }
 
 }

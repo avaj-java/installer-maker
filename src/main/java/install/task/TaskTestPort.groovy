@@ -8,7 +8,7 @@ import com.jaemisseo.man.PropMan
 class TaskTestPort extends TaskUtil{
 
     @Override
-    void run(){
+    Integer run(){
         //Ready
         def rangeFrom   = (get('port') ?: get('from') ?: 0) as int
         def rangeTo     = (get('to') ?: rangeFrom) as int
@@ -23,6 +23,8 @@ class TaskTestPort extends TaskUtil{
         logMiddleTitle "START CHECK PORT (${rangeFrom}${(rangeFrom!=rangeTo)?' to '+rangeTo:''})"
         Map portMap = getUsingPortMap(rangeFrom, rangeTo)
         println "\n - Port Count (You Can Use): ${portMap.findAll{ !it.value }.size()}"
+
+        return STATUS_TASK_DONE
     }
 
 

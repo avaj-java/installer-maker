@@ -14,11 +14,12 @@ class JobInstaller extends JobUtil{
     JobInstaller(PropMan propman) {
         //Job Setup
         levelNamesProperty = 'i.level'
-        levelNamePrefix = 'i'
+        executorNamePrefix = 'i'
+        propertiesFileName = 'installer.properties'
 
         this.propman = propman
         this.varman = new VariableMan(propman.properties)
-        parsePropMan(propman, varman, levelNamePrefix)
+        parsePropMan(propman, varman, executorNamePrefix)
         setBeforeGetProp(propman, varman)
         this.gOpt = new InstallerGlobalOption().merge(new InstallerGlobalOption(
                 fileSetup                  : genGlobalFileSetup(),
@@ -36,9 +37,9 @@ class JobInstaller extends JobUtil{
         ReportSetup reportSetup = gOpt.reportSetup
 
         //Each level by level
-        eachLevel(levelNamesProperty, levelNamePrefix, 'installer.properties'){ String levelName ->
+        eachLevel{ String propertyPrefix ->
             try{
-                runTaskByPrefix("${levelNamePrefix}.${levelName}.")
+                return runTaskByPrefix("${propertyPrefix}")
             }catch(e){
                 //Write Report
                 writeReport(reportMapList, reportSetup)

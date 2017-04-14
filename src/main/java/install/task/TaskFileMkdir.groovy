@@ -10,7 +10,7 @@ import com.jaemisseo.man.util.FileSetup
 class TaskFileMkdir extends TaskUtil{
 
     @Override
-    void run(){
+    Integer run(){
 
         //Ready
         String destPath = getFilePath('dest.path')
@@ -21,6 +21,7 @@ class TaskFileMkdir extends TaskUtil{
         println "<MKDIR>"
         FileMan.mkdirs(destPath, buildStructureMap)
 
+        return STATUS_TASK_DONE
     }
 
 }

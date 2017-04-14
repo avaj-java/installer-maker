@@ -8,7 +8,7 @@ import com.jaemisseo.man.PropMan
 class TaskExec extends TaskUtil{
 
     @Override
-    void run(){
+    Integer run(){
 
         //Ready
         String shFilePath = getFilePath('sh.file.path')
@@ -37,6 +37,7 @@ class TaskExec extends TaskUtil{
             throw e
         }
 
+        return STATUS_TASK_DONE
     }
 
 }

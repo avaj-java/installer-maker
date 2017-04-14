@@ -10,7 +10,7 @@ import com.jaemisseo.man.util.FileSetup
 class TaskFileTar extends TaskUtil{
 
     @Override
-    void run(){
+    Integer run(){
 
         //Ready
         String filePath = getFilePath('file.path')
@@ -21,6 +21,7 @@ class TaskFileTar extends TaskUtil{
         println "<TAR>"
         FileMan.tar(filePath, destPath, fileSetup)
 
+        return STATUS_TASK_DONE
     }
 
 }

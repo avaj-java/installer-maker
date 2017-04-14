@@ -8,8 +8,9 @@ import com.jaemisseo.man.PropMan
 class TaskTestGroovyRange extends TaskUtil{
 
     @Override
-    void run(){
+    Integer run(){
         println getLevelList("range").join(', ')
+        return STATUS_TASK_DONE
     }
 
 

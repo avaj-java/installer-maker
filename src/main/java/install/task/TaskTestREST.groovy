@@ -15,7 +15,7 @@ class TaskTestREST extends TaskUtil{
 
 
     @Override
-    void run(){
+    Integer run(){
         String url      = get('url')
         String method   = get('method') ?: "POST"
         String type     = get('type')
@@ -48,6 +48,8 @@ class TaskTestREST extends TaskUtil{
         println "<RESPONSE>\n${response}"
 
         logMiddleTitle 'FINISHED CHECK REST'
+
+        return STATUS_TASK_DONE
     }
 
 }

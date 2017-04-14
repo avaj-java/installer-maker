@@ -36,20 +36,38 @@ class JobUtil extends TaskUtil{
     public static final String JOB_INSTALLER = "INSTALLER"
 
     String levelNamesProperty = ''
-    String levelNamePrefix = ''
+    String executorNamePrefix = ''
+    String propertiesFileName = ''
     List validTaskList = []
     List invalidTaskList = []
     def gOpt
 
+    Integer taskResultStatus
+    List<String> undoableList = [TASK_Q, TASK_Q_CHOICE, TASK_Q_YN, TASK_SET, TASK_NOTICE]
+    List<String> undoMoreList = [TASK_SET, TASK_NOTICE]
 
 
     //Do level by level
-    protected void eachLevel(String levelNamesProperty, String executorName, String fileName, Closure closure){
+    protected void eachLevel(Closure closure){
         //1. Try to get levels from level property
-        List<String> levelList = getSpecificLevelList(levelNamesProperty) ?: geLinetOrderedLevelList(fileName, executorName)
+        List<String> levelList = getSpecificLevelList(levelNamesProperty) ?: geLinetOrderedLevelList(propertiesFileName, executorNamePrefix)
+        List<String> taskList = levelList.collect{ getTaskName("${executorNamePrefix}.${it}.") }
+        List<String> prefixList = levelList.collect{ "${executorNamePrefix}.${it}." }
+
         //3. Do Each Tasks
-        levelList.each{ String levelName ->
-            closure(levelName)
+        commit()
+        for (int i=0; i<levelList.size(); i++){
+            String levelName = levelList[i]
+            String propertyPrefix = "${executorNamePrefix}.${levelName}."
+            //- Do Task
+            taskResultStatus = closure(propertyPrefix)
+            //- Check Status
+            if (taskResultStatus == TaskUtil.STATUS_UNDO_QUESTION)
+                i = undo(taskList, prefixList, i)
+            else if (taskResultStatus == TaskUtil.STATUS_REDO_QUESTION)
+                i = redo(taskList, prefixList, i)
+            else
+                commit()
         }
     }
 
@@ -92,18 +110,82 @@ class JobUtil extends TaskUtil{
 
 
 
-
-
-    void runTaskByPrefix(String propertyPrefix) {
-        String taskName = getString("${propertyPrefix}task")?.trim()?.toUpperCase()
-        runTask(taskName, propertyPrefix)
+    /**
+     * UNDO
+     */
+    int undo(List taskList, List prefixList, int i){
+        i -= 1
+        if (undoableList.contains(taskList[i])){
+            propman.undo()
+            while (i > 0 && (undoMoreList.contains(taskList[i]) || !checkCondition(prefixList[i])) ){
+                i -= 1
+                propman.undo()
+            }
+            i -= 1
+            if (i <= -1){
+                i = -1
+                propman.checkout(0)
+                //First is undoMore, then auto-redo
+                if (undoMoreList.contains(taskList[0])){
+                    i += 1
+                    propman.redo()
+                    while ( propman.isNotHeadLast() && undoableList.contains(taskList[i+1]) && (undoMoreList.contains(taskList[i+1]) || !checkCondition(prefixList[i+1])) ){
+                        i += 1
+                        propman.redo()
+                    }
+                }
+                println "It Can not undo"
+            }
+        }else{
+            if (i == -1)
+                println "No more undo"
+            else
+                println "It Can not undo"
+        }
+        return i
     }
 
-    void runTask(String taskName){
-        runTask(taskName, '')
+    /**
+     * REDO
+     */
+    int redo(List taskList, List prefixList, int i){
+        if (propman.isNotHeadLast()){
+            propman.redo()
+            while ( propman.isNotHeadLast() && undoableList.contains(taskList[i+1]) && (undoMoreList.contains(taskList[i+1]) || !checkCondition(prefixList[i+1])) ){
+                i += 1
+                propman.redo()
+            }
+        }else{
+            i -= 1
+            propman.rollback()
+            println "It Can not redo more"
+        }
+        return i
     }
 
-    void runTask(String taskName, String propertyPrefix){
+    /**
+     * COMMIT
+     */
+    void commit(){
+        propman.commit()
+    }
+
+
+
+    String getTaskName(String propertyPrefix){
+        return getString("${propertyPrefix}task")?.trim()?.toUpperCase()
+    }
+
+    Integer runTaskByPrefix(String propertyPrefix) {
+        String taskName = getTaskName(propertyPrefix)
+        return runTask(taskName, propertyPrefix)
+    }
+
+    Integer runTask(String taskName){
+        return runTask(taskName, '')
+    }
+
+    Integer runTask(String taskName, String propertyPrefix){
         //Check Valid Task
         if (!taskName)
             throw new Exception(" 'No Task Name. ${propertyPrefix}task=???. Please Check Task.' ")
@@ -113,82 +195,83 @@ class JobUtil extends TaskUtil{
         //Run Task
         switch (taskName){
             case TaskUtil.TASK_NOTICE:
-                new TaskNotice().setPropman(propman).start(propertyPrefix)
+                return new TaskNotice().setPropman(propman).start(propertyPrefix)
                 break
             case TaskUtil.TASK_Q:
-                new TaskQuestion().setPropman(propman).setRememberAnswerLineList(rememberAnswerLineList).start(propertyPrefix)
+                return new TaskQuestion().setPropman(propman).setRememberAnswerLineList(rememberAnswerLineList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_Q_CHOICE:
-                new TaskQuestionChoice().setPropman(propman).setRememberAnswerLineList(rememberAnswerLineList).start(propertyPrefix)
+                return new TaskQuestionChoice().setPropman(propman).setRememberAnswerLineList(rememberAnswerLineList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_Q_YN:
-                new TaskQuestionYN().setPropman(propman).setRememberAnswerLineList(rememberAnswerLineList).start(propertyPrefix)
+                return new TaskQuestionYN().setPropman(propman).setRememberAnswerLineList(rememberAnswerLineList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_SET:
-                new TaskSet().setPropman(propman).start(propertyPrefix)
+                return new TaskSet().setPropman(propman).start(propertyPrefix)
                 break
 
             case TaskUtil.TASK_TAR:
-                new TaskFileTar().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
+                return new TaskFileTar().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_ZIP:
-                new TaskFileZip().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
+                return new TaskFileZip().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_JAR:
-                new TaskFileJar().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
+                return new TaskFileJar().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
 
             case TaskUtil.TASK_UNTAR:
-                new TaskFileUntar().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
+                return new TaskFileUntar().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_UNZIP:
-                new TaskFileUnzip().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
+                return new TaskFileUnzip().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_UNJAR:
-                new TaskFileUnjar().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
+                return new TaskFileUnjar().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
 
             case TaskUtil.TASK_REPLACE:
-                new TaskFileReplace().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
+                return new TaskFileReplace().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_COPY:
-                new TaskFileCopy().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
+                return new TaskFileCopy().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_MKDIR:
-                new TaskFileMkdir().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
+                return new TaskFileMkdir().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
 
             case TaskUtil.TASK_EXEC:
-                new TaskExec().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
+                return new TaskExec().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_SQL:
-                new TaskSql().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
+                return new TaskSql().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_MERGE_ROPERTIES:
-                new TaskMergeProperties().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
+                return new TaskMergeProperties().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_EMAIL://Not Supported Yet
-                new TaskTestEMail().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
+                return new TaskTestEMail().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_SOCKET:
-                new TaskTestSocket().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
+                return new TaskTestSocket().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_REST:
-                new TaskTestREST().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
+                return new TaskTestREST().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_JDBC:
-                new TaskTestJDBC().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
+                return new TaskTestJDBC().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_GROOVYRANGE:
-                new TaskTestGroovyRange().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
+                return new TaskTestGroovyRange().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_PORT:
-                new TaskTestPort().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
+                return new TaskTestPort().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
 
             default :
                 break
         }
+        return TaskUtil.STATUS_TASK_RUN_FAILED
     }
 
 }

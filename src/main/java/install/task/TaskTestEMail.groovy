@@ -9,7 +9,7 @@ import com.jaemisseo.man.RestMan
 class TaskTestEMail extends TaskUtil{
 
     @Override
-    void run(){
+    Integer run(){
 
         String host         = get('host')
         String port         = get('port')
@@ -34,6 +34,8 @@ class TaskTestEMail extends TaskUtil{
         println "<RESPONSE>\n${}"
 
         logMiddleTitle 'FINISHED CHECK REST'
+
+        return STATUS_TASK_DONE
     }
 
 }

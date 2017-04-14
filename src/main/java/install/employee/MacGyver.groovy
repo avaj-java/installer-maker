@@ -5,6 +5,7 @@ import com.jaemisseo.man.ReportMan
 import com.jaemisseo.man.VariableMan
 import install.bean.ReportSetup
 import install.job.JobUtil
+import install.task.TaskUtil
 
 /**
  * Created by sujkim on 2017-02-17.
@@ -13,11 +14,12 @@ class MacGyver extends JobUtil {
 
     MacGyver(PropMan propman){
         levelNamesProperty = 'macgyver.level'
-        levelNamePrefix = 'm'
+        executorNamePrefix = 'm'
+        propertiesFileName = 'macgyver.properties'
 
         this.propman = propman
         this.varman = new VariableMan(propman.properties)
-        parsePropMan(propman, varman, levelNamePrefix)
+        parsePropMan(propman, varman, executorNamePrefix)
         setBeforeGetProp(propman, varman)
     }
 
@@ -26,7 +28,7 @@ class MacGyver extends JobUtil {
     /**
      * RUN
      */
-    void run(){
+    Integer run(){
         List taskMap = [
             TASK_TAR, TASK_ZIP, TASK_JAR, TASK_UNTAR, TASK_UNZIP, TASK_UNJAR,
             TASK_MKDIR, TASK_COPY, TASK_GROOVYRANGE, TASK_MERGE_ROPERTIES, TASK_REPLACE, TASK_SQL,
@@ -39,6 +41,8 @@ class MacGyver extends JobUtil {
                 runTask(taskCode)
         }
 
+        return TaskUtil.STATUS_TASK_DONE
+
     }
 
 
@@ -50,9 +54,9 @@ class MacGyver extends JobUtil {
         ReportSetup reportSetup = genMergedReportSetup('')
 
         //Each level by level
-        eachLevel(levelNamesProperty, levelNamePrefix, 'macgyver.properties'){ String levelName ->
+        eachLevel{ String propertyPrefix ->
             try{
-                runTaskByPrefix("${levelNamePrefix}.${levelName}.")
+                return runTaskByPrefix("${propertyPrefix}")
             }catch(e){
                 //Write Report
                 writeReport(reportMapList, reportSetup)

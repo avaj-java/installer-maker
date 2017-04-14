@@ -10,7 +10,7 @@ import com.jaemisseo.man.util.FileSetup
 class TaskFileUnjar extends TaskUtil{
 
     @Override
-    void run(){
+    Integer run(){
 
         //Ready
         String filePath = getFilePath('file.path')
@@ -21,6 +21,7 @@ class TaskFileUnjar extends TaskUtil{
         println "<UNJAR>"
         FileMan.unjar(filePath, destPath, fileSetup)
 
+        return STATUS_TASK_DONE
     }
 
 }

@@ -10,9 +10,11 @@ import com.jaemisseo.man.util.QuestionSetup
 class TaskSet extends TaskUtil{
 
     @Override
-    void run(){
+    Integer run(){
         //Set Some Property
         setPropValue()
+
+        return STATUS_TASK_DONE
     }
 
 }

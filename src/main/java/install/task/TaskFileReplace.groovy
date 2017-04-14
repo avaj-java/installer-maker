@@ -10,7 +10,7 @@ import com.jaemisseo.man.util.FileSetup
 class TaskFileReplace extends TaskUtil{
 
     @Override
-    void run(){
+    Integer run(){
 
         //Ready
         List<String> filePathList = getFilePathList('file.path')
@@ -33,6 +33,7 @@ class TaskFileReplace extends TaskUtil{
                         .report()
         }
 
+        return STATUS_TASK_DONE
     }
 
 }

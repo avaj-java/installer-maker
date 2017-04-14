@@ -16,11 +16,12 @@ class JobBuilder extends JobUtil{
     JobBuilder(PropMan propman){
         //Job Setup
         levelNamesProperty = 'b.level'
-        levelNamePrefix = 'b'
+        executorNamePrefix = 'b'
+        propertiesFileName = 'builder.properties'
 
         this.propman = propman
         this.varman = new VariableMan(propman.properties)
-        parsePropMan(propman, varman, levelNamePrefix)
+        parsePropMan(propman, varman, executorNamePrefix)
         setBeforeGetProp(propman, varman)
         this.gOpt = new BuilderGlobalOption().merge(new BuilderGlobalOption(
             fileSetup           : genGlobalFileSetup(),
@@ -107,9 +108,9 @@ class JobBuilder extends JobUtil{
         setLibAndBin()
 
         //2. Each level by level
-        eachLevel(levelNamesProperty, levelNamePrefix, 'builder.properties'){ String levelName ->
+        eachLevel{ String propertyPrefix ->
             try{
-                runTaskByPrefix("${levelNamePrefix}.${levelName}.")
+                return runTaskByPrefix("${propertyPrefix}")
             }catch(e){
                 //Write Report
                 writeReport(reportMapList, reportSetup)
