@@ -241,7 +241,10 @@ class FileMan {
         boolean isOk = false
         File dir = new File(path)
         if (!dir.exists()){
-            isOk = new File(path).mkdirs()
+            isOk = dir.mkdirs()
+            dir.setReadable(true, false)
+            dir.setExecutable(true, false)
+            dir.setWritable(true, false)
             println "Created Directory: ${dir.path}"
         }
         return isOk
@@ -441,7 +444,7 @@ class FileMan {
         try{
             file.withWriter(opt.encoding){ out ->
                 // METHOD A. Auto LineBreak
-                if (opt.modeAutoLineBreak)
+                if (!opt.lineBreak)
                     fileContentLineList.each{ String oneLine -> out.println oneLine }
                 // METHOD B. Custom LineBreak
                 else

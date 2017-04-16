@@ -5,13 +5,12 @@ package com.jaemisseo.man.util
  */
 class FileSetup extends Option<FileSetup> {
 
-    Boolean modeAutoLineBreak = true
     Boolean modeAutoMkdir = false
     Boolean modeAutoBackup = false
     Boolean modeAutoOverWrite = false
 
     String encoding = 'utf-8'
-    String lineBreak = System.getProperty("line.seperator")
+    String lineBreak
     String lastLineBreak = ''
     String backupPath
 

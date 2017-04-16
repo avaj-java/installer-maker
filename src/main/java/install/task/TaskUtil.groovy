@@ -323,7 +323,6 @@ class TaskUtil{
                 backupPath          : propman.get("${propertyPrefix}file.backup.path"),
                 lineBreak           : propman.get("${propertyPrefix}file.linebreak"),
                 lastLineBreak       : propman.get("${propertyPrefix}file.last.linebreak"),
-                modeAutoLineBreak   : propman.getBoolean("${propertyPrefix}mode.auto.linebreak"),
                 modeAutoBackup      : propman.getBoolean("${propertyPrefix}mode.auto.backup"),
                 modeAutoMkdir       : propman.getBoolean("${propertyPrefix}mode.auto.mkdir"),
                 modeAutoOverWrite   : propman.getBoolean("${propertyPrefix}mode.auto.overwrite"),

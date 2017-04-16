@@ -37,6 +37,7 @@ class JobBuilder extends JobUtil{
             buildInstallerHome  : getFilePath('build.installer.home'),
             modeAutoRsp         : getFilePath('mode.auto.rsp'),
             modeAutoZip         : getFilePath('mode.auto.zip'),
+            modeAutoTar         : getFilePath('mode.auto.tar'),
             propertiesDir       : getString('properties.dir') ?: './',
         ))
     }
@@ -165,6 +166,7 @@ class JobBuilder extends JobUtil{
 
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
+        FileSetup fileSetupForLin = fileSetup.clone([lineBreak:'\n'])
         String buildTempDir = gOpt.buildTempDir
         String buildDistDir = gOpt.buildDistDir
         String buildInstallerHome = gOpt.buildInstallerHome
@@ -219,7 +221,7 @@ class JobBuilder extends JobUtil{
 
         //3. Gen bin/install(sh)
         new FileMan()
-        .set(fileSetup)
+        .set(fileSetupForLin)
         .readResource(binInstallShSourcePath)
         .replaceLine([
             'REL_PATH_BIN_TO_HOME=' : "REL_PATH_BIN_TO_HOME=${binToHomeRelPath}",
@@ -244,7 +246,7 @@ class JobBuilder extends JobUtil{
 
         //5. Gen bin/installer(sh)
         new FileMan()
-        .set(fileSetup)
+        .set(fileSetupForLin)
         .readResource(binInstallerShSourcePath)
         .replaceLine([
             'REL_PATH_BIN_TO_HOME=' : "REL_PATH_BIN_TO_HOME=${binToHomeRelPath}",
@@ -264,7 +266,7 @@ class JobBuilder extends JobUtil{
     }
 
     /**
-     * Distribute Zip
+     * Distribute ZIP
      * From: ${build.installer.home}
      *   To: ${build.dist.dir}
      */
@@ -284,6 +286,29 @@ class JobBuilder extends JobUtil{
 
         //Zip
         FileMan.zip(buildInstallerHome, "${buildDistDir}/${installerName}.zip", fileSetup)
+    }
+
+    /**
+     * Distribute TAR
+     * From: ${build.installer.home}
+     *   To: ${build.dist.dir}
+     */
+    void tar(){
+        if (!propman.getBoolean('mode.auto.tar'))
+            return
+
+        //Ready
+        FileSetup fileSetup = gOpt.fileSetup
+        String installerName = gOpt.installerName
+        String buildTempDir = gOpt.buildTempDir
+        String buildDistDir = gOpt.buildDistDir
+        String buildInstallerHome = gOpt.buildInstallerHome
+
+        //Log
+        logBigTitle('AUTO TAR')
+
+        //Zip
+        FileMan.tar(buildInstallerHome, "${buildDistDir}/${installerName}.tar", fileSetup)
     }
 
 }

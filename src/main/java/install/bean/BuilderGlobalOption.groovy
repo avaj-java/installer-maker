@@ -18,6 +18,8 @@ class BuilderGlobalOption extends Option{
     String buildInstallerHome
     String modeAutoRsp
     String modeAutoZip
+    String modeAutoTar
+
     String propertiesDir
 
     FileSetup fileSetup

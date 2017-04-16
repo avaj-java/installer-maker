@@ -92,8 +92,9 @@ class Start {
             builder.build()
             //2. Make a Response Form
             receptionist.buildForm()
-            //3. Zip
+            //3. Zip and Tar
             builder.zip()
+            builder.tar()
         }
 
         /**
