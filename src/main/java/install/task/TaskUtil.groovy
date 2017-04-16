@@ -126,13 +126,6 @@ class TaskUtil{
 
         try{
             status = run()
-//            switch(status){
-//                case STATUS_UNDO_QUESTION:
-//                    break;
-//
-//                default:
-//                    break;
-//            }
 
         }catch(e){
             throw e
@@ -183,7 +176,10 @@ class TaskUtil{
         //TODO: Override And Implement
     }
 
-
+    List<String> buildForm(String propertyPrefix){
+        //TODO: Override And Implement
+        // To Build 'Question User Response Form'
+    }
 
 
 
@@ -407,14 +403,29 @@ class TaskUtil{
     /**
      * QuestionSetup
      */
-    protected QuestionSetup genQuestionSetup(){
+    protected QuestionSetup genQuestionSetup(String propertyPrefix){
         return new QuestionSetup(
             question            : propman.get("${propertyPrefix}question"),
-            recommandAnswer     : propman.get("${propertyPrefix}answer.default"),
+            answer              : propman.getString("${propertyPrefix}answer"),
+            recommandAnswer     : propman.getString("${propertyPrefix}answer.default"),
+            modeOnlyInteractive : propman.getBoolean("${propertyPrefix}mode.only.interactive"),
+            validation          : propman.parse("${propertyPrefix}answer.validation"),
             descriptionMap      : propman.parse("${propertyPrefix}answer.description.map"),
             valueMap            : propman.parse("${propertyPrefix}answer.value.map"),
-            validation          : propman.parse("${propertyPrefix}answer.validation"),
         )
+    }
+
+    protected QuestionSetup genGlobalQuestionSetup(){
+        QuestionSetup defaultOpt = new QuestionSetup()
+        QuestionSetup globalOpt = genQuestionSetup('')
+        return defaultOpt.merge(globalOpt)
+    }
+
+    protected QuestionSetup genMergedQuestionSetup(){
+        QuestionSetup defaultOpt = new QuestionSetup()
+        QuestionSetup globalOpt = genQuestionSetup('')
+        QuestionSetup localOpt = genQuestionSetup(propertyPrefix)
+        return defaultOpt.merge(globalOpt).merge(localOpt)
     }
 
     /**
@@ -436,7 +447,7 @@ class TaskUtil{
         return defaultOpt.merge(globalOpt)
     }
 
-    protected ReportSetup genMergedReportSetup(String propertyPrefix){
+    protected ReportSetup genMergedReportSetup(){
         ReportSetup defaultOpt = new ReportSetup()
         ReportSetup globalOpt = genReportSetup('')
         ReportSetup localOpt = genReportSetup(propertyPrefix)

@@ -37,7 +37,7 @@ class JobInstaller extends JobUtil{
         ReportSetup reportSetup = gOpt.reportSetup
 
         //Each level by level
-        eachLevel{ String propertyPrefix ->
+        eachLevelForTask{ String propertyPrefix ->
             try{
                 return runTaskByPrefix("${propertyPrefix}")
             }catch(e){

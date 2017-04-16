@@ -10,6 +10,7 @@ class ReceptionistGlobalOption extends Option{
 
     Boolean modeRemember
     String rememberFilePath
+    String responseFilePath
 
     FileSetup rememberFileSetup
     FileSetup fileSetup

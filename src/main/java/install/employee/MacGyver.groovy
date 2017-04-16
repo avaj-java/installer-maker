@@ -51,10 +51,10 @@ class MacGyver extends JobUtil {
      */
     void doSomething(){
 
-        ReportSetup reportSetup = genMergedReportSetup('')
+        ReportSetup reportSetup = genGlobalReportSetup()
 
         //Each level by level
-        eachLevel{ String propertyPrefix ->
+        eachLevelForTask{ String propertyPrefix ->
             try{
                 return runTaskByPrefix("${propertyPrefix}")
             }catch(e){

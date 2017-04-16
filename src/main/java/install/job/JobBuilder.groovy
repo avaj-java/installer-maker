@@ -30,10 +30,13 @@ class JobBuilder extends JobUtil{
             installerName            : getString('installer.name') ?: 'installer',
             installerHomeToLibRelPath: getString('installer.home.to.lib.relpath') ?: './lib',
             installerHomeToBinRelPath: getString('installer.home.to.bin.relpath') ?: './bin',
+            installerHomeToRspRelPath: getString('installer.home.to.rsp.relpath') ?: './rsp',
             buildDir            : getFilePath('build.dir'),
             buildTempDir        : getFilePath('build.temp.dir'),
             buildDistDir        : getFilePath('build.dist.dir'),
             buildInstallerHome  : getFilePath('build.installer.home'),
+            modeAutoRsp         : getFilePath('mode.auto.rsp'),
+            modeAutoZip         : getFilePath('mode.auto.zip'),
             propertiesDir       : getString('properties.dir') ?: './',
         ))
     }
@@ -104,11 +107,11 @@ class JobBuilder extends JobUtil{
 
         ReportSetup reportSetup = gOpt.reportSetup
 
-        //1. Gen Starter
-        setLibAndBin()
+        //1. Gen Starter and Response File
+        genLibAndBin()
 
         //2. Each level by level
-        eachLevel{ String propertyPrefix ->
+        eachLevelForTask{ String propertyPrefix ->
             try{
                 return runTaskByPrefix("${propertyPrefix}")
             }catch(e){
@@ -117,10 +120,6 @@ class JobBuilder extends JobUtil{
                 throw e
             }
         }
-
-        //3. Distribute Zip
-        logBigTitle('AUTO ZIP')
-        distributeZip()
 
         //Write Report
         writeReport(reportMapList, reportSetup)
@@ -162,7 +161,7 @@ class JobBuilder extends JobUtil{
      *  2. Generate Lib
      *  3. Generate Bin
      */
-    private void setLibAndBin(){
+    private void genLibAndBin(){
 
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
@@ -269,13 +268,19 @@ class JobBuilder extends JobUtil{
      * From: ${build.installer.home}
      *   To: ${build.dist.dir}
      */
-    void distributeZip(){
+    void zip(){
+        if (!propman.getBoolean('mode.auto.zip'))
+            return
+
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
         String installerName = gOpt.installerName
         String buildTempDir = gOpt.buildTempDir
         String buildDistDir = gOpt.buildDistDir
         String buildInstallerHome = gOpt.buildInstallerHome
+
+        //Log
+        logBigTitle('AUTO ZIP')
 
         //Zip
         FileMan.zip(buildInstallerHome, "${buildDistDir}/${installerName}.zip", fileSetup)

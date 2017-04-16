@@ -5,6 +5,10 @@ import com.jaemisseo.man.PropMan
 import com.jaemisseo.man.VariableMan
 import com.jaemisseo.man.util.FileSetup
 import install.bean.ReceptionistGlobalOption
+import install.task.TaskQuestion
+import install.task.TaskQuestionChoice
+import install.task.TaskQuestionYN
+import install.task.TaskUtil
 
 /**
  * Created by sujkim on 2017-02-17.
@@ -25,21 +29,89 @@ class JobReceptionist extends JobUtil{
         this.gOpt = new ReceptionistGlobalOption().merge(new ReceptionistGlobalOption(
                 modeRemember        : getBoolean("mode.remember.answer"),
                 rememberFilePath    : getString("remember.answer.file.path"),
-                rememberFileSetup   : genOtherFileSetup("remember.answer.")
+                rememberFileSetup   : genOtherFileSetup("remember.answer."),
+                responseFilePath    : getString("response.file.path"),
         ))
     }
 
+    /**
+     * BUILD FORM
+     */
+    /**
+     * Generate Response File
+     * 1. Load receptionist.properties
+     * 2. Gen install.rsp
+     */
+    void buildForm(){
+        if (!propman.getBoolean('mode.auto.rsp'))
+            return
 
+        List<String> allLineList = []
+
+        logBigTitle('AUTO CREATE RESPONSE FILE')
+
+        //Each level by level
+        eachLevel{ String propertyPrefix ->
+            String taskName = getTaskName(propertyPrefix)
+            //Check Valid Task
+            if (!taskName)
+                throw new Exception(" 'No Task Name. ${propertyPrefix}task=???. Please Check Task.' ")
+            if ( (validTaskList && !validTaskList.contains(taskName)) || (invalidTaskList && invalidTaskList.contains(taskName)) )
+                throw new Exception(" 'Sorry, This is Not my task, [${taskName}]. I Can Not do this.' ")
+
+            //Run Task
+            List<String> lineList = []
+            switch (taskName){
+                case TaskUtil.TASK_Q:
+                    lineList.addAll( new TaskQuestion().setPropman(propman).buildForm(propertyPrefix) )
+                    break
+                case TaskUtil.TASK_Q_CHOICE:
+                    lineList.addAll( new TaskQuestionChoice().setPropman(propman).buildForm(propertyPrefix) )
+                    break
+                case TaskUtil.TASK_Q_YN:
+                    lineList.addAll( new TaskQuestionYN().setPropman(propman).buildForm(propertyPrefix) )
+                    break
+
+                default :
+                    break
+            }
+
+            //Add One Question into Form
+            if (lineList){
+                List editingList = lineList.collect{ "# $it" }
+                editingList.add(0, "#########################")
+                editingList << "#########################"
+                editingList << "${propertyPrefix}answer="
+                editingList << ""
+                allLineList.addAll(editingList)
+            }
+        }
+
+        //Make a Response File
+        String buildInstallerHome = getString('build.installer.home')
+        String homeToRspRelPath = getString('installer.home.to.rsp.relpath')
+        String rspDestPath = FileMan.getFullPath(buildInstallerHome, homeToRspRelPath)
+        String rspInstallRspDestPath = "${rspDestPath}/install.rsp"
+        FileMan.write(rspInstallRspDestPath, allLineList, true)
+    }
 
     /**
      * ASK
      */
     void ask(){
+        //0. Check Response File
+        if (checkResponseFile()){
+            propman.merge(getResponsePropMan())
+            println '///// Add Response File Answer'
+            println propman.get('a.program.answer')
+        }
+
+
         //1. READ ANSWER
         readRemeber()
 
         //2. Each level by level
-        eachLevel{ String propertyPrefix ->
+        eachLevelForTask{ String propertyPrefix ->
             return runTaskByPrefix("${propertyPrefix}")
         }
 
@@ -47,6 +119,25 @@ class JobReceptionist extends JobUtil{
         writeRemember()
     }
 
+
+
+    boolean checkResponseFile(){
+        String responseFilePath = gOpt.responseFilePath
+        if (responseFilePath){
+            if (new File(responseFilePath).exists()){
+                return true
+            }else{
+                println " < Failed > Load Response File, Does not exists file - ${responseFilePath}"
+                System.exit(0)
+            }
+        }
+        return false
+    }
+
+    PropMan getResponsePropMan(){
+        String responseFilePath = gOpt.responseFilePath
+        return new PropMan(responseFilePath)
+    }
 
 
     /**

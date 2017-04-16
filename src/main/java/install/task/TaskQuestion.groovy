@@ -13,7 +13,7 @@ class TaskQuestion extends TaskUtil{
 
         //Get Properties
         qman = new QuestionMan().setValidAnswer([undoSign, redoSign])
-        QuestionSetup opt = genQuestionSetup()
+        QuestionSetup opt = genMergedQuestionSetup()
 
         //Ask Question
         //Get Answer
@@ -36,6 +36,19 @@ class TaskQuestion extends TaskUtil{
         setPropValue()
 
         return STATUS_TASK_DONE
+    }
+
+
+
+    /**
+     * BUILD FORM
+     */
+    List<String> buildForm(String propertyPrefix){
+        this.propertyPrefix = propertyPrefix
+        qman = new QuestionMan().setValidAnswer([undoSign, redoSign])
+        QuestionSetup opt = genMergedQuestionSetup()
+
+        return (!opt.modeOnlyInteractive) ? qman.genQuestion(opt) : []
     }
 
 }

@@ -63,6 +63,7 @@ class Start {
         if (prop['init']){
             propmanForBuilder.merge(prop)
             new JobBuilder(propmanForBuilder).init()
+            System.exit(0)
         }
 
         ///// clean
@@ -76,11 +77,23 @@ class Start {
 
         ///// build
         if (prop['build'] || prop['b']){
+            //0. New Instance
+            // - Builder
             propmanForBuilder.merge("${propertiesDir}/builder.properties")
                              .merge(prop)
                              .merge(['builder.home': builderHome])
                              .mergeNew(propmanDefault)
-            new JobBuilder(propmanForBuilder).build()
+            JobBuilder builder = new JobBuilder(propmanForBuilder)
+            // - Receptionist
+            propmanForReceptionist.merge("${propertiesDir}/receptionist.properties")
+                                  .mergeNew(propmanForBuilder)
+            JobReceptionist receptionist = new JobReceptionist(propmanForReceptionist)
+            //1. Build
+            builder.build()
+            //2. Make a Response Form
+            receptionist.buildForm()
+            //3. Zip
+            builder.zip()
         }
 
         /**
@@ -88,15 +101,16 @@ class Start {
          */
         ///// ask
         if (prop['ask']){
+            //From User's FileSystem or Resource
             String userSetPropertiesDir = prop['properties.dir']
             if (userSetPropertiesDir)
                 propmanForReceptionist.merge("${userSetPropertiesDir}/receptionist.properties")
             else
                 propmanForReceptionist.mergeResource("receptionist.properties")
+            //ASK
             propmanForReceptionist.merge(prop)
                                   .merge(['installer.home': installerHome])
                                   .mergeNew(propmanDefault)
-
             new JobReceptionist(propmanForReceptionist).ask()
         }
 
@@ -105,11 +119,13 @@ class Start {
          */
         ///// install
         if (prop['install'] || prop['i']){
+            //From User's FileSystem or Resource
             String userSetPropertiesDir = prop['properties.dir']
             if (userSetPropertiesDir)
                 propmanForInstaller.merge("${userSetPropertiesDir}/installer.properties")
             else
                 propmanForInstaller.mergeResource("installer.properties")
+            //INSTALL
             propmanForInstaller.merge(propmanForReceptionist)
                                .merge(['installer.home': installerHome])
                                .mergeNew(propmanDefault)
@@ -121,11 +137,13 @@ class Start {
          */
         ///// macgyver
         if (prop['macgyver'] || prop['m']){
+            //From User's FileSystem or Resource
             String userSetPropertiesDir = prop['properties.dir']
             if (userSetPropertiesDir)
                 propmanForMacgyver.merge("${userSetPropertiesDir}/macgyver.properties")
             else
                 propmanForMacgyver.mergeResource("macgyver.properties")
+            //Macgyver Do Something
             propmanForMacgyver.merge(prop)
                               .mergeNew(propmanDefault)
             new MacGyver(propmanForMacgyver).doSomething()

@@ -47,14 +47,14 @@ class JobUtil extends TaskUtil{
     List<String> undoMoreList = [TASK_SET, TASK_NOTICE]
 
 
-    //Do level by level
-    protected void eachLevel(Closure closure){
+    //level by level For Task
+    protected void eachLevelForTask(Closure closure){
         //1. Try to get levels from level property
         List<String> levelList = getSpecificLevelList(levelNamesProperty) ?: geLinetOrderedLevelList(propertiesFileName, executorNamePrefix)
         List<String> taskList = levelList.collect{ getTaskName("${executorNamePrefix}.${it}.") }
         List<String> prefixList = levelList.collect{ "${executorNamePrefix}.${it}." }
 
-        //3. Do Each Tasks
+        //2. Do Each Tasks
         commit()
         for (int i=0; i<levelList.size(); i++){
             String levelName = levelList[i]
@@ -69,6 +69,21 @@ class JobUtil extends TaskUtil{
             else
                 commit()
         }
+    }
+
+    //level by level
+    protected void eachLevel(Closure closure){
+        //1. Try to get levels from level property
+        List<String> levelList = getSpecificLevelList(levelNamesProperty) ?: geLinetOrderedLevelList(propertiesFileName, executorNamePrefix)
+
+        //2. Do Each Tasks
+        for (int i=0; i<levelList.size(); i++){
+            String levelName = levelList[i]
+            String propertyPrefix = "${executorNamePrefix}.${levelName}."
+            //- Do Task
+            closure(propertyPrefix)
+        }
+
     }
 
     protected List<String> getSpecificLevelList(String levelNamesProperty){
