@@ -6,8 +6,10 @@ package com.jaemisseo.man.util
 class QuestionSetup extends Option<QuestionSetup>{
 
     String question
+    String answer
     String recommandAnswer
     String validation       //Not Supported Yet
+    Boolean modeOnlyInteractive
 
     Map descriptionMap
     Map valueMap

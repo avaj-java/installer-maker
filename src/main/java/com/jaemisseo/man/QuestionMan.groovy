@@ -123,10 +123,8 @@ class QuestionMan {
 
     String question(QuestionSetup lOpt, Closure validAnswerClosure){
         nowOpt = gOpt.clone().merge(lOpt)
-        String yourAnswer
-        String question = nowOpt.question
+        String yourAnswer = nowOpt.answer
         String recommandAnswer = nowOpt.recommandAnswer ?: ''
-        Map descriptionMap = nowOpt.descriptionMap
 
         //Ask Question
         int repeatLimit = 5
@@ -138,15 +136,11 @@ class QuestionMan {
                 throw new Exception('So Many Not Good Answer. Please Correct Answer :) ')
 
             //Print Question
-            println "${question} [${recommandAnswer}]? "
-
-            //Print Selection
-            if (descriptionMap)
-                descriptionMap.sort{ a,b -> a.key <=> b.key }.each{ println "  ${it.key}) ${it.value}" }
+            genQuestion(nowOpt).each{ println it }
 
             //Wait Your Input
             print "> "
-            yourAnswer = new Scanner(System.in).nextLine()
+            yourAnswer = (yourAnswer && !nowOpt.modeOnlyInteractive) ? yourAnswer : new Scanner(System.in).nextLine()
 
             //If You Just Enter, Input Recommand Answer
             if (!yourAnswer)
@@ -166,6 +160,21 @@ class QuestionMan {
         return yourAnswer
     }
 
+    List<String> genQuestion(QuestionSetup nowOpt){
+        List<String> lineList = []
+        String question = nowOpt.question
+        String recommandAnswer = nowOpt.recommandAnswer ?: ''
+        Map descriptionMap = nowOpt.descriptionMap
+        //Gen Question
+        lineList << "${question} [${recommandAnswer}]? "
+        //Gen Selection
+        if (descriptionMap){
+            descriptionMap.sort{ a,b -> a.key <=> b.key }.each{
+                lineList << "  ${it.key}) ${it.value}"
+            }
+        }
+        return lineList
+    }
 
     String getValue(){
         return getValue(yourAnswer)

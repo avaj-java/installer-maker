@@ -420,6 +420,10 @@ class FileMan {
         return write(new File(getFullPath(newFilePath)), fileContentLineList, opt)
     }
 
+    static boolean write(String newFilePath, List<String> fileContentLineList, boolean modeAutoMkdir){
+        return write(new File(getFullPath(newFilePath)), fileContentLineList, modeAutoMkdir)
+    }
+
     static boolean write(File newFile, List<String> fileContentLineList, boolean modeAutoMkdir){
         return write(newFile, fileContentLineList, new FileSetup(modeAutoMkdir:modeAutoMkdir))
     }
