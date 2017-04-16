@@ -33,6 +33,7 @@ class TaskSql extends TaskUtil{
             String originFileName = new File(filePath).getName()
 
             //2. Generate Query Replaced With New Object Name
+            println "Replace Object Name..."
             sqlman.init()
                     .queryFromFile("${filePath}")
                     .command([SqlMan.ALL])
@@ -41,6 +42,7 @@ class TaskSql extends TaskUtil{
             //3. Report Checking Before
             if (sqlSetup.modeSqlCheckBefore){
                 try {
+                    println "Checking Before..."
                     sqlman.checkBefore(sqlSetup)
                 }catch(e){
                     println "<ERROR> Checking Before Execution"
@@ -49,15 +51,20 @@ class TaskSql extends TaskUtil{
             }
 
             //- Generate SQL File
-            if (sqlSetup.modeSqlFileGenerate)
+            if (sqlSetup.modeSqlFileGenerate){
+                println "Creating SQL File..."
                 FileMan.write("./replaced_${originFileName}", sqlman.getReplacedQueryList(), reportSetup.fileSetup)
+            }
 
             //4. Execute
-            if (sqlSetup.modeSqlExecute)
+            if (sqlSetup.modeSqlExecute){
+                println "Executing..."
                 sqlman.run(sqlSetup)
+            }
 
         }
 
+        println "<DONE>"
         return STATUS_TASK_DONE
     }
 

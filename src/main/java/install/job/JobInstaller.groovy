@@ -69,6 +69,7 @@ class JobInstaller extends JobUtil{
             }
 
             if (reportSetup.modeReportExcel){
+                println "Creating Excel Report File..."
                 new ReportMan().write("${fileNamePrefix}_${date}.xlsx", reportMapList, 'sqlFileName')
             }
 
