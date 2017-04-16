@@ -210,7 +210,9 @@ class SqlMan extends SqlAnalMan{
                         it.warnningMessage = WARN_MSG_2
                 }
             }
-        }catch(Exception){
+        }catch(Exception e){
+            e.printStackTrace()
+            throw e
         }finally{
             close()
         }
