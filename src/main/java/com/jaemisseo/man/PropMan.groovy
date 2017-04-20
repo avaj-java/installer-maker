@@ -84,6 +84,11 @@ class PropMan{
         return (get(key, null) as String)
     }
 
+    Integer getInteger(String key){
+        String value = get(key, null)
+        return (!value) ? null : Integer.parseInt(value)
+    }
+
     Boolean getBoolean(String key){
         String value = get(key, null)
         return (!value) ? null : (value != '0' && value != 'false') ? true : false

@@ -414,6 +414,7 @@ class TaskUtil{
             answer              : propman.getString("${propertyPrefix}answer"),
             recommandAnswer     : propman.getString("${propertyPrefix}answer.default"),
             modeOnlyInteractive : propman.getBoolean("${propertyPrefix}mode.only.interactive"),
+            repeatLimit         : propman.getInteger("${propertyPrefix}answer.repeat.limit"),
             validation          : propman.parse("${propertyPrefix}answer.validation"),
             descriptionMap      : propman.parse("${propertyPrefix}answer.description.map"),
             valueMap            : propman.parse("${propertyPrefix}answer.value.map"),

@@ -102,8 +102,8 @@ class JobReceptionist extends JobUtil{
         //0. Check Response File
         if (checkResponseFile()){
             propman.merge(getResponsePropMan())
-            println '///// Add Response File Answer'
-            println propman.get('a.program.answer')
+            propman.set('answer.repeat.limit', 0)
+            logBigTitle('Add Response File Answer')
         }
 
 
