@@ -127,12 +127,12 @@ class QuestionMan {
         String recommandAnswer = nowOpt.recommandAnswer ?: ''
 
         //Ask Question
-        int repeatLimit = 5
+        int repeatLimit = nowOpt.repeatLimit
         int repeatCount = 0
         boolean isOk = false
 
         while (!isOk){
-            if (repeatCount++ > repeatLimit)
+            if (repeatCount > repeatLimit)
                 throw new Exception('So Many Not Good Answer. Please Correct Answer :) ')
 
             //Print Question
@@ -152,8 +152,12 @@ class QuestionMan {
 
             //Check Answer
             println "=> ${yourAnswer}\n"
-            if (!isOk)
+            if (!isOk){
                 println "!! Not Good Answer. Please Answer Angain"
+                yourAnswer = ""
+            }
+
+            repeatCount++
         }
 
         this.yourAnswer = yourAnswer

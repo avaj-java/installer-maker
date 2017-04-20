@@ -11,6 +11,8 @@ class QuestionSetup extends Option<QuestionSetup>{
     String validation       //Not Supported Yet
     Boolean modeOnlyInteractive
 
+    Integer repeatLimit = 1
+
     Map descriptionMap
     Map valueMap
 
