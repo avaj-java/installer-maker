@@ -144,4 +144,4 @@ if [ "$THIS_OS" = "WIN" ]; then
 fi
 
 ##### Run Jar
-java -cp "${PATH_TO_LIB_DIR}/*" install.Start -build
+java -cp "${PATH_TO_LIB_DIR}/*" install.Start -macgyver "$@"

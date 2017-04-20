@@ -83,10 +83,8 @@ jar {
  * Before distZip
  *****/
 applicationDistribution.from([
-        "src/main/resources/binForBuilder/build",
-        "src/main/resources/binForBuilder/build.bat",
-        "src/main/resources/binForBuilder/init",
-        "src/main/resources/binForBuilder/init.bat",
+        "src/main/resources/binForBuilder/macgyver",
+        "src/main/resources/binForBuilder/macgyver.bat",
 ]){
     into "bin"
 }
