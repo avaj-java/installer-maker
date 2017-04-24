@@ -4,6 +4,9 @@ import com.sun.jersey.api.client.Client
 import com.sun.jersey.api.client.ClientResponse
 import com.sun.jersey.api.client.WebResource
 import com.sun.jersey.core.util.MultivaluedMapImpl
+import groovy.json.JsonBuilder
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 
 import javax.ws.rs.core.MediaType
 
@@ -19,10 +22,9 @@ class RestMan {
 
     String url = "http://192.168.0.55:19070/erwin_mart9g/getLibraryDepth"
     String method = POST
-    String type = MediaType.APPLICATION_FORM_URLENCODED
-    String accept = MediaType.APPLICATION_JSON
-
-    Map<String, List<String>> headerMap = [:]
+    String type = "*/*"
+    String accept = "*/*"
+    Map<String, String> headerMap = [:]
     Map<String, List<String>> parameterMap = [:]
 
 
@@ -69,14 +71,17 @@ class RestMan {
     }
 
     RestMan addHeader(String key, String value){
-        if (headerMap[key]){
-            if (headerMap[key] instanceof List)
-                headerMap[key] << value
-            else
-                headerMap[key] << [headerMap[key], value]
-        }else{
-            headerMap[key] = [value]
-        }
+        //Map
+        headerMap[key] = value
+        //MultiValueMap
+//        if (headerMap[key]){
+//            if (headerMap[key] instanceof List)
+//                headerMap[key] << value
+//            else
+//                headerMap[key] << [headerMap[key], value]
+//        }else{
+//            headerMap[key] = [value]
+//        }
         return this
     }
 
@@ -126,10 +131,10 @@ class RestMan {
         //Generate MultiValueMap
         MultivaluedMapImpl paramMultiMap = new MultivaluedMapImpl()
         paramMultiMap.putAll(parameterMap)
-        return request(url, paramMultiMap, method)
+        return request(url, JsonOutput.toJson(parameterMap), method)
     }
 
-    String request(String url, MultivaluedMapImpl paramMutliMap, String method){
+    String request(String url, String jsonParam, String method){
         String responseString
         try {
             ClientResponse response
@@ -140,15 +145,15 @@ class RestMan {
 
             //REQUEST
             if (!method)
-                response = builder.post(ClientResponse.class, paramMutliMap)
+                response = builder.post(ClientResponse.class, jsonParam)
             else if (method == GET)
                 response = builder.get(ClientResponse.class)
             else if (method == POST)
-                response = builder.post(ClientResponse.class, paramMutliMap)
+                response = builder.post(ClientResponse.class, jsonParam)
             else if (method == PUT)
-                response = builder.put(ClientResponse.class, paramMutliMap)
+                response = builder.put(ClientResponse.class, jsonParam)
             else if (method == DELETE)
-                response = builder.delete(ClientResponse.class, paramMutliMap)
+                response = builder.delete(ClientResponse.class, jsonParam)
 
             //CHECK ERROR
             checkError(response)
