@@ -41,13 +41,18 @@ class TaskUtil{
     public static final String TASK_Q_YN = "Q-YN"
     public static final String TASK_SET = "SET"
 
-    public static final String TASK_GROOVYRANGE = "GROOVYRANGE"
     public static final String TASK_JDBC = "JDBC"
     public static final String TASK_REST = "REST"
     public static final String TASK_SOCKET = "SOCKET"
     public static final String TASK_EMAIL = "EMAIL"
     public static final String TASK_PORT = "PORT"
     public static final String TASK_MERGE_ROPERTIES = "MERGE-PROPERTIES"
+
+    //Temporary Task
+    public static final String TASK_GROOVYRANGE = "GROOVYRANGE"
+    public static final String TASK_ENCRYPT = "ENCRYPT"
+    public static final String TASK_DECRYPT = "DECRYPT"
+
 
     PropMan propman
     VariableMan varman
@@ -309,7 +314,8 @@ class TaskUtil{
     protected void descript(String propertyPrefix){
         String descriptionString = propman.get("${propertyPrefix}desc")
         descriptionString = descriptionString ?: propertyPrefix
-        logBigTitle(descriptionString)
+        if (descriptionString)
+            logBigTitle(descriptionString)
     }
 
 

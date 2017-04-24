@@ -1,6 +1,8 @@
 package install.job
 
 import com.jaemisseo.man.FileMan
+import install.task.TaskDecrypt
+import install.task.TaskEncrypt
 import install.task.TaskExec
 import install.task.TaskFileCopy
 import install.task.TaskFileJar
@@ -276,11 +278,19 @@ class JobUtil extends TaskUtil{
             case TaskUtil.TASK_JDBC:
                 return new TaskTestJDBC().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
+            case TaskUtil.TASK_PORT:
+                return new TaskTestPort().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
+                break
+
             case TaskUtil.TASK_GROOVYRANGE:
                 return new TaskTestGroovyRange().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
-            case TaskUtil.TASK_PORT:
-                return new TaskTestPort().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
+
+            case TaskUtil.TASK_ENCRYPT:
+                return new TaskEncrypt().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
+                break
+            case TaskUtil.TASK_DECRYPT:
+                return new TaskDecrypt().setPropman(propman).setReporter(reportMapList).start(propertyPrefix)
                 break
 
             default :

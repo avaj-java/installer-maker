@@ -31,9 +31,10 @@ class MacGyver extends JobUtil {
     Integer run(){
         List taskMap = [
             TASK_TAR, TASK_ZIP, TASK_JAR, TASK_UNTAR, TASK_UNZIP, TASK_UNJAR,
-            TASK_MKDIR, TASK_COPY, TASK_GROOVYRANGE, TASK_MERGE_ROPERTIES, TASK_REPLACE, TASK_SQL,
+            TASK_MKDIR, TASK_COPY, TASK_MERGE_ROPERTIES, TASK_REPLACE, TASK_SQL,
             TASK_JDBC, TASK_REST, TASK_SOCKET, TASK_EMAIL, TASK_PORT,
             TASK_NOTICE, TASK_Q, TASK_Q_CHOICE, TASK_Q_YN, TASK_SET,
+            TASK_GROOVYRANGE, TASK_ENCRYPT, TASK_DECRYPT
         ]
 
         taskMap.each{ String taskCode ->
