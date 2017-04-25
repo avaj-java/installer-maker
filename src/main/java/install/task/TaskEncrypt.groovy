@@ -2,6 +2,7 @@ package install.task
 
 import com.jaemisseo.man.PropMan
 import com.jaemisseo.man.RestMan
+import temp.util.Encryptor
 import temp.util.SEEDUtil
 
 /**
@@ -19,19 +20,28 @@ class TaskEncrypt extends TaskUtil{
     Integer run(){
 
         String value = propman.getString('value')
-
-        // 암복호화에 사용할 키 배열생성
-        int[] seedKey = SEEDUtil.getSeedRoundKey("1234567890123456");
-
+        String method = propman.getString('method') ?: "SEED"
 
         logMiddleTitle 'START ENCRYPT'
 
         println "<REQUEST>"
-        println "${value}"
+        println "METHOD : ${method}"
+        println "VALUE  : ${value}"
         println ""
 
         //Encrypt
-        String encryptedText = SEEDUtil.getSeedEncrypt(value, seedKey)
+        String encryptedText
+
+        switch (method){
+            case "SEED":
+                encryptedText = SEEDUtil.getSeedDecrypt(value, SEEDUtil.getSeedRoundKey("1234567890123456"))
+                break
+            case "AES":
+                encryptedText = new Encryptor().encrypt(value)
+                break
+            default:
+                break
+        }
 
         //LOG
         println "<RESULT>"
