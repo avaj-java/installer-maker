@@ -282,33 +282,43 @@ class FileMan {
 //        new File(libPath).toURI().relativize(new File(installerHome).toURI())
         String relPath
         //0. Ready for diff
-        List toDepthList = getLastDirectoryPath(to).split(/[\/\\]/)
-        List fromDepthList = getLastDirectoryPath(from).split(/[\/\\]/)
-        String fromFileName = getLastFileName(from)
-        String toFileName = getLastFileName(to)
-        String addFileName = (fromFileName && !toFileName) ? fromFileName : (fromFileName && toFileName) ? toFileName : ''
+        List<String> fromDepthList  = getLastDirectoryPath(from).split(/[\/\\]/) - [""]
+        List<String> toDepthList    = getLastDirectoryPath(to).split(/[\/\\]/) - [""]
+        String fromFileName     = getLastFileName(from)
+        String toFileName       = getLastFileName(to)
+        String addFileName      = (fromFileName && !toFileName) ? fromFileName : (fromFileName && toFileName) ? toFileName : ''
         int sameDepthLevel = -1
         //1. Get Same Depth
         for (int i=0; i<fromDepthList.size(); i++){
             String fromDirName = fromDepthList[i]
             String toDirName = toDepthList[i]
             if (!fromDirName || !toDirName || !fromDirName.equals(toDirName)){
-                sameDepthLevel = i - 1
                 break
+            }else{
+                sameDepthLevel = i
             }
         }
         //2. Gen Relative Dir Path
-        int diffStartIndex = sameDepthLevel + 1
-        int fromLastIndex = fromDepthList.size() - 1
+        // - Step One - CD
+        int diffStartIndex  = sameDepthLevel + 1
+        int fromLastIndex   = fromDepthList.size() - 1
+        int toLastIndex     = toDepthList.size() - 1
         int diffDepthCount = sameDepthLevel - fromLastIndex
         if (diffDepthCount == 0){
             relPath = '.'
         }else if (diffDepthCount < 0){
             relPath = fromDepthList[diffStartIndex..fromLastIndex].collect{ '..' }.join('/')
-        }else if (diffDepthCount > 0){
-            relPath = fromDepthList[diffStartIndex..fromLastIndex].join('/')
         }
-        return "${relPath}/${addFileName}"
+        // - Step Two - CD
+        if (sameDepthLevel <= fromLastIndex && sameDepthLevel < toLastIndex){
+            if (isDifferentRootDir(from, to))
+                relPath = getFullPath(to)
+            else
+                relPath += "/${toDepthList[diffStartIndex..toLastIndex].join('/')}"
+
+
+        }
+        return (addFileName) ? "${relPath}/${addFileName}" : relPath
     }
 
     //Get Last Directory
@@ -1586,6 +1596,17 @@ class FileMan {
                 isRootPath = true
         }
         return isRootPath
+    }
+
+    static boolean isDifferentRootDir(String from, String to){
+        boolean result = false
+        if (isItStartsWithRootPath(from) && isItStartsWithRootPath(to)){
+            List<String> fromDepthList = getLastDirectoryPath(from).split(/[\/\\]/) - [""]
+            List<String> toDepthList = getLastDirectoryPath(to).split(/[\/\\]/) - [""]
+            if (fromDepthList[0] != toDepthList[0])
+                result = true
+        }
+        return result
     }
 
 }
