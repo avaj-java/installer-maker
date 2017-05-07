@@ -1,6 +1,6 @@
 package install.job
 
-import com.jaemisseo.man.FileMan
+import jaemisseo.man.FileMan
 import install.task.TaskDecrypt
 import install.task.TaskEncrypt
 import install.task.TaskExec

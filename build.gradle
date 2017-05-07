@@ -9,7 +9,7 @@ targetCompatibility = "1.6"
 String projectName = "installer"
 version = "git describe --tags".execute([], project.projectDir).text.trim()
 String libFileName = "${projectName}-${version}"
-group = "com.jaemmisseo"
+group = "jaemmisseo"
 mainClassName = "install.Start"
 String installerHome = "$System.env.INSTALLER_HOME"
 
@@ -113,36 +113,32 @@ task deployLocal(type: Copy){
 
 
 
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
 repositories {
     jcenter()
+    maven { url "https://jitpack.io" }
     maven { url 'http://repo.spring.io/milestone' }
     maven { url "http://maven.springframework.org/release" }
-    maven { url "http://maven.restlet.org" }
-    maven { url "http://61.250.197.68/nexus/content/repositories/thirdparty" }
-    maven { url "http://61.250.197.68/nexus/content/repositories/snapshots" }
-    maven { url "http://61.250.197.68/nexus/content/repositories/releases" }
-    maven { url "http://61.250.197.68/nexus/content/repositories/spring-releases" }
 }
 
 dependencies {
+
     //GROOVY
     compile 'org.codehaus.groovy:groovy-all:2.1.3'
 
-    //REST
-//    compile 'com.sun.jersey:jersey-server:1.12-b01' //Jersey-Server
-    compile 'com.sun.jersey:jersey-client:1.9.1'    //Jersey-Client
+    //JAEMISSEO
+//    compile "com.github.jaemisseo:man:0.0.9"
+    compile "com.github.jaemisseo:common-man:0.0.5"
+    compile "com.github.jaemisseo:fileman:0.0.2"
+    compile "com.github.jaemisseo:reportman:0.0.2"
+    compile "com.github.jaemisseo:restman:0.0.2"
     
     //JDBC
     compile "com.oracle:ojdbc6:11.2.0.3"
-    compile "com.tmax.tibero:tibero-jdbc:5.0"
-
-    //POI
-    compile "org.apache.poi:poi:3.9"
-    compile "org.apache.poi:poi-ooxml:3.9"
-    compile "org.apache.poi:poi-ooxml-schemas:3.9"
-
-    //TAR
-    compile 'org.apache.commons:commons-compress:1.11'
+//    compile "com.tmax.tibero:tibero-jdbc:5.0"
 
     // TEST
     testCompile "junit:junit:4.11"

@@ -1,8 +1,6 @@
-import com.jaemisseo.man.FileMan
-import com.jaemisseo.man.PropMan
-import com.jaemisseo.man.VariableMan
-import groovy.json.JsonSlurper
-import install.task.TaskTestPort
+import jaemisseo.man.FileMan
+import jaemisseo.man.PropMan
+import jaemisseo.man.VariableMan
 import org.junit.Test
 
 /**

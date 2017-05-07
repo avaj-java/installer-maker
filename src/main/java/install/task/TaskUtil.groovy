@@ -1,13 +1,13 @@
 package install.task
 
-import com.jaemisseo.man.FileMan
-import com.jaemisseo.man.PropMan
-import com.jaemisseo.man.QuestionMan
-import com.jaemisseo.man.SqlMan
-import com.jaemisseo.man.VariableMan
-import com.jaemisseo.man.util.FileSetup
-import com.jaemisseo.man.util.SqlSetup
-import com.jaemisseo.man.util.QuestionSetup
+import jaemisseo.man.FileMan
+import jaemisseo.man.PropMan
+import jaemisseo.man.QuestionMan
+import jaemisseo.man.SqlMan
+import jaemisseo.man.VariableMan
+import jaemisseo.man.util.FileSetup
+import jaemisseo.man.util.SqlSetup
+import jaemisseo.man.util.QuestionSetup
 import install.bean.ReportSetup
 
 /**

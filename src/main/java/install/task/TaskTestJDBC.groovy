@@ -1,8 +1,7 @@
 package install.task
 
-import com.jaemisseo.man.PropMan
 import groovy.sql.Sql
-import com.jaemisseo.man.util.ConnectionGenerator
+import jaemisseo.man.util.ConnectionGenerator
 
 /**
  * Created by sujkim on 2017-01-25.

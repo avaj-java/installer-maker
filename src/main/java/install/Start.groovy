@@ -1,11 +1,11 @@
 package install
 
-import com.jaemisseo.man.FileMan
+import jaemisseo.man.FileMan
 import install.job.JobReceptionist
 import install.job.JobBuilder
 import install.employee.MacGyver
 import install.job.JobInstaller
-import com.jaemisseo.man.PropMan
+import jaemisseo.man.PropMan
 
 class Start {
 

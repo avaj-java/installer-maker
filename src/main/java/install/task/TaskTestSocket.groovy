@@ -1,7 +1,6 @@
 package install.task
 
-import com.jaemisseo.man.PropMan
-import com.jaemisseo.man.SocketMan
+import jaemisseo.man.SocketMan
 
 /**
  * Created by sujkim on 2017-03-10.

@@ -1,8 +1,8 @@
 package install.job
 
-import com.jaemisseo.man.PropMan
-import com.jaemisseo.man.ReportMan
-import com.jaemisseo.man.VariableMan
+import jaemisseo.man.PropMan
+import jaemisseo.man.ReportMan
+import jaemisseo.man.VariableMan
 import install.bean.InstallerGlobalOption
 import install.bean.ReportSetup
 

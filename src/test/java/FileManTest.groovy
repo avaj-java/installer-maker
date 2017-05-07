@@ -1,4 +1,4 @@
-import com.jaemisseo.man.FileMan
+import jaemisseo.man.FileMan
 import org.junit.Test
 
 /**

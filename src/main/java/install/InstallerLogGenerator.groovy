@@ -1,7 +1,7 @@
 package install
 
-import com.jaemisseo.man.PropMan
-import com.jaemisseo.man.util.PropertiesGenerator
+import jaemisseo.man.PropMan
+import jaemisseo.man.util.PropertiesGenerator
 
 /**
  * Created by sujkim on 2017-03-29.

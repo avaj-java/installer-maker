@@ -1,6 +1,6 @@
 package install.task
 
-import com.jaemisseo.man.PropMan
+import jaemisseo.man.PropMan
 import temp.util.Encryptor
 import temp.util.SEEDUtil
 

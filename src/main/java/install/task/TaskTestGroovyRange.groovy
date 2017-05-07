@@ -1,7 +1,4 @@
 package install.task
-
-import com.jaemisseo.man.PropMan
-
 /**
  * Created by sujkim on 2017-03-18.
  */

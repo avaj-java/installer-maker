@@ -1,10 +1,9 @@
 package install.task
 
-import com.jaemisseo.man.FileMan
-import com.jaemisseo.man.PropMan
-import com.jaemisseo.man.SqlAnalMan
-import com.jaemisseo.man.SqlMan
-import com.jaemisseo.man.util.SqlSetup
+import jaemisseo.man.FileMan
+import jaemisseo.man.SqlAnalMan
+import jaemisseo.man.SqlMan
+import jaemisseo.man.util.SqlSetup
 import install.bean.ReportSetup
 import install.bean.ReportSql
 

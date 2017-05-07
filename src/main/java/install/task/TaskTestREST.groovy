@@ -1,7 +1,7 @@
 package install.task
 
-import com.jaemisseo.man.PropMan
-import com.jaemisseo.man.RestMan
+import jaemisseo.man.PropMan
+import jaemisseo.man.RestMan
 
 /**
  * Created by sujkim on 2017-03-10.

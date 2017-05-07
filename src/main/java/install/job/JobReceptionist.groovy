@@ -1,9 +1,9 @@
 package install.job
 
-import com.jaemisseo.man.FileMan
-import com.jaemisseo.man.PropMan
-import com.jaemisseo.man.VariableMan
-import com.jaemisseo.man.util.FileSetup
+import jaemisseo.man.FileMan
+import jaemisseo.man.PropMan
+import jaemisseo.man.VariableMan
+import jaemisseo.man.util.FileSetup
 import install.bean.ReceptionistGlobalOption
 import install.task.TaskQuestion
 import install.task.TaskQuestionChoice
