@@ -20,7 +20,7 @@ class JobReceptionist extends JobUtil{
         levelNamesProperty = 'a.level'
         executorNamePrefix = 'a'
         propertiesFileName = 'receptionist.properties'
-        validTaskList = [TASK_NOTICE, TASK_Q, TASK_Q_CHOICE, TASK_Q_YN, TASK_SET]
+        validTaskList = [TASK_NOTICE, TASK_Q, TASK_Q_CHOICE, TASK_Q_YN, TASK_Q_FIND_FILE, TASK_SET]
 
         this.propman = propman
         this.varman = new VariableMan(propman.properties)

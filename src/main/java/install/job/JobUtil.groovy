@@ -1,5 +1,6 @@
 package install.job
 
+import install.task.TaskQuestionFindFile
 import jaemisseo.man.FileMan
 import install.task.TaskDecrypt
 import install.task.TaskEncrypt
@@ -45,7 +46,7 @@ class JobUtil extends TaskUtil{
     def gOpt
 
     Integer taskResultStatus
-    List<String> undoableList = [TASK_Q, TASK_Q_CHOICE, TASK_Q_YN, TASK_SET, TASK_NOTICE]
+    List<String> undoableList = [TASK_Q, TASK_Q_CHOICE, TASK_Q_YN, TASK_Q_FIND_FILE, TASK_SET, TASK_NOTICE]
     List<String> undoMoreList = [TASK_SET, TASK_NOTICE]
 
 
@@ -222,6 +223,9 @@ class JobUtil extends TaskUtil{
                 break
             case TaskUtil.TASK_Q_YN:
                 return new TaskQuestionYN().setPropman(propman).setRememberAnswerLineList(rememberAnswerLineList).start(propertyPrefix)
+                break
+            case TaskUtil.TASK_Q_FIND_FILE:
+                return new TaskQuestionFindFile().setPropman(propman).setRememberAnswerLineList(rememberAnswerLineList).start(propertyPrefix)
                 break
             case TaskUtil.TASK_SET:
                 return new TaskSet().setPropman(propman).start(propertyPrefix)

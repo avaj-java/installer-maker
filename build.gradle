@@ -126,19 +126,17 @@ repositories {
 
 dependencies {
 
+    //JAEMISSEO
+    compile "com.github.avaj-java:common-man:0.1.0"
+    compile "com.github.avaj-java:fileman:0.1.0"
+    compile "com.github.avaj-java:reportman:0.0.1"
+    compile "com.github.avaj-java:restman:0.0.1"
+
     //GROOVY
     compile 'org.codehaus.groovy:groovy-all:2.1.3'
 
-    //JAEMISSEO
-//    compile "com.github.jaemisseo:man:0.0.9"
-    compile "com.github.jaemisseo:common-man:0.0.5"
-    compile "com.github.jaemisseo:fileman:0.0.2"
-    compile "com.github.jaemisseo:reportman:0.0.2"
-    compile "com.github.jaemisseo:restman:0.0.2"
-    
     //JDBC
     compile "com.oracle:ojdbc6:11.2.0.3"
-//    compile "com.tmax.tibero:tibero-jdbc:5.0"
 
     // TEST
     testCompile "junit:junit:4.11"

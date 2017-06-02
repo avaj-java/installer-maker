@@ -32,7 +32,6 @@ class TaskQuestionChoice extends TaskUtil{
         set('answer', yourAnswer)
         set('value', qman.getValue())
 
-
         //Set Some Property
         setPropValue()
 

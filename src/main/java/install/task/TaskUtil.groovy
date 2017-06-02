@@ -39,6 +39,7 @@ class TaskUtil{
     public static final String TASK_Q = "Q"
     public static final String TASK_Q_CHOICE = "Q-CHOICE"
     public static final String TASK_Q_YN = "Q-YN"
+    public static final String TASK_Q_FIND_FILE = "Q-FIND-FILE"
     public static final String TASK_SET = "SET"
 
     public static final String TASK_JDBC = "JDBC"
