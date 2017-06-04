@@ -1,10 +1,12 @@
 package install.job
 
+import install.JobUtil
 import jaemisseo.man.PropMan
 import jaemisseo.man.ReportMan
 import jaemisseo.man.VariableMan
 import install.bean.InstallerGlobalOption
 import install.bean.ReportSetup
+import jaemisseo.man.util.Util
 
 /**
  * Created by sujkim on 2017-02-17.
@@ -16,6 +18,7 @@ class JobInstaller extends JobUtil{
         levelNamesProperty = 'i.level'
         executorNamePrefix = 'i'
         propertiesFileName = 'installer.properties'
+        validTaskList = Util.findAllClasses(packageNameForTask)
 
         this.propman = propman
         this.varman = new VariableMan(propman.properties)
@@ -29,13 +32,11 @@ class JobInstaller extends JobUtil{
 
 
 
-    /**
+    /*************************
      * INSTALL
-     */
+     *************************/
     void install(){
-
         ReportSetup reportSetup = gOpt.reportSetup
-
         //Each level by level
         eachLevelForTask{ String propertyPrefix ->
             try{
@@ -46,18 +47,16 @@ class JobInstaller extends JobUtil{
                 throw e
             }
         }
-
         //Write Report
         writeReport(reportMapList, reportSetup)
     }
 
 
 
-    /**
+    /*************************
      * WRITE Report
-     */
+     *************************/
     private void writeReport(List reportMapList, ReportSetup reportSetup){
-
         //Generate File Report
         if (reportMapList){
             String date = new Date().format('yyyyMMdd_HHmmss')
@@ -73,9 +72,9 @@ class JobInstaller extends JobUtil{
                 println "Creating Excel Report File..."
                 new ReportMan().write("${fileNamePrefix}_${date}.xlsx", reportMapList, 'sqlFileName')
             }
-
         }
-
     }
+
+
 
 }

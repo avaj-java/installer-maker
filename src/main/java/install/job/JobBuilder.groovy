@@ -1,12 +1,14 @@
 package install.job
 
+import install.JobUtil
+import install.bean.BuilderGlobalOption
+import install.bean.ReportSetup
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.ReportMan
 import jaemisseo.man.VariableMan
 import jaemisseo.man.util.FileSetup
-import install.bean.BuilderGlobalOption
-import install.bean.ReportSetup
+import jaemisseo.man.util.Util
 
 /**
  * Created by sujkim on 2017-02-17.
@@ -18,6 +20,7 @@ class JobBuilder extends JobUtil{
         levelNamesProperty = 'b.level'
         executorNamePrefix = 'b'
         propertiesFileName = 'builder.properties'
+        validTaskList = Util.findAllClasses(packageNameForTask)
 
         this.propman = propman
         this.varman = new VariableMan(propman.properties)
@@ -44,13 +47,15 @@ class JobBuilder extends JobUtil{
 
 
 
-    /**
+
+
+    /*************************
      * INIT
      * Generate Sample Properties Files
      * 1. builder.properties
      * 2. receptionist.properties
      * 3. installer.properties
-     */
+     *************************/
     void init(){
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
@@ -88,10 +93,10 @@ class JobBuilder extends JobUtil{
         }
     }
 
-    /**
+    /*************************
      * CLEAN
      * Clean Build Directory
-     */
+     *************************/
     void clean(){
         try{
             FileMan.delete(gOpt.buildInstallerHome)
@@ -101,16 +106,13 @@ class JobBuilder extends JobUtil{
         }
     }
 
-    /**
+    /*************************
      * BUILD
-     */
+     *************************/
     void build(){
-
         ReportSetup reportSetup = gOpt.reportSetup
-
         //1. Gen Starter and Response File
         genLibAndBin()
-
         //2. Each level by level
         eachLevelForTask{ String propertyPrefix ->
             try{
@@ -121,16 +123,15 @@ class JobBuilder extends JobUtil{
                 throw e
             }
         }
-
         //Write Report
         writeReport(reportMapList, reportSetup)
     }
 
 
 
-    /**
+    /*************************
      * WRITE Report
-     */
+     *************************/
     private void writeReport(List reportMapList, ReportSetup reportSetup){
 
         //Generate File Report
@@ -153,7 +154,7 @@ class JobBuilder extends JobUtil{
 
 
 
-    /**
+    /*************************
      * Generate Install Starter (Lib, Bin)
      * ${build.installer.home}/lib
      * ${build.installer.home}/bin
@@ -161,7 +162,7 @@ class JobBuilder extends JobUtil{
      *  1. Create Dir
      *  2. Generate Lib
      *  3. Generate Bin
-     */
+     *************************/
     private void genLibAndBin(){
 
         //Ready
@@ -265,11 +266,11 @@ class JobBuilder extends JobUtil{
         .write(binInstallerBatDestPath)
     }
 
-    /**
+    /*************************
      * Distribute ZIP
      * From: ${build.installer.home}
      *   To: ${build.dist.dir}
-     */
+     *************************/
     void zip(){
         if (!propman.getBoolean('mode.auto.zip'))
             return
@@ -288,11 +289,11 @@ class JobBuilder extends JobUtil{
         FileMan.zip(buildInstallerHome, "${buildDistDir}/${installerName}.zip", fileSetup)
     }
 
-    /**
+    /*************************
      * Distribute TAR
      * From: ${build.installer.home}
      *   To: ${build.dist.dir}
-     */
+     *************************/
     void tar(){
         if (!propman.getBoolean('mode.auto.tar'))
             return
@@ -310,5 +311,7 @@ class JobBuilder extends JobUtil{
         //Zip
         FileMan.tar(buildInstallerHome, "${buildDistDir}/${installerName}.tar", fileSetup)
     }
+
+
 
 }

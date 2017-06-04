@@ -1,5 +1,6 @@
 package install.task
 
+import install.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.QuestionMan
 import jaemisseo.man.util.QuestionSetup
@@ -8,7 +9,7 @@ import jaemisseo.man.util.Util
 /**
  * Created by sujkim on 2017-03-18.
  */
-class TaskQuestionFindFile extends TaskUtil{
+class QuestionFindFile extends TaskUtil{
 
     @Override
     Integer run(){
@@ -28,7 +29,7 @@ class TaskQuestionFindFile extends TaskUtil{
         Thread threadSearcher = Util.newThread(' <Stoped Searching>'){
             int i = 0;
             List<File> foundFileList = FileMan.findAll(searchRootPath, searchFileName, searchIf) { File foundFile ->
-                String editedPath = FileMan.getFullPath(foundFile.path, editResultPath)
+                String editedPath = (editResultPath) ? FileMan.getFullPath(foundFile.path, editResultPath) : foundFile.path
                 println "${++i}) ${editedPath}"
                 itemList << foundFile
                 return true

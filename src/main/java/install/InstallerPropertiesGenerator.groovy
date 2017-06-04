@@ -1,9 +1,21 @@
 package install
 
+import install.task.Copy
+import install.task.Jar
+import install.task.MergeProperties
+import install.task.Sql
+import install.task.Tar
+import install.task.TestJDBC
+import install.task.TestPort
+import install.task.TestREST
+import install.task.TestSocket
+import install.task.Unjar
+import install.task.Untar
+import install.task.Unzip
+import install.task.Zip
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.util.PropertiesGenerator
-import install.task.TaskUtil
 
 /**
  * Created by sujkim on 2017-03-29.
@@ -29,7 +41,7 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
     //Generate Properties Perspective Map
     Map genPropertiesValueMap(Map valueListMap){
         Map propValueMap = [:]
-        Map<String, List> valueProtocolListMap = getValueProtocolListMap()
+        Map<Class, List> valueProtocolListMap = getValueProtocolListMap()
 
         valueListMap.each{ String exPropName, def valueList ->
             List valueOrderList = valueProtocolListMap[exPropName.toUpperCase()]
@@ -72,22 +84,22 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
 
 
     //Protocol of exProperty value
-    Map<String, List> getValueProtocolListMap(){
-        Map<String, List> valueOrderListMap = [:]
-        valueOrderListMap[TaskUtil.TASK_ZIP]    = ['file.path', 'dest.path']
-        valueOrderListMap[TaskUtil.TASK_TAR]    = ['file.path', 'dest.path']
-        valueOrderListMap[TaskUtil.TASK_JAR]    = ['file.path', 'dest.path']
-        valueOrderListMap[TaskUtil.TASK_UNZIP]  = ['file.path', 'dest.path']
-        valueOrderListMap[TaskUtil.TASK_UNJAR]  = ['file.path', 'dest.path']
-        valueOrderListMap[TaskUtil.TASK_UNTAR]  = ['file.path', 'dest.path']
-        valueOrderListMap[TaskUtil.TASK_COPY]   = ['file.path', 'dest.path']
+    Map<Class, List> getValueProtocolListMap(){
+        Map<Class, List> valueOrderListMap = [:]
+        valueOrderListMap[Zip]    = ['file.path', 'dest.path']
+        valueOrderListMap[Tar]    = ['file.path', 'dest.path']
+        valueOrderListMap[Jar]    = ['file.path', 'dest.path']
+        valueOrderListMap[Unzip]  = ['file.path', 'dest.path']
+        valueOrderListMap[Unjar]  = ['file.path', 'dest.path']
+        valueOrderListMap[Untar]  = ['file.path', 'dest.path']
+        valueOrderListMap[Copy]   = ['file.path', 'dest.path']
 
-        valueOrderListMap[TaskUtil.TASK_SOCKET] = ['file.path', 'dest.path']
-        valueOrderListMap[TaskUtil.TASK_REST]   = ['url', 'param', 'header']
-        valueOrderListMap[TaskUtil.TASK_JDBC]   = ['id', 'pw', 'ip', 'port', 'db']
-        valueOrderListMap[TaskUtil.TASK_PORT]   = ['from', 'to']
-        valueOrderListMap[TaskUtil.TASK_MERGE_ROPERTIES]   = ['from', 'into']
-        valueOrderListMap[TaskUtil.TASK_SQL]        = ['file.path']
+        valueOrderListMap[TestSocket] = ['file.path', 'dest.path']
+        valueOrderListMap[TestREST]   = ['url', 'param', 'header']
+        valueOrderListMap[TestJDBC]   = ['id', 'pw', 'ip', 'port', 'db']
+        valueOrderListMap[TestPort]   = ['from', 'to']
+        valueOrderListMap[MergeProperties]   = ['from', 'into']
+        valueOrderListMap[Sql]        = ['file.path']
 
         return valueOrderListMap
     }

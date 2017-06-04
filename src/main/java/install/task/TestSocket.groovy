@@ -1,11 +1,12 @@
 package install.task
 
+import install.TaskUtil
 import jaemisseo.man.SocketMan
 
 /**
  * Created by sujkim on 2017-03-10.
  */
-class TaskTestSocket extends TaskUtil{
+class TestSocket extends TaskUtil{
 
     @Override
     Integer run(){

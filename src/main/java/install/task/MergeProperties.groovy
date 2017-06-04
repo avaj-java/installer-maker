@@ -1,5 +1,6 @@
 package install.task
 
+import install.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.util.FileSetup
@@ -7,7 +8,7 @@ import jaemisseo.man.util.FileSetup
 /**
  * Created by sujkim on 2017-02-27.
  */
-class TaskMergeProperties extends TaskUtil{
+class MergeProperties extends TaskUtil{
 
     @Override
     Integer run() {

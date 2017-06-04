@@ -1,8 +1,11 @@
 package install.task
+
+import install.TaskUtil
+
 /**
  * Created by sujkim on 2017-03-18.
  */
-class TaskNotice extends TaskUtil{
+class Notice extends TaskUtil{
 
     @Override
     Integer run(){

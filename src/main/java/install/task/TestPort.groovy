@@ -1,8 +1,11 @@
 package install.task
+
+import install.TaskUtil
+
 /**
  * Created by sujkim on 2017-02-27.
  */
-class TaskTestPort extends TaskUtil{
+class TestPort extends TaskUtil{
 
     @Override
     Integer run(){

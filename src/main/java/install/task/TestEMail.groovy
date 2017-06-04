@@ -1,8 +1,11 @@
 package install.task
+
+import install.TaskUtil
+
 /**
  * Created by sujkim on 2017-03-10.
  */
-class TaskTestEMail extends TaskUtil{
+class TestEMail extends TaskUtil{
 
     @Override
     Integer run(){

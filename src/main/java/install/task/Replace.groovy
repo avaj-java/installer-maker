@@ -1,12 +1,13 @@
 package install.task
 
+import install.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.util.FileSetup
 
 /**
  * Created by sujkim on 2017-02-22.
  */
-class TaskFileReplace extends TaskUtil{
+class Replace extends TaskUtil{
 
     @Override
     Integer run(){

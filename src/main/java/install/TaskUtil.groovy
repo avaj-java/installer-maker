@@ -1,4 +1,4 @@
-package install.task
+package install
 
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
@@ -9,13 +9,12 @@ import jaemisseo.man.util.FileSetup
 import jaemisseo.man.util.SqlSetup
 import jaemisseo.man.util.QuestionSetup
 import install.bean.ReportSetup
+import jaemisseo.man.util.Util
 
 /**
  * Created by sujkim on 2017-03-11.
  */
 class TaskUtil{
-
-
 
     public static final Integer STATUS_NOTHING = 0
     public static final Integer STATUS_TASK_DONE = 1
@@ -23,36 +22,6 @@ class TaskUtil{
     public static final Integer STATUS_UNDO_QUESTION = 3
     public static final Integer STATUS_REDO_QUESTION = 4
 
-    public static final String TASK_TAR = "TAR"
-    public static final String TASK_ZIP = "ZIP"
-    public static final String TASK_JAR = "JAR"
-    public static final String TASK_UNTAR = "UNTAR"
-    public static final String TASK_UNZIP = "UNZIP"
-    public static final String TASK_UNJAR = "UNJAR"
-    public static final String TASK_MKDIR = "MKDIR"
-    public static final String TASK_COPY = "COPY"
-    public static final String TASK_REPLACE = "REPLACE"
-    public static final String TASK_SQL = "SQL"
-    public static final String TASK_EXEC = "EXEC"
-
-    public static final String TASK_NOTICE = "NOTICE"
-    public static final String TASK_Q = "Q"
-    public static final String TASK_Q_CHOICE = "Q-CHOICE"
-    public static final String TASK_Q_YN = "Q-YN"
-    public static final String TASK_Q_FIND_FILE = "Q-FIND-FILE"
-    public static final String TASK_SET = "SET"
-
-    public static final String TASK_JDBC = "JDBC"
-    public static final String TASK_REST = "REST"
-    public static final String TASK_SOCKET = "SOCKET"
-    public static final String TASK_EMAIL = "EMAIL"
-    public static final String TASK_PORT = "PORT"
-    public static final String TASK_MERGE_ROPERTIES = "MERGE-PROPERTIES"
-
-    //Temporary Task
-    public static final String TASK_GROOVYRANGE = "GROOVYRANGE"
-    public static final String TASK_ENCRYPT = "ENCRYPT"
-    public static final String TASK_DECRYPT = "DECRYPT"
 
 
     PropMan propman
@@ -61,6 +30,7 @@ class TaskUtil{
     FileMan fileman
     QuestionMan qman
 
+    String packageNameForTask = 'install.task'
     Integer status
     String propertyPrefix = ''
     List reportMapList = []
@@ -185,6 +155,7 @@ class TaskUtil{
     List<String> buildForm(String propertyPrefix){
         //TODO: Override And Implement
         // To Build 'Question User Response Form'
+        return []
     }
 
 
@@ -207,6 +178,10 @@ class TaskUtil{
     }
 
 
+
+    protected Object newTaskInstance(String taskName){
+        return Util.newInstance("${packageNameForTask}.${taskName}")
+    }
 
     protected List<String> getListWithDashRange(String dashRnage){
         List<String> resultList = []

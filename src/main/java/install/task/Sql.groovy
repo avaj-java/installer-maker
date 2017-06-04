@@ -1,5 +1,6 @@
 package install.task
 
+import install.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.SqlAnalMan
 import jaemisseo.man.SqlMan
@@ -12,7 +13,7 @@ import java.sql.SQLException
 /**
  * Created by sujkim on 2017-02-17.
  */
-class TaskSql extends TaskUtil{
+class Sql extends TaskUtil{
 
     @Override
     Integer run(){

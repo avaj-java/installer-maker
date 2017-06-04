@@ -1,8 +1,11 @@
 package install.task
+
+import install.TaskUtil
+
 /**
  * Created by sujkim on 2017-04-04.
  */
-class TaskExec extends TaskUtil{
+class Exec extends TaskUtil{
 
     @Override
     Integer run(){

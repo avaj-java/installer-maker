@@ -1,12 +1,13 @@
 package install.task
 
+import install.TaskUtil
 import jaemisseo.man.QuestionMan
 import jaemisseo.man.util.QuestionSetup
 
 /**
  * Created by sujkim on 2017-03-18.
  */
-class TaskQuestionYN extends TaskUtil{
+class QuestionYN extends TaskUtil{
 
     @Override
     Integer run(){

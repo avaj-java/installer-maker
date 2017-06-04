@@ -1,8 +1,11 @@
 package install.task
+
+import install.TaskUtil
+
 /**
  * Created by sujkim on 2017-03-18.
  */
-class TaskTestGroovyRange extends TaskUtil{
+class TestGroovyRange extends TaskUtil{
 
     @Override
     Integer run(){

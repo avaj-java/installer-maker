@@ -1,12 +1,13 @@
 package install.task
 
 import groovy.sql.Sql
+import install.TaskUtil
 import jaemisseo.man.util.ConnectionGenerator
 
 /**
  * Created by sujkim on 2017-01-25.
  */
-class TaskTestJDBC extends TaskUtil{
+class TestJDBC extends TaskUtil{
 
     @Override
     Integer run(){

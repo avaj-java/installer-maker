@@ -9,11 +9,11 @@ import jaemisseo.man.PropMan
 
 class Start {
 
-    /**
+    /*************************
      * START INSTALL
      * @param args
      * @throws Exception
-     */
+     *************************/
     static void main(String[] args) throws Exception{
         Map propMap = new InstallerPropertiesGenerator().genPropertiesValueMap(args)
         //Start With Properties Value Map
@@ -25,10 +25,10 @@ class Start {
     InstallerPropertiesGenerator propGen = new InstallerPropertiesGenerator()
     InstallerLogGenerator logGen = new InstallerLogGenerator()
 
-    /**
+    /*************************
      * START
      * @param prop
-     */
+     *************************/
     void start(Map prop){
 
         /////Create Main Bean
@@ -50,9 +50,9 @@ class Start {
         /////LOG
         logGen.logStart(propmanDefault)
 
-        /**
+        /*****
          * BUILDER
-         */
+         *****/
         ///// version
         if (prop['version'] || prop['v']){
             logGen.logVersion(propmanDefault)
@@ -97,9 +97,9 @@ class Start {
             builder.tar()
         }
 
-        /**
+        /*****
          * RECEPTIONIST
-         */
+         *****/
         ///// ask
         if (prop['ask']){
             //From User's FileSystem or Resource
@@ -115,9 +115,9 @@ class Start {
             new JobReceptionist(propmanForReceptionist).ask()
         }
 
-        /**
+        /*****
          * INSTALLER
-         */
+         *****/
         ///// install
         if (prop['install'] || prop['i']){
             //From User's FileSystem or Resource
@@ -133,9 +133,9 @@ class Start {
             new JobInstaller(propmanForInstaller).install()
         }
 
-        /**
+        /*****
          * MACGYVER
-         */
+         *****/
         ///// macgyver
         if (prop['macgyver'] || prop['m']){
             //From User's FileSystem or Resource

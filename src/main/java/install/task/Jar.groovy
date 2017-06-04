@@ -1,12 +1,13 @@
 package install.task
 
+import install.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.util.FileSetup
 
 /**
  * Created by sujkim on 2017-02-22.
  */
-class TaskFileUnzip extends TaskUtil{
+class Jar extends TaskUtil{
 
     @Override
     Integer run(){
@@ -17,8 +18,8 @@ class TaskFileUnzip extends TaskUtil{
         FileSetup fileSetup = genMergedFileSetup()
 
         //DO
-        println "<UNZIP>"
-        FileMan.unzip(filePath, destPath, fileSetup)
+        println "<JAR>"
+        FileMan.jar(filePath, destPath, fileSetup)
 
         return STATUS_TASK_DONE
     }

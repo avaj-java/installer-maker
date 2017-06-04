@@ -1,14 +1,15 @@
 package install.task
 
+import install.TaskUtil
 import jaemisseo.man.PropMan
 import jaemisseo.man.RestMan
 
 /**
  * Created by sujkim on 2017-03-10.
  */
-class TaskTestREST extends TaskUtil{
+class TestREST extends TaskUtil{
 
-    TaskTestREST(PropMan propman){
+    TestREST(PropMan propman){
         this.propman = propman
     }
 

@@ -1,24 +1,25 @@
 package install.task
 
+import install.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.util.FileSetup
 
 /**
  * Created by sujkim on 2017-02-22.
  */
-class TaskFileUntar extends TaskUtil{
+class Mkdir extends TaskUtil{
 
     @Override
     Integer run(){
 
         //Ready
-        String filePath = getFilePath('file.path')
         String destPath = getFilePath('dest.path')
+        Map buildStructureMap = getMap('structure')
         FileSetup fileSetup = genMergedFileSetup()
 
         //DO
-        println "<UNTAR>"
-        FileMan.untar(filePath, destPath, fileSetup)
+        println "<MKDIR>"
+        FileMan.mkdirs(destPath, buildStructureMap)
 
         return STATUS_TASK_DONE
     }

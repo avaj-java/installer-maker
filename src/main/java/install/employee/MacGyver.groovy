@@ -4,8 +4,9 @@ import jaemisseo.man.PropMan
 import jaemisseo.man.ReportMan
 import jaemisseo.man.VariableMan
 import install.bean.ReportSetup
-import install.job.JobUtil
-import install.task.TaskUtil
+import install.JobUtil
+import install.TaskUtil
+import jaemisseo.man.util.Util
 
 /**
  * Created by sujkim on 2017-02-17.
@@ -29,17 +30,12 @@ class MacGyver extends JobUtil {
      * RUN
      */
     Integer run(){
-        List taskMap = [
-            TASK_TAR, TASK_ZIP, TASK_JAR, TASK_UNTAR, TASK_UNZIP, TASK_UNJAR,
-            TASK_MKDIR, TASK_COPY, TASK_MERGE_ROPERTIES, TASK_REPLACE, TASK_SQL,
-            TASK_JDBC, TASK_REST, TASK_SOCKET, TASK_EMAIL, TASK_PORT,
-            TASK_NOTICE, TASK_Q, TASK_Q_CHOICE, TASK_Q_YN, TASK_Q_FIND_FILE, TASK_SET,
-            TASK_GROOVYRANGE, TASK_ENCRYPT, TASK_DECRYPT
-        ]
+        List<Class> clazzList = Util.findAllClasses(packageNameForTask)
 
-        taskMap.each{ String taskCode ->
-            if (propman.get(taskCode.toLowerCase()))
-                runTask(taskCode)
+        clazzList.each{ clazz ->
+            String taskName = clazz.getSimpleName()
+            if (propman.get(taskName))
+                runTask(taskName)
         }
 
         return TaskUtil.STATUS_TASK_DONE
