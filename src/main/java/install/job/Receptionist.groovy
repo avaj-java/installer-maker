@@ -16,9 +16,9 @@ import install.TaskUtil
 /**
  * Created by sujkim on 2017-02-17.
  */
-class JobReceptionist extends JobUtil{
+class Receptionist extends JobUtil{
 
-    JobReceptionist(PropMan propman){
+    Receptionist(PropMan propman){
         //Job Setup
         levelNamesProperty = 'a.level'
         executorNamePrefix = 'a'

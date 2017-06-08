@@ -8,8 +8,23 @@ class TaskTest {
 
     @Test
     void taks_test(){
-        Util.findAllClasses('install.task').each { println it }
-        Util.findAllClasses('jaemisseo.man').each { println it }
+        Util.findAllClasses('').each { Class clazz ->
+            println clazz
+            println clazz.getAnnotations()
+            println clazz.getDeclaredAnnotations()
+            println clazz.getDeclaredConstructors()
+            println clazz.getDeclaredFields()
+            println clazz.getDeclaredMethods()
+            println '//////////\n'
+        }
+
+//        Util.findAllClasses('install.task')
+//
+//        Util.findAllClasses('install.task', Undoable)
+//
+//        Util.findAllClasses('install.task', [Undoable, UndoMore])
+
+
     }
 
 

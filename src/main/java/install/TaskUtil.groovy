@@ -255,7 +255,7 @@ class TaskUtil{
 
     protected List<String> getFilePathList(String propertyName, String extention){
         String filePath = get(propertyName)
-        return FileMan.getFilePathList(filePath, extention)
+        return FileMan.getSubFilePathList(filePath, extention)
     }
 
     protected String getFilePath(String propertyName){

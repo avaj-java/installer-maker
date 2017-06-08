@@ -11,9 +11,9 @@ import jaemisseo.man.util.Util
 /**
  * Created by sujkim on 2017-02-17.
  */
-class JobInstaller extends JobUtil{
+class Installer extends JobUtil{
 
-    JobInstaller(PropMan propman) {
+    Installer(PropMan propman) {
         //Job Setup
         levelNamesProperty = 'i.level'
         executorNamePrefix = 'i'

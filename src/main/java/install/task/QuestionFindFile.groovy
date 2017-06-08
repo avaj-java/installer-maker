@@ -26,12 +26,12 @@ class QuestionFindFile extends TaskUtil{
 
         //Thread-Searcher - START
         println " <Searching>"
-        Thread threadSearcher = Util.newThread(' <Stoped Searching>'){
+        Thread threadSearcher = Util.newThread(' <Stoped Searching>      '){
             int i = 0;
             List<File> foundFileList = FileMan.findAll(searchRootPath, searchFileName, searchIf) { File foundFile ->
                 String editedPath = (editResultPath) ? FileMan.getFullPath(foundFile.path, editResultPath) : foundFile.path
                 println "${++i}) ${editedPath}"
-                itemList << foundFile
+                itemList << new File(editedPath)
                 return true
             }
             println "${foundFileList.size()} was founded."
@@ -68,7 +68,7 @@ class QuestionFindFile extends TaskUtil{
         //Set 'answer' and 'value' Property
         int seletedIndex = (Integer.parseInt(yourAnswer) -1)
         set('answer', yourAnswer)
-        set('value', itemList[seletedIndex])
+        set('value', itemList[seletedIndex].path)
 
         //Set Some Property
         setPropValue()

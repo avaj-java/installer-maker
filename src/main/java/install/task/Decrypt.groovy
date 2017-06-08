@@ -1,7 +1,6 @@
 package install.task
 
 import install.TaskUtil
-import jaemisseo.man.PropMan
 import temp.util.Encryptor
 import temp.util.SEEDUtil
 
@@ -9,12 +8,6 @@ import temp.util.SEEDUtil
  * Created by sujkim on 2017-03-10.
  */
 class Decrypt extends TaskUtil{
-
-    Decrypt(PropMan propman){
-        this.propman = propman
-    }
-
-
 
     @Override
     Integer run(){

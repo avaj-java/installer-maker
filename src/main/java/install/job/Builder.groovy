@@ -13,9 +13,9 @@ import jaemisseo.man.util.Util
 /**
  * Created by sujkim on 2017-02-17.
  */
-class JobBuilder extends JobUtil{
+class Builder extends JobUtil{
 
-    JobBuilder(PropMan propman){
+    Builder(PropMan propman){
         //Job Setup
         levelNamesProperty = 'b.level'
         executorNamePrefix = 'b'

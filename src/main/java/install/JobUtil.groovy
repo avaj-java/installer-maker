@@ -160,18 +160,9 @@ class JobUtil extends TaskUtil{
 
 
 
-    String getTaskName(String propertyPrefix){
-        String taskName = getString("${propertyPrefix}task")?.trim()?.toUpperCase()
-        return taskName
-    }
-
-    Class getTaskClass(String taskName){
-        Class taskClazz = validTaskList.find{ it.getSimpleName().equalsIgnoreCase(taskName) }
-        if (!taskClazz)
-            throw new Exception('Does not exists task.')
-        return taskClazz
-    }
-
+    /**
+     * RUN TASK
+     */
     Integer runTaskByPrefix(String propertyPrefix) {
         String taskName = getTaskName(propertyPrefix)
         return runTask(taskName, propertyPrefix)
@@ -184,11 +175,14 @@ class JobUtil extends TaskUtil{
     Integer runTask(String taskName, String propertyPrefix){
         //Check Valid Task
         Class taskClazz = getTaskClass(taskName)
+
+        //Validation
         if (!taskName)
             throw new Exception(" 'No Task Name. ${propertyPrefix}task=???. Please Check Task.' ")
         if ( (validTaskList && !validTaskList.contains(taskClazz)) || (invalidTaskList && invalidTaskList.contains(taskClazz)) )
             throw new Exception(" 'Sorry, This is Not my task, [${taskName}]. I Can Not do this.' ")
 
+        //Run Task
         TaskUtil taskInctance = newTaskInstance(taskClazz.getSimpleName())
         return taskInctance
                 .setPropman(propman)
@@ -197,6 +191,20 @@ class JobUtil extends TaskUtil{
                 .start(propertyPrefix)
 
         return TaskUtil.STATUS_TASK_RUN_FAILED
+    }
+
+
+
+    String getTaskName(String propertyPrefix){
+        String taskName = getString("${propertyPrefix}task")?.trim()?.toUpperCase()
+        return taskName
+    }
+
+    Class getTaskClass(String taskName){
+        Class taskClazz = validTaskList.find{ it.getSimpleName().equalsIgnoreCase(taskName) }
+        if (!taskClazz)
+            throw new Exception('Does not exists task.')
+        return taskClazz
     }
 
 }

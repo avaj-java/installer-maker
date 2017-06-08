@@ -10,12 +10,6 @@ import temp.util.SEEDUtil
  */
 class Encrypt extends TaskUtil{
 
-    Encrypt(PropMan propman){
-        this.propman = propman
-    }
-
-
-
     @Override
     Integer run(){
 

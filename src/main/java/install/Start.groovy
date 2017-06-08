@@ -1,10 +1,10 @@
 package install
 
 import jaemisseo.man.FileMan
-import install.job.JobReceptionist
-import install.job.JobBuilder
+import install.job.Receptionist
+import install.job.Builder
 import install.employee.MacGyver
-import install.job.JobInstaller
+import install.job.Installer
 import jaemisseo.man.PropMan
 
 class Start {
@@ -62,7 +62,7 @@ class Start {
         ///// init
         if (prop['init']){
             propmanForBuilder.merge(prop)
-            new JobBuilder(propmanForBuilder).init()
+            new Builder(propmanForBuilder).init()
             System.exit(0)
         }
 
@@ -72,7 +72,7 @@ class Start {
                              .merge(prop)
                              .merge(['builder.home': builderHome])
                              .mergeNew(propmanDefault)
-            new JobBuilder(propmanForBuilder).clean()
+            new Builder(propmanForBuilder).clean()
         }
 
         ///// build
@@ -83,11 +83,11 @@ class Start {
                              .merge(prop)
                              .merge(['builder.home': builderHome])
                              .mergeNew(propmanDefault)
-            JobBuilder builder = new JobBuilder(propmanForBuilder)
+            Builder builder = new Builder(propmanForBuilder)
             // - Receptionist
             propmanForReceptionist.merge("${propertiesDir}/receptionist.properties")
                                   .mergeNew(propmanForBuilder)
-            JobReceptionist receptionist = new JobReceptionist(propmanForReceptionist)
+            Receptionist receptionist = new Receptionist(propmanForReceptionist)
             //1. Build
             builder.build()
             //2. Make a Response Form
@@ -112,7 +112,7 @@ class Start {
             propmanForReceptionist.merge(prop)
                                   .merge(['installer.home': installerHome])
                                   .mergeNew(propmanDefault)
-            new JobReceptionist(propmanForReceptionist).ask()
+            new Receptionist(propmanForReceptionist).ask()
         }
 
         /*****
@@ -130,7 +130,7 @@ class Start {
             propmanForInstaller.merge(propmanForReceptionist)
                                .merge(['installer.home': installerHome])
                                .mergeNew(propmanDefault)
-            new JobInstaller(propmanForInstaller).install()
+            new Installer(propmanForInstaller).install()
         }
 
         /*****

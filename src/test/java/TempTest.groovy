@@ -62,14 +62,14 @@ class TempTest {
     @Test
     void "file path range test"(){
         String path = "D:\\dev_by_sj\\Dropbox\\workspacesForCompany\\installer\\build\\libs\\*"
-        List<String> entryList = FileMan.getFilePathList(path)
+        List<String> entryList = FileMan.getSubFilePathList(path)
         println entryList.size()
         println path
         entryList.each{ println it }
         println ""
 
         String path2 = "D:\\dev_by_sj\\Dropbox\\workspacesForCompany\\installer\\build\\libs\\*te*.*ja*"
-        List<String> entryList2 = FileMan.getFilePathList(path2)
+        List<String> entryList2 = FileMan.getSubFilePathList(path2)
         println entryList2.size()
         println path2
         entryList2.each{ println it }
