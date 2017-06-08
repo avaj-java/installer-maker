@@ -33,17 +33,16 @@ class Sql extends TaskUtil{
             String originFileName = new File(filePath).getName()
 
             //2. Generate Query Replaced With New Object Name
-            println "Replace Object Name..."
             sqlman.init()
-                    .queryFromFile("${filePath}")
+                    .queryFromFile(filePath)
                     .command([SqlMan.ALL])
                     .replace(sqlSetup)
 
             //3. Report Checking Before
             if (sqlSetup.modeSqlCheckBefore){
                 try {
-                    println "Checking Before..."
                     sqlman.checkBefore(sqlSetup)
+
                 }catch(e){
                     println "<ERROR> Checking Before Execution"
                     throw new SQLException('Error, Checking Before Execution.')
@@ -58,7 +57,6 @@ class Sql extends TaskUtil{
 
             //4. Execute
             if (sqlSetup.modeSqlExecute){
-                println "Executing..."
                 sqlman.run(sqlSetup)
             }
 
