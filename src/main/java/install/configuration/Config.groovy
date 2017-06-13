@@ -95,13 +95,18 @@ class Config {
         }
     }
 
-    void initInstance(Class clazz){
+    void initInstance(Class clazz) {
         MethodInfomation info = initMap[clazz]
         Object instance = info.instance
         Method method = clazz.getMethod(info.methodName, null)
         println info.methodName
         println clazz
-        method.invoke(instance, null)
+        try {
+            method.invoke(instance, null)
+        }catch(e){
+            e.printStackTrace()
+            throw e
+        }
         initCheckMap[clazz] = true
     }
 
@@ -145,11 +150,15 @@ class Config {
     }
 
     Object runMethod(Object instance, String methodName){
-        println "\n /////"
-        println instance
-        println methodName
-        Method method = instance.getClass().getMethod(methodName, null)
-        return method.invoke(instance, null)
+        Object result
+        try {
+            Method method = instance.getClass().getMethod(methodName, null)
+            result = method.invoke(instance, null)
+        }catch(e){
+            e.printStackTrace()
+            throw e
+        }
+        return result
     }
 
 }
