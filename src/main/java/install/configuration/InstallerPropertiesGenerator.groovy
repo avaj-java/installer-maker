@@ -1,4 +1,4 @@
-package install
+package install.configuration
 
 import install.task.Copy
 import install.task.Jar
@@ -17,10 +17,24 @@ import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.util.PropertiesGenerator
 
+import java.security.CodeSource
+
 /**
  * Created by sujkim on 2017-03-29.
  */
 class InstallerPropertiesGenerator extends PropertiesGenerator{
+
+    Map<String, PropMan> dataMap = [:]
+
+
+    PropMan defaultProperties
+    PropMan externalProperties
+
+    PropMan bilderDefaultProperties
+    PropMan receiptionlistDefaultProperties
+    PropMan installerDefaultProperties
+    PropMan macgyverDefaultProperties
+
 
 
 
@@ -66,9 +80,7 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
 
                 // VALUE VALUE ..
                 }else{
-                    valueList.each{
-                        propValueMap[it] = true
-                    }
+                    propValueMap[''] = valueList
                 }
 
             }else{
@@ -106,7 +118,7 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
 
 
 
-    PropMan genSystemDefaultProperties(){
+    static PropMan genDefaultProperties(){
         return new PropMan([
                 'os.name': System.getProperty('os.name'),
                 'os.version': System.getProperty('os.version'),
@@ -116,36 +128,90 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
                 'user.dir': System.getProperty('user.dir'),
                 'user.home': System.getProperty('user.home'),
                 // installer.jar path
-                'lib.dir': getThisAppFile().getParentFile().getPath(),
-                'lib.path': getThisAppFile().getPath(),
+                'lib.dir': new InstallerPropertiesGenerator().getThisAppFile()?.getParentFile()?.getPath() ?: '',
+                'lib.path': new InstallerPropertiesGenerator().getThisAppFile()?.getPath() ?: '' ,
                 'lib.version': FileMan.getFileFromResource('.version').text,
                 'lib.compiler': FileMan.getFileFromResource('.compiler').text,
                 'lib.build.date': FileMan.getFileFromResource('.date').text,
         ])
     }
 
-    PropMan genBuilderDefaultProperties(){
-        return new PropMan().readResource('defaultProperties/builder.default.properties')
+    static PropMan gen(String filePath){
+        return new PropMan().readFile(filePath)
     }
 
-    PropMan genReceptionistDefaultProperties(){
-        return new PropMan().readResource('defaultProperties/receptionist.default.properties')
-    }
-
-    PropMan genInstallerDefaultProperties(){
-        return new PropMan().readResource('defaultProperties/installer.default.properties')
-    }
-
-    PropMan genMacgyverDefaultProperties(){
-        return new PropMan().readResource('defaultProperties/macgyver.default.properties')
+    static PropMan genResource(String resourcePath){
+        return new PropMan().readResource(resourcePath)
     }
 
 
+
+    boolean containsKey(String key){
+        return dataMap.containsKey(key)
+    }
+
+
+
+    /**
+     *
+     */
+    PropMan get(String key){
+        return dataMap[key]
+    }
+
+    InstallerPropertiesGenerator add(String key, String filePath){
+        dataMap[key] = new PropMan().readFile(filePath)
+        return this
+    }
+
+    InstallerPropertiesGenerator addResource(String key, String resourcePath){
+        dataMap[key] = new PropMan().readResource(resourcePath)
+        return this
+    }
+
+    PropMan genSingleton(String key, String filePath){
+        if (!dataMap.containsKey(key))
+            add(key, filePath)
+        return dataMap[key]
+    }
+
+    PropMan genResourceSingleton(String key, String filePath){
+        if (!dataMap.containsKey(key))
+            addResource(key, filePath)
+        return dataMap[key]
+    }
+
+
+
+    /**
+     *
+     */
+    InstallerPropertiesGenerator makeExternalProperties(String[] args){
+        externalProperties = new PropMan(genPropertiesValueMap(args))
+        return this
+    }
+
+    InstallerPropertiesGenerator makeDefaultProperties(){
+        defaultProperties = genDefaultProperties()
+        return this
+    }
+
+    PropMan getExternalProperties(){
+        return externalProperties
+    }
+
+    PropMan getDefaultProperties(){
+        return defaultProperties
+    }
 
 
 
     File getThisAppFile(){
-        return new File(this.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath())
+        File thisAppFile
+        CodeSource src = this.getClass().getProtectionDomain().getCodeSource()
+        if (src)
+            thisAppFile = new File( src.getLocation().toURI().getPath() )
+        return thisAppFile
     }
 
 }

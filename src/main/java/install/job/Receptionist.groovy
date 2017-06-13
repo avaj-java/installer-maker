@@ -1,34 +1,35 @@
 package install.job
 
 import install.JobUtil
-import install.task.Notice
-import install.task.QuestionFindFile
+import install.TaskUtil
+import install.annotation.Command
+import install.annotation.Init
+import install.annotation.Job
+import install.bean.ReceptionistGlobalOption
+import install.configuration.InstallerPropertiesGenerator
+import install.task.*
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.VariableMan
 import jaemisseo.man.util.FileSetup
-import install.bean.ReceptionistGlobalOption
-import install.task.Question
-import install.task.QuestionChoice
-import install.task.QuestionYN
-import install.TaskUtil
+
+import java.util.Set
 
 /**
  * Created by sujkim on 2017-02-17.
  */
+@Job
 class Receptionist extends JobUtil{
 
-    Receptionist(PropMan propman){
-        //Job Setup
+    @Init(lately=true)
+    void init(){
         levelNamesProperty = 'a.level'
         executorNamePrefix = 'a'
         propertiesFileName = 'receptionist.properties'
         validTaskList = [Notice, Question, QuestionChoice, QuestionYN, QuestionFindFile, Set]
 
-        this.propman = propman
-        this.varman = new VariableMan(propman.properties)
-        parsePropMan(propman, varman, executorNamePrefix)
-        setBeforeGetProp(propman, varman)
+        this.propman = setupPropMan(propGen)
+        this.varman = setupVariableMan(propman, executorNamePrefix)
         this.gOpt = new ReceptionistGlobalOption().merge(new ReceptionistGlobalOption(
                 modeRemember        : getBoolean("mode.remember.answer"),
                 rememberFilePath    : getString("remember.answer.file.path"),
@@ -37,60 +38,35 @@ class Receptionist extends JobUtil{
         ))
     }
 
-    /*************************
-     * BUILD FORM
-     *************************/
-    /**
-     * Generate Response File
-     * 1. Load receptionist.properties
-     * 2. Gen install.rsp
-     */
-    void buildForm(){
-        if (!propman.getBoolean('mode.auto.rsp'))
-            return
+    PropMan setupPropMan(InstallerPropertiesGenerator propGen){
+        PropMan propmanForReceptionist = propGen.get('receptionist')
+        PropMan propmanDefault = propGen.getDefaultProperties()
+        PropMan propmanExternal = propGen.getExternalProperties()
 
-        List<String> allLineList = []
+        if (propmanDefault.getBoolean('mode.build.form')){
+            //Mode Build Form
+            PropMan propmanForBuilder = propGen.get('builder')
+            String propertiesDir = propmanExternal.get('properties.dir') ?: propmanDefault.get('user.dir')
+            propmanForReceptionist.merge("${propertiesDir}/receptionist.properties").mergeNew(propmanForBuilder)
 
-        logBigTitle('AUTO CREATE RESPONSE FILE')
-
-        //Each level by level
-        eachLevel{ String propertyPrefix ->
-            String taskName = getTaskName(propertyPrefix)
-            Class taskClazz  = getTaskClass(taskName)
-            //Check Valid Task
-            if (!taskName || !taskClazz)
-                throw new Exception(" 'No Task Name. ${propertyPrefix}task=???. Please Check Task.' ")
-            if ( (validTaskList && !validTaskList.contains(taskClazz)) || (invalidTaskList && invalidTaskList.contains(taskClazz)) )
-                throw new Exception(" 'Sorry, This is Not my task, [${taskName}]. I Can Not do this.' ")
-            //Build Task's Form
-            TaskUtil taskInstance = newTaskInstance(taskClazz.getSimpleName())
-            List<String> lineList = taskInstance.setPropman(propman).buildForm(propertyPrefix)
-            //Add One Question into Form
-            if (lineList){
-                List editingList = lineList.collect{ "# $it" }
-                editingList.add(0, "#########################")
-                editingList << "#########################"
-                editingList << "${propertyPrefix}answer="
-                editingList << ""
-                allLineList.addAll(editingList)
-            }
+        }else{
+            //Normally
+            String libtohomeRelPath = FileMan.getFileFromResource('.libtohome')?.text.replaceAll('\\s*', '') ?: '../'
+            String installerHome = FileMan.getFullPath(propmanDefault.get('lib.dir'), libtohomeRelPath)
+            //From User's FileSystem or Resource
+            String userSetPropertiesDir = propmanExternal['properties.dir']
+            if (userSetPropertiesDir)
+                propmanForReceptionist.merge("${userSetPropertiesDir}/receptionist.properties")
+            else
+                propmanForReceptionist.mergeResource("receptionist.properties")
+            propmanForReceptionist.merge(propmanExternal).mergeNew(propmanDefault).merge(['installer.home': installerHome])
         }
-
-        //Make a Response File
-        if (allLineList){
-            String buildInstallerHome = getString('build.installer.home')
-            String homeToRspRelPath = getString('installer.home.to.rsp.relpath')
-            String rspDestPath = FileMan.getFullPath(buildInstallerHome, homeToRspRelPath)
-            String rspInstallRspDestPath = "${rspDestPath}/install.rsp"
-            FileMan.write(rspInstallRspDestPath, allLineList, true)
-        }
+        
+        return propmanForReceptionist
     }
 
 
-
-    /*************************
-     * ASK
-     *************************/
+    @Command('ask')
     void ask(){
         //0. Check Response File
         if (checkResponseFile()){
@@ -146,6 +122,8 @@ class Receptionist extends JobUtil{
         }
     }
 
+
+
     /*************************
      * Backup & Write Remeber File
      *************************/
@@ -171,5 +149,51 @@ class Receptionist extends JobUtil{
         }
     }
 
+
+    /*************************
+     * BUILD FORM
+     *************************/
+    /**
+     * Generate Response File
+     * 1. Load receptionist.properties
+     * 2. Gen install.rsp
+     */
+    void buildForm(){
+        List<String> allLineList = []
+
+        logBigTitle('AUTO CREATE RESPONSE FILE')
+
+        //Each level by level
+        eachLevel{ String propertyPrefix ->
+            String taskName = getTaskName(propertyPrefix)
+            Class taskClazz  = getTaskClass(taskName)
+            //Check Valid Task
+            if (!taskName || !taskClazz)
+                throw new Exception(" 'No Task Name. ${propertyPrefix}task=???. Please Check Task.' ")
+            if ( (validTaskList && !validTaskList.contains(taskClazz)) || (invalidTaskList && invalidTaskList.contains(taskClazz)) )
+                throw new Exception(" 'Sorry, This is Not my task, [${taskName}]. I Can Not do this.' ")
+            //Build Task's Form
+            TaskUtil taskInstance = newTaskInstance(taskClazz.getSimpleName())
+            List<String> lineList = taskInstance.setPropman(propman).buildForm(propertyPrefix)
+            //Add One Question into Form
+            if (lineList){
+                List editingList = lineList.collect{ "# $it" }
+                editingList.add(0, "#########################")
+                editingList << "#########################"
+                editingList << "${propertyPrefix}answer="
+                editingList << ""
+                allLineList.addAll(editingList)
+            }
+        }
+
+        //Make a Response File
+        if (allLineList){
+            String buildInstallerHome = getString('build.installer.home')
+            String homeToRspRelPath = getString('installer.home.to.rsp.relpath')
+            String rspDestPath = FileMan.getFullPath(buildInstallerHome, homeToRspRelPath)
+            String rspInstallRspDestPath = "${rspDestPath}/install.rsp"
+            FileMan.write(rspInstallRspDestPath, allLineList, true)
+        }
+    }
 
 }

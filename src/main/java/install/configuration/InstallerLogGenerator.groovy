@@ -1,4 +1,4 @@
-package install
+package install.configuration
 
 import jaemisseo.man.PropMan
 import jaemisseo.man.util.PropertiesGenerator

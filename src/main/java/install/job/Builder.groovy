@@ -1,51 +1,65 @@
 package install.job
 
 import install.JobUtil
+import install.annotation.Command
+import install.annotation.Init
+import install.annotation.Job
 import install.bean.BuilderGlobalOption
 import install.bean.ReportSetup
+import install.configuration.InstallerPropertiesGenerator
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.ReportMan
-import jaemisseo.man.VariableMan
 import jaemisseo.man.util.FileSetup
 import jaemisseo.man.util.Util
 
 /**
  * Created by sujkim on 2017-02-17.
  */
+@Job
 class Builder extends JobUtil{
 
-    Builder(PropMan propman){
-        //Job Setup
+    @Init
+    void init(){
         levelNamesProperty = 'b.level'
         executorNamePrefix = 'b'
         propertiesFileName = 'builder.properties'
         validTaskList = Util.findAllClasses(packageNameForTask)
 
-        this.propman = propman
-        this.varman = new VariableMan(propman.properties)
-        parsePropMan(propman, varman, executorNamePrefix)
-        setBeforeGetProp(propman, varman)
+        this.propman = setupPropMan(propGen)
+        this.varman = setupVariableMan(propman, executorNamePrefix)
         this.gOpt = new BuilderGlobalOption().merge(new BuilderGlobalOption(
-            fileSetup           : genGlobalFileSetup(),
-            reportSetup         : genReportSetup(),
+                fileSetup           : genGlobalFileSetup(),
+                reportSetup         : genReportSetup(),
 
-            installerName            : getString('installer.name') ?: 'installer',
-            installerHomeToLibRelPath: getString('installer.home.to.lib.relpath') ?: './lib',
-            installerHomeToBinRelPath: getString('installer.home.to.bin.relpath') ?: './bin',
-            installerHomeToRspRelPath: getString('installer.home.to.rsp.relpath') ?: './rsp',
-            buildDir            : getFilePath('build.dir'),
-            buildTempDir        : getFilePath('build.temp.dir'),
-            buildDistDir        : getFilePath('build.dist.dir'),
-            buildInstallerHome  : getFilePath('build.installer.home'),
-            modeAutoRsp         : getFilePath('mode.auto.rsp'),
-            modeAutoZip         : getFilePath('mode.auto.zip'),
-            modeAutoTar         : getFilePath('mode.auto.tar'),
-            propertiesDir       : getString('properties.dir') ?: './',
+                installerName            : getString('installer.name') ?: 'installer',
+                installerHomeToLibRelPath: getString('installer.home.to.lib.relpath') ?: './lib',
+                installerHomeToBinRelPath: getString('installer.home.to.bin.relpath') ?: './bin',
+                installerHomeToRspRelPath: getString('installer.home.to.rsp.relpath') ?: './rsp',
+                buildDir            : getFilePath('build.dir'),
+                buildTempDir        : getFilePath('build.temp.dir'),
+                buildDistDir        : getFilePath('build.dist.dir'),
+                buildInstallerHome  : getFilePath('build.installer.home'),
+                modeAutoRsp         : getFilePath('mode.auto.rsp'),
+                modeAutoZip         : getFilePath('mode.auto.zip'),
+                modeAutoTar         : getFilePath('mode.auto.tar'),
+                propertiesDir       : getString('properties.dir') ?: './',
         ))
     }
 
+    PropMan setupPropMan(InstallerPropertiesGenerator propGen){
+        PropMan propmanForBuilder = propGen.get('builder')
+        PropMan propmanDefault = propGen.getDefaultProperties()
+        PropMan propmanExternal = propGen.getExternalProperties()
+        String propertiesDir = propmanExternal.get('properties.dir') ?: propmanDefault.get('user.dir')
 
+        propmanForBuilder.merge("${propertiesDir}/builder.properties")
+                        .merge(propmanExternal)
+                        .mergeNew(propmanDefault)
+                        .merge(['builder.home': FileMan.getFullPath(propmanDefault.get('lib.dir'), '../')])
+
+        return propmanForBuilder
+    }
 
 
 
@@ -56,7 +70,8 @@ class Builder extends JobUtil{
      * 2. receptionist.properties
      * 3. installer.properties
      *************************/
-    void init(){
+    @Command('init')
+    void initCommand(){
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
         fileSetup.modeAutoOverWrite = false
@@ -97,6 +112,7 @@ class Builder extends JobUtil{
      * CLEAN
      * Clean Build Directory
      *************************/
+    @Command('clean')
     void clean(){
         try{
             FileMan.delete(gOpt.buildInstallerHome)
@@ -109,25 +125,52 @@ class Builder extends JobUtil{
     /*************************
      * BUILD
      *************************/
+    @Command('build')
     void build(){
-        ReportSetup reportSetup = gOpt.reportSetup
-        //1. Gen Starter and Response File
-        genLibAndBin()
-        //2. Each level by level
-        eachLevelForTask{ String propertyPrefix ->
-            try{
-                return runTaskByPrefix("${propertyPrefix}")
-            }catch(e){
-                //Write Report
-                writeReport(reportMapList, reportSetup)
-                throw e
+        try{
+            ReportSetup reportSetup = gOpt.reportSetup
+            //1. Gen Starter and Response File
+            genLibAndBin()
+
+            //2. Each level by level
+            eachLevelForTask{ String propertyPrefix ->
+                try{
+                    return runTaskByPrefix("${propertyPrefix}")
+                }catch(e){
+                    //Write Report
+                    writeReport(reportMapList, reportSetup)
+                    throw e
+                }
             }
+            //Write Report
+            writeReport(reportMapList, reportSetup)
+
+            // - 1) Make a Response Form
+            if (propman.getBoolean('mode.auto.rsp'))
+                buildForm()
+
+            // - 2) Zip
+            if (propman.getBoolean('mode.auto.zip'))
+                zip()
+
+            // - 3) Tar
+            if (propman.getBoolean('mode.auto.tar'))
+                tar()
+
+        }catch(e){
+            e.printStackTrace()
+            throw e
         }
-        //Write Report
-        writeReport(reportMapList, reportSetup)
     }
 
+    void buildForm(){
+        propGen.getDefaultProperties().set('mode.build.form', true)
 
+        Receptionist receptionist = new Receptionist()
+        receptionist.propGen = propGen
+        receptionist.init()
+        receptionist.buildForm()
+    }
 
     /*************************
      * WRITE Report
@@ -164,7 +207,6 @@ class Builder extends JobUtil{
      *  3. Generate Bin
      *************************/
     private void genLibAndBin(){
-
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
         FileSetup fileSetupForLin = fileSetup.clone([lineBreak:'\n'])
@@ -272,9 +314,6 @@ class Builder extends JobUtil{
      *   To: ${build.dist.dir}
      *************************/
     void zip(){
-        if (!propman.getBoolean('mode.auto.zip'))
-            return
-
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
         String installerName = gOpt.installerName
@@ -295,9 +334,6 @@ class Builder extends JobUtil{
      *   To: ${build.dist.dir}
      *************************/
     void tar(){
-        if (!propman.getBoolean('mode.auto.tar'))
-            return
-
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
         String installerName = gOpt.installerName

@@ -10,7 +10,7 @@ String projectName = "installer"
 version = "git describe --tags".execute([], project.projectDir).text.trim()
 String libFileName = "${projectName}-${version}"
 group = "jaemmisseo"
-mainClassName = "install.Start"
+mainClassName = "install.Starter"
 String installerHome = "$System.env.INSTALLER_HOME"
 
 buildscript {
@@ -127,8 +127,8 @@ repositories {
 dependencies {
 
     //JAEMISSEO
-    compile "com.github.avaj-java:common-util:0.1.36"
-    compile "com.github.avaj-java:common-man:0.1.37"
+    compile "com.github.avaj-java:common-util:0.1.38"
+    compile "com.github.avaj-java:common-man:0.1.38"
     compile "com.github.avaj-java:fileman:0.1.1"
     compile "com.github.avaj-java:reportman:0.0.1"
     compile "com.github.avaj-java:restman:0.0.1"
