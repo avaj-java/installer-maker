@@ -1,7 +1,11 @@
 package install
 
+import install.configuration.InstallerLogGenerator
+import install.configuration.InstallerPropertiesGenerator
 import install.task.*
 import jaemisseo.man.FileMan
+import jaemisseo.man.PropMan
+import jaemisseo.man.VariableMan
 
 /**
  * Created by sujkim on 2017-04-07.
@@ -18,6 +22,25 @@ class JobUtil extends TaskUtil{
     Integer taskResultStatus
     List<Class> undoableList = [Question, QuestionChoice, QuestionYN, QuestionFindFile, Set, Notice]
     List<Class> undoMoreList = [Set, Notice]
+
+    InstallerPropertiesGenerator propGen = new InstallerPropertiesGenerator()
+    InstallerLogGenerator logGen = new InstallerLogGenerator()
+
+
+
+    PropMan setupPropMan(InstallerPropertiesGenerator propGen){
+        String poolName = this.getClass().simpleName.toLowerCase()
+        PropMan propman = propGen.get(poolName)
+        return propman
+    }
+
+    VariableMan setupVariableMan(PropMan propman, String executorNamePrefix){
+        VariableMan varman = new VariableMan(propman.properties)
+        parsePropMan(propman, varman, executorNamePrefix)
+        setBeforeGetProp(propman, varman)
+        return varman
+    }
+
 
 
     //level by level For Task
@@ -50,13 +73,10 @@ class JobUtil extends TaskUtil{
         List<String> levelList = getSpecificLevelList(levelNamesProperty) ?: geLinetOrderedLevelList(propertiesFileName, executorNamePrefix)
 
         //2. Do Each Tasks
-        for (int i=0; i<levelList.size(); i++){
-            String levelName = levelList[i]
+        levelList.eachWithIndex{ levelName, i ->
             String propertyPrefix = "${executorNamePrefix}.${levelName}."
-            //- Do Task
             closure(propertyPrefix)
         }
-
     }
 
     protected List<String> getSpecificLevelList(String levelNamesProperty){

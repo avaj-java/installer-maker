@@ -1,35 +1,55 @@
 package install.employee
 
+import install.JobUtil
+import install.TaskUtil
+import install.annotation.Command
+import install.annotation.Employee
+import install.annotation.Init
+import install.bean.ReportSetup
+import install.configuration.InstallerPropertiesGenerator
 import jaemisseo.man.PropMan
 import jaemisseo.man.ReportMan
 import jaemisseo.man.VariableMan
-import install.bean.ReportSetup
-import install.JobUtil
-import install.TaskUtil
 import jaemisseo.man.util.Util
 
 /**
  * Created by sujkim on 2017-02-17.
  */
+@Employee
 class MacGyver extends JobUtil {
 
-    MacGyver(PropMan propman){
+    @Init
+    void init(){
         levelNamesProperty = 'macgyver.level'
         executorNamePrefix = 'm'
         propertiesFileName = 'macgyver.properties'
 
-        this.propman = propman
-        this.varman = new VariableMan(propman.properties)
-        parsePropMan(propman, varman, executorNamePrefix)
-        setBeforeGetProp(propman, varman)
+        this.propman = setupPropMan(propGen)
+        this.varman = setupVariableMan(propman, executorNamePrefix)
     }
 
+    PropMan setupPropMan(InstallerPropertiesGenerator propGen){
+        PropMan propmanForMacgyver = propGen.get('macgyver')
+        PropMan propmanDefault = propGen.getDefaultProperties()
+        PropMan propmanExternal = propGen.getExternalProperties()
 
+        //From User's FileSystem or Resource
+        String userSetPropertiesDir = propmanExternal['properties.dir']
+        if (userSetPropertiesDir)
+            propmanForMacgyver.merge("${userSetPropertiesDir}/macgyver.properties")
+        else
+            propmanForMacgyver.mergeResource("macgyver.properties")
 
-    /**
-     * RUN
-     */
-    Integer run(){
+        propmanForMacgyver.merge(propmanExternal)
+                            .mergeNew(propmanDefault)
+
+        return propmanForMacgyver
+    }
+
+    
+
+    @Command('doSomething')
+    Integer doSomething(){
         List<Class> clazzList = Util.findAllClasses(packageNameForTask)
 
         clazzList.each{ clazz ->
@@ -39,14 +59,14 @@ class MacGyver extends JobUtil {
         }
 
         return TaskUtil.STATUS_TASK_DONE
-
     }
 
 
     /**
      * DO SOMETHING
      */
-    void doSomething(){
+    @Command('macgyver')
+    void macgyver(){
 
         ReportSetup reportSetup = genGlobalReportSetup()
 

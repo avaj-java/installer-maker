@@ -1,34 +1,35 @@
 package install.job
 
 import install.JobUtil
-import install.task.Notice
-import install.task.QuestionFindFile
+import install.TaskUtil
+import install.annotation.Command
+import install.annotation.Init
+import install.annotation.Job
+import install.bean.ReceptionistGlobalOption
+import install.configuration.InstallerPropertiesGenerator
+import install.task.*
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.VariableMan
 import jaemisseo.man.util.FileSetup
-import install.bean.ReceptionistGlobalOption
-import install.task.Question
-import install.task.QuestionChoice
-import install.task.QuestionYN
-import install.TaskUtil
+
+import java.util.Set
 
 /**
  * Created by sujkim on 2017-02-17.
  */
+@Job
 class Receptionist extends JobUtil{
 
-    Receptionist(PropMan propman){
-        //Job Setup
+    @Init(lately=true)
+    void init(){
         levelNamesProperty = 'a.level'
         executorNamePrefix = 'a'
         propertiesFileName = 'receptionist.properties'
         validTaskList = [Notice, Question, QuestionChoice, QuestionYN, QuestionFindFile, Set]
 
-        this.propman = propman
-        this.varman = new VariableMan(propman.properties)
-        parsePropMan(propman, varman, executorNamePrefix)
-        setBeforeGetProp(propman, varman)
+        this.propman = setupPropMan(propGen)
+        this.varman = setupVariableMan(propman, executorNamePrefix)
         this.gOpt = new ReceptionistGlobalOption().merge(new ReceptionistGlobalOption(
                 modeRemember        : getBoolean("mode.remember.answer"),
                 rememberFilePath    : getString("remember.answer.file.path"),
@@ -36,6 +37,35 @@ class Receptionist extends JobUtil{
                 responseFilePath    : getString("response.file.path"),
         ))
     }
+
+    PropMan setupPropMan(InstallerPropertiesGenerator propGen){
+        PropMan propmanForReceptionist = propGen.get('receptionist')
+        PropMan propmanDefault = propGen.getDefaultProperties()
+        PropMan propmanExternal = propGen.getExternalProperties()
+
+        if (propmanDefault.getBoolean('mode.build.form')){
+            //Mode Build Form
+            PropMan propmanForBuilder = propGen.get('build')
+            String propertiesDir = propmanExternal.get('properties.dir') ?: propmanDefault.get('user.dir')
+            propmanForReceptionist.merge("${propertiesDir}/receptionist.properties").mergeNew(propmanForBuilder)
+
+        }else{
+            //Normally
+            String libtohomeRelPath = FileMan.getFileFromResource('.libtohome')?.text.replaceAll('\\s*', '') ?: '../'
+            String installerHome = FileMan.getFullPath(propmanDefault.get('lib.dir'), libtohomeRelPath)
+            //From User's FileSystem or Resource
+            String userSetPropertiesDir = propmanExternal['properties.dir']
+            if (userSetPropertiesDir)
+                propmanForReceptionist.merge("${userSetPropertiesDir}/receptionist.properties")
+            else
+                propmanForReceptionist.mergeResource("receptionist.properties")
+            propmanForReceptionist.merge(propmanExternal).mergeNew(propmanDefault).merge(['installer.home': installerHome])
+        }
+        
+        return propmanForReceptionist
+    }
+
+
 
     /*************************
      * BUILD FORM
@@ -46,9 +76,6 @@ class Receptionist extends JobUtil{
      * 2. Gen install.rsp
      */
     void buildForm(){
-        if (!propman.getBoolean('mode.auto.rsp'))
-            return
-
         List<String> allLineList = []
 
         logBigTitle('AUTO CREATE RESPONSE FILE')
@@ -91,6 +118,7 @@ class Receptionist extends JobUtil{
     /*************************
      * ASK
      *************************/
+    @Command('ask')
     void ask(){
         //0. Check Response File
         if (checkResponseFile()){

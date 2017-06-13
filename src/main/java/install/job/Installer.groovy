@@ -1,27 +1,33 @@
 package install.job
 
 import install.JobUtil
+import install.annotation.Command
+import install.annotation.Init
+import install.annotation.Job
+import install.bean.InstallerGlobalOption
+import install.bean.ReportSetup
+import install.configuration.InstallerPropertiesGenerator
+import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.ReportMan
 import jaemisseo.man.VariableMan
-import install.bean.InstallerGlobalOption
-import install.bean.ReportSetup
 import jaemisseo.man.util.Util
 
 /**
  * Created by sujkim on 2017-02-17.
  */
+@Job
 class Installer extends JobUtil{
 
-    Installer(PropMan propman) {
-        //Job Setup
+    @Init(lately=true)
+    void init(){
         levelNamesProperty = 'i.level'
         executorNamePrefix = 'i'
         propertiesFileName = 'installer.properties'
         validTaskList = Util.findAllClasses(packageNameForTask)
 
-        this.propman = propman
-        this.varman = new VariableMan(propman.properties)
+        this.propman = setupPropMan(propGen)
+        this.varman = setupVariableMan(propman, executorNamePrefix)
         parsePropMan(propman, varman, executorNamePrefix)
         setBeforeGetProp(propman, varman)
         this.gOpt = new InstallerGlobalOption().merge(new InstallerGlobalOption(
@@ -30,11 +36,35 @@ class Installer extends JobUtil{
         ))
     }
 
+    PropMan setupPropMan(InstallerPropertiesGenerator propGen){
+        PropMan propmanForInstaller = propGen.get('builder')
+        PropMan propmanForReceptionist = propGen.get('receptionist')
+        PropMan propmanDefault = propGen.getDefaultProperties()
+        PropMan propmanExternal = propGen.getExternalProperties()
+
+        String libtohomeRelPath = FileMan.getFileFromResource('.libtohome')?.text.replaceAll('\\s*', '') ?: '../'
+        String installerHome = FileMan.getFullPath(propmanDefault.get('lib.dir'), libtohomeRelPath)
+
+        //From User's FileSystem or Resource
+        String userSetPropertiesDir = propmanExternal['properties.dir']
+        if (userSetPropertiesDir)
+            propmanForInstaller.merge("${userSetPropertiesDir}/installer.properties")
+        else
+            propmanForInstaller.mergeResource("installer.properties")
+
+        propmanForInstaller.merge(propmanForReceptionist)
+                            .mergeNew(propmanDefault)
+                            .merge(['installer.home': installerHome])
+
+        return propmanForInstaller
+    }
+
 
 
     /*************************
      * INSTALL
      *************************/
+    @Command('install')
     void install(){
         ReportSetup reportSetup = gOpt.reportSetup
         //Each level by level
