@@ -99,8 +99,6 @@ class Config {
         MethodInfomation info = initMap[clazz]
         Object instance = info.instance
         Method method = clazz.getMethod(info.methodName, null)
-        println info.methodName
-        println clazz
         try {
             method.invoke(instance, null)
         }catch(e){
