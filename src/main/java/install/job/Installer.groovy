@@ -37,7 +37,7 @@ class Installer extends JobUtil{
     }
 
     PropMan setupPropMan(InstallerPropertiesGenerator propGen){
-        PropMan propmanForInstaller = propGen.get('builder')
+        PropMan propmanForInstaller = propGen.get('installer')
         PropMan propmanForReceptionist = propGen.get('receptionist')
         PropMan propmanDefault = propGen.getDefaultProperties()
         PropMan propmanExternal = propGen.getExternalProperties()

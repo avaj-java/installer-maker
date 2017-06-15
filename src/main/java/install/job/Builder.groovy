@@ -19,7 +19,7 @@ import jaemisseo.man.util.Util
 @Job
 class Builder extends JobUtil{
 
-    @Init
+    @Init(lately=true)
     void init(){
         levelNamesProperty = 'b.level'
         executorNamePrefix = 'b'
