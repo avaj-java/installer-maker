@@ -342,6 +342,9 @@ class TaskUtil{
                 db          : propman.get("${propertyPrefix}sql.db"),
                 user        : propman.get("${propertyPrefix}sql.user"),
                 password    : propman.get("${propertyPrefix}sql.password"),
+                //-CheckBefore
+                commnadListThatObjectMustExist: propman.parse("${propertyPrefix}sql.command.that.object.must.exist"),
+                commnadListThatObjectMustNotExist: propman.parse("${propertyPrefix}sql.command.that.object.must.not.exist"),
                 //-Replacement
                 replace             : propman.parse("${propertyPrefix}sql.replace"),
                 replaceTable        : propman.parse("${propertyPrefix}sql.replace.table"),
