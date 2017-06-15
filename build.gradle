@@ -129,7 +129,7 @@ dependencies {
     //JAEMISSEO
     compile "com.github.avaj-java:common-util:0.1.40"
     compile "com.github.avaj-java:common-man:0.1.41"
-    compile "com.github.avaj-java:fileman:0.1.39"
+    compile "com.github.avaj-java:fileman:0.1.40"      
     compile "com.github.avaj-java:reportman:0.0.1"
     compile "com.github.avaj-java:restman:0.0.1"
 
