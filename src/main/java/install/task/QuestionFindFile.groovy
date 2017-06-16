@@ -27,10 +27,11 @@ class QuestionFindFile extends TaskUtil{
         //Thread-Searcher - START
         println " <Searching>"
         Thread threadSearcher = Util.newThread(' <Stoped Searching>      '){
-            int i = 0;
-            List<File> foundFileList = FileMan.findAll(searchRootPath, searchFileName, searchIf) { File foundFile ->
+            List<File> foundFileList = FileMan.findAllWithProgressBar(searchRootPath, searchFileName, searchIf) { data ->
+                File foundFile = data.item
+                int count = data.count
                 String editedPath = (editResultPath) ? FileMan.getFullPath(foundFile.path, editResultPath) : foundFile.path
-                println "${++i}) ${editedPath}"
+                data.stringList << "${count}) ${editedPath}"
                 itemList << new File(editedPath)
                 return true
             }

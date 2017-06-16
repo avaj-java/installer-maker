@@ -62,7 +62,6 @@ class Sql extends TaskUtil{
 
         }
 
-        println "<DONE>"
         return STATUS_TASK_DONE
     }
 
