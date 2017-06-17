@@ -11,17 +11,16 @@ class InstallerLogGenerator extends PropertiesGenerator{
 
 
     void logVersion(PropMan propman){
-        println "Installer Version ${propman.get('lib.version')}"
-        println "${propman.get('lib.compiler')} compiled on ${propman.get('lib.build.date')}"
+        String thisVersion  = propman.get('lib.version')
+        String thisBuildDate = propman.get('lib.build.date')
         println ""
-        println "Sinna Jaemisseo"
-        println "http://jaemi.me"
-        println "http://youtube.com/chooseamenu"
-        println "http://github.com/souljungkim"
-        println '\n"Have a Good Time" :) '
+        println "Installer Version ${thisVersion}"
+        println "${propman.get('lib.compiler')} compiled on ${thisBuildDate}"
+        println "https://github.com/avaj-java/installer-maker"
+        println ""
     }
 
-    void logStart(PropMan propman){
+    void logSystem(PropMan propman){
         String thisVersion  = propman.get('lib.version')
         String thisPath     = propman.get('lib.path')
         String osName       = propman.get('os.name')
@@ -32,7 +31,7 @@ class InstallerLogGenerator extends PropertiesGenerator{
         String homePath     = propman.get('user.home')
         String nowPath      = propman.get('user.dir')
         println ""
-        println "<<< WELCOME INSTALLER ${thisVersion} >>>"
+        println "Check your system "
         println " - OS            : ${osName}, ${osVersion}"
         println " - USER          : ${userName}"
         println " - JAVA Version  : ${javaVersion} (${javaHome})"
@@ -44,7 +43,7 @@ class InstallerLogGenerator extends PropertiesGenerator{
 
     void logFinished(){
         println ""
-        println "<<< FINISHED INSTALLER >>>"
+        println "   <<< Bye >>>"
         println ""
     }
 

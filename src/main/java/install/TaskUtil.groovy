@@ -1,14 +1,10 @@
 package install
 
-import jaemisseo.man.FileMan
-import jaemisseo.man.PropMan
-import jaemisseo.man.QuestionMan
-import jaemisseo.man.SqlMan
-import jaemisseo.man.VariableMan
-import jaemisseo.man.util.FileSetup
-import jaemisseo.man.util.SqlSetup
-import jaemisseo.man.util.QuestionSetup
 import install.bean.ReportSetup
+import jaemisseo.man.*
+import jaemisseo.man.util.FileSetup
+import jaemisseo.man.util.QuestionSetup
+import jaemisseo.man.util.SqlSetup
 import jaemisseo.man.util.Util
 
 /**
@@ -166,9 +162,9 @@ class TaskUtil{
         println ""
         println ""
         println ""
-        println "///////////////////////////////////////////////////////////////////////////"
-        println "///// ${title}"
-        println "///////////////////////////////////////////////////////////////////////////"
+        println "-------------------------"
+        println "----- ${title}"
+        println "-------------------------"
     }
 
     protected void logMiddleTitle(String title){

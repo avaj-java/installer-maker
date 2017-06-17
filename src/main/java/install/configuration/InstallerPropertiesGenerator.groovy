@@ -43,11 +43,11 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
         Map valueListMap = super.genValueListMap(args)
         Map propertiesValueMap = genPropertiesValueMap(valueListMap)
         //Check
-        println "- Check Arguments."
-        propertiesValueMap.each{
-            println "${it.key}=${it.value}"
-        }
-        println ""
+//        println "- Check Arguments."
+//        propertiesValueMap.each{
+//            println "${it.key}=${it.value}"
+//        }
+//        println ""
         return propertiesValueMap
     }
 

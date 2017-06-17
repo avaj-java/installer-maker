@@ -34,7 +34,6 @@ class Starter {
         PropMan propmanDefault = propGen.getDefaultProperties()
         PropMan propmanExternal = propGen.getExternalProperties()
 
-        logGen.logStart(propmanDefault)
 
         /*****
          * Command
@@ -46,8 +45,16 @@ class Starter {
         /*****
          * Version Check
          *****/
-        if (propmanExternal.getBoolean('version') || propmanExternal.getBoolean('v')){
+        if (propmanExternal.getBoolean(['version', 'v'])){
             logGen.logVersion(propmanDefault)
+            System.exit(0)
+        }
+
+        /*****
+         * System Check
+         *****/
+        if (propmanExternal.getBoolean(['system', 's'])){
+            logGen.logSystem(propmanDefault)
             System.exit(0)
         }
 

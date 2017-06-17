@@ -31,7 +31,7 @@ class QuestionFindFile extends TaskUtil{
                 File foundFile = data.item
                 int count = data.count
                 String editedPath = (editResultPath) ? FileMan.getFullPath(foundFile.path, editResultPath) : foundFile.path
-                data.stringList << "${count}) ${editedPath}"
+                data.stringList << "  ${count}) ${editedPath}"
                 itemList << new File(editedPath)
                 return true
             }

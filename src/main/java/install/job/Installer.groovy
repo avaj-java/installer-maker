@@ -10,7 +10,6 @@ import install.configuration.InstallerPropertiesGenerator
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.ReportMan
-import jaemisseo.man.VariableMan
 import jaemisseo.man.util.Util
 
 /**
