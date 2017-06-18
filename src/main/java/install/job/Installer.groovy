@@ -1,6 +1,6 @@
 package install.job
 
-import install.JobUtil
+import install.util.JobUtil
 import install.annotation.Command
 import install.annotation.Init
 import install.annotation.Job

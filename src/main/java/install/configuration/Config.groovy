@@ -1,6 +1,6 @@
 package install.configuration
 
-import install.JobUtil
+import install.util.JobUtil
 import install.annotation.*
 import jaemisseo.man.PropMan
 import jaemisseo.man.util.Util

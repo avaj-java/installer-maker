@@ -1,6 +1,6 @@
 package install.task
 
-import install.TaskUtil
+import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.QuestionMan
 import jaemisseo.man.util.QuestionSetup

@@ -1,6 +1,6 @@
 package install.task
 
-import install.TaskUtil
+import install.util.TaskUtil
 import temp.util.Encryptor
 import temp.util.SEEDUtil
 

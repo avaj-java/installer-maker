@@ -1,4 +1,4 @@
-package install
+package install.util
 
 import install.configuration.InstallerLogGenerator
 import install.configuration.InstallerPropertiesGenerator

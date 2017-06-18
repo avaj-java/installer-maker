@@ -1,7 +1,7 @@
 package install.task
 
 import groovy.sql.Sql
-import install.TaskUtil
+import install.util.TaskUtil
 import jaemisseo.man.util.ConnectionGenerator
 
 /**

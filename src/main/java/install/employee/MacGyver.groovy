@@ -1,7 +1,7 @@
 package install.employee
 
-import install.JobUtil
-import install.TaskUtil
+import install.util.JobUtil
+import install.util.TaskUtil
 import install.annotation.Command
 import install.annotation.Employee
 import install.annotation.Init
@@ -9,7 +9,6 @@ import install.bean.ReportSetup
 import install.configuration.InstallerPropertiesGenerator
 import jaemisseo.man.PropMan
 import jaemisseo.man.ReportMan
-import jaemisseo.man.VariableMan
 import jaemisseo.man.util.Util
 
 /**

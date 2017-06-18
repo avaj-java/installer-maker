@@ -1,6 +1,6 @@
 package install.task
 
-import install.TaskUtil
+import install.util.TaskUtil
 
 /**
  * Created by sujkim on 2017-04-04.

@@ -1,4 +1,4 @@
-package install
+package install.util
 
 import install.bean.ReportSetup
 import jaemisseo.man.*
