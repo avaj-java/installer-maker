@@ -1,7 +1,7 @@
 package install.job
 
-import install.JobUtil
-import install.TaskUtil
+import install.util.JobUtil
+import install.util.TaskUtil
 import install.annotation.Command
 import install.annotation.Init
 import install.annotation.Job
@@ -10,7 +10,6 @@ import install.configuration.InstallerPropertiesGenerator
 import install.task.*
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
-import jaemisseo.man.VariableMan
 import jaemisseo.man.util.FileSetup
 
 import java.util.Set
@@ -23,8 +22,8 @@ class Receptionist extends JobUtil{
 
     @Init(lately=true)
     void init(){
-        levelNamesProperty = 'a.level'
-        executorNamePrefix = 'a'
+        levelNamesProperty = 'r.level'
+        executorNamePrefix = 'r'
         propertiesFileName = 'receptionist.properties'
         validTaskList = [Notice, Question, QuestionChoice, QuestionYN, QuestionFindFile, Set]
 
