@@ -1,7 +1,7 @@
 package install.task
 
-import install.annotation.Task
-import install.annotation.Value
+import install.configuration.annotation.type.Task
+import install.configuration.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
@@ -49,11 +49,13 @@ class MergeProperties extends TaskUtil{
         println " - Matching Properties Size    : ${matchingPropMap.size()} <<"
         println " - NotMatching Properties Size : ${notMatchingPropMap.size()}"
         println ""
+
         println "<MERGE-INTO (${propmanSpecific.filePath})> - CHECK"
         println " - All Properties Size         : ${propmanSpecific.size()}"
         println " - Matching Properties Size    : ${matchingPropMap.size()} <<"
         println " - NotMatching Properties Size : ${notMatchingPropMap2.size()}"
         println ""
+
         println "<MERGE> - CHECK"
         println " - Matching Properties Size                     : ${matchingPropMap.size()}"
         println " - Matching Properties And Different Value Size : ${differentValuePropMap.size()}"

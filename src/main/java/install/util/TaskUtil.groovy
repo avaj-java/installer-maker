@@ -101,6 +101,12 @@ class TaskUtil{
         return yourAnswer.equals(redoSign)
     }
 
+    /*************************
+     * Remember Answer
+     *************************/
+    protected void rememberAnswer(String yourAnswer){
+        rememberAnswerLineList.add("${propertyPrefix}answer.default=${yourAnswer}")
+    }
 
     /*************************
      * Set Property

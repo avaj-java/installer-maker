@@ -1,7 +1,8 @@
 package install.task
 
-import install.annotation.Task
-import install.annotation.Value
+import install.configuration.annotation.type.Task
+import install.configuration.annotation.type.Undoable
+import install.configuration.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.QuestionMan
 import jaemisseo.man.util.QuestionSetup
@@ -9,6 +10,7 @@ import jaemisseo.man.util.QuestionSetup
 /**
  * Created by sujkim on 2017-03-18.
  */
+@Undoable
 @Task
 class QuestionYN extends TaskUtil{
 
@@ -19,7 +21,6 @@ class QuestionYN extends TaskUtil{
 
     @Override
     Integer run(){
-
         //Get Properties
         qman = new QuestionMan().setValidAnswer([undoSign, redoSign])
 
@@ -30,11 +31,12 @@ class QuestionYN extends TaskUtil{
         //Check undo & redo command
         if (checkUndoQuestion(yourAnswer))
             return STATUS_UNDO_QUESTION
-        else if (checkRedoQuestion(yourAnswer))
+
+        if (checkRedoQuestion(yourAnswer))
             return STATUS_REDO_QUESTION
 
         //Remeber Answer
-        rememberAnswerLineList.add("${propertyPrefix}answer.default=${yourAnswer}")
+        rememberAnswer(yourAnswer)
 
         //Set 'answer' and 'value' Property
         set('answer', yourAnswer)

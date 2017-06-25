@@ -1,9 +1,8 @@
 package install.task
 
-import install.annotation.Task
-import install.annotation.Value
+import install.configuration.annotation.type.Task
+import install.configuration.annotation.Value
 import install.util.TaskUtil
-import jaemisseo.man.PropMan
 import jaemisseo.man.RestMan
 
 /**

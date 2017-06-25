@@ -1,6 +1,6 @@
 package install
 
-import install.annotation.Data
+import install.configuration.annotation.type.Data
 import install.configuration.Config
 import install.configuration.InstallerLogGenerator
 import install.configuration.PropertyProvider

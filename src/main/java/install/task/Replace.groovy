@@ -1,7 +1,7 @@
 package install.task
 
-import install.annotation.Task
-import install.annotation.Value
+import install.configuration.annotation.type.Task
+import install.configuration.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.util.FileSetup
@@ -12,7 +12,6 @@ import jaemisseo.man.util.FileSetup
 @Task
 class Replace extends TaskUtil{
 
-    //Ready
     @Value(property='file.path', method='getFilePathList')
     List<String> filePathList
 
@@ -32,8 +31,6 @@ class Replace extends TaskUtil{
 
     @Override
     Integer run(){
-
-        //Do
         println "<REPLACE>"
         filePathList.each{ String filePath ->
             new FileMan(filePath)

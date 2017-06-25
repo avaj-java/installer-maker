@@ -1,8 +1,8 @@
 package install.job
 
-import install.annotation.Command
-import install.annotation.Init
-import install.annotation.Job
+import install.configuration.annotation.method.Command
+import install.configuration.annotation.method.Init
+import install.configuration.annotation.type.Job
 import install.configuration.PropertyProvider
 import install.task.*
 import install.util.JobUtil
@@ -22,7 +22,7 @@ class Receptionist extends JobUtil{
         levelNamesProperty = 'r.level'
         executorNamePrefix = 'r'
         propertiesFileName = 'receptionist.properties'
-        validTaskList = [Notice, Question, QuestionChoice, QuestionYN, QuestionFindFile, install.task.Set]
+        validTaskList = [Notice, Question, QuestionChoice, QuestionYN, QuestionFindFile, Set]
 
         this.propman = setupPropMan(provider)
         this.varman = setupVariableMan(propman, executorNamePrefix)
@@ -66,14 +66,14 @@ class Receptionist extends JobUtil{
             propman.set('answer.repeat.limit', 0)
             logBigTitle('Add Response File Answer')
         }
-        //1. READ ANSWER
-        readRemeber()
+        //1. READ REMEMBERED ANSWER
+        readRememberAnswer()
         //2. Each level by level
         eachLevelForTask{ String propertyPrefix ->
             return runTaskByPrefix("${propertyPrefix}")
         }
-        //3. WRITE ANSWER
-        writeRemember()
+        //3. WRITE REMEMBERED ANSWER
+        writeRememberAnswer()
     }
 
     boolean checkResponseFile(){
@@ -99,7 +99,7 @@ class Receptionist extends JobUtil{
     /*************************
      * Read Remeber File
      *************************/
-    private void readRemeber(){
+    private void readRememberAnswer(){
         Boolean modeRemember = gOpt.modeRemember
         String rememberFilePath = gOpt.rememberFilePath
 
@@ -119,7 +119,7 @@ class Receptionist extends JobUtil{
     /*************************
      * Backup & Write Remeber File
      *************************/
-    private void writeRemember(){
+    private void writeRememberAnswer(){
         Boolean modeRemember = gOpt.modeRemember
         String rememberFilePath = gOpt.rememberFilePath
         FileSetup fileSetup = gOpt.rememberFileSetup
@@ -171,14 +171,14 @@ class Receptionist extends JobUtil{
             TaskUtil taskInstance = config.findInstance(taskClazz)
 
             //(Task) Inject Value
-            provider.shift( this.getClass().simpleName.toLowerCase(), propertyPrefix )
+            provider.shift( jobName, propertyPrefix )
             config.injectValue(taskInstance)
             taskInstance.provider = provider
+            taskInstance.propertyPrefix = propertyPrefix
             taskInstance.rememberAnswerLineList = rememberAnswerLineList
             taskInstance.reportMapList = reportMapList
 
             //(Task) Build Form
-            taskInstance.setPropman(propman)
             List<String> lineList = taskInstance.buildForm(propertyPrefix)
 
             //Add One Question into Form

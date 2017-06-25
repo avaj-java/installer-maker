@@ -1,4 +1,4 @@
-package install.annotation
+package install.configuration.annotation.type
 
 import java.lang.annotation.ElementType
 import java.lang.annotation.Retention

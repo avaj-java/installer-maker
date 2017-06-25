@@ -1,11 +1,17 @@
 package install.configuration
 
-import install.annotation.*
+import install.configuration.annotation.*
+import install.configuration.annotation.method.After
+import install.configuration.annotation.method.Before
+import install.configuration.annotation.method.Command
+import install.configuration.annotation.method.Init
+import install.configuration.annotation.type.Data
+import install.configuration.annotation.type.Employee
+import install.configuration.annotation.type.Job
+import install.configuration.annotation.type.Task
 import install.configuration.reflection.FieldInfomation
 import install.configuration.reflection.MethodInfomation
 import install.configuration.reflection.ReflectInfomation
-import install.util.JobUtil
-import jaemisseo.man.PropMan
 import jaemisseo.man.util.Util
 
 import java.lang.reflect.Field
@@ -135,7 +141,7 @@ class Config {
         Object instance = reflect.instance
         clazz.getDeclaredMethods().each { Method method ->
             method.getAnnotations().each { annotation ->
-                if (annotation instanceof install.annotation.Method) {
+                if (annotation instanceof install.configuration.annotation.method.Method) {
                     methodMethodNameMap[method.name] = new MethodInfomation(instance: instance, clazz: clazz, annotation: annotation, method:method, methodName: method.name)
                 }
             }

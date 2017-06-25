@@ -1,7 +1,8 @@
 package install.task
 
-import install.annotation.Task
-import install.annotation.Value
+import install.configuration.annotation.type.Task
+import install.configuration.annotation.type.Undoable
+import install.configuration.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.QuestionMan
@@ -11,6 +12,7 @@ import jaemisseo.man.util.Util
 /**
  * Created by sujkim on 2017-03-18.
  */
+@Undoable
 @Task
 class QuestionFindFile extends TaskUtil{
 
@@ -33,7 +35,6 @@ class QuestionFindFile extends TaskUtil{
 
     @Override
     Integer run(){
-
         //Get Properties
         qman = new QuestionMan().setValidAnswer([undoSign, redoSign])
 
@@ -41,11 +42,12 @@ class QuestionFindFile extends TaskUtil{
 
 
         //Thread-Searcher - START
-        println "FIND Root Path: $searchRootPath"
-        println "FIND File Name: $searchFileName"
-        println "FIND Condition: $searchIf"
-
         println " <Searching>"
+        println "Root Path: $searchRootPath"
+        println "File Name: $searchFileName"
+        println "Condition: $searchIf"
+        println ""
+
         Thread threadSearcher = Util.newThread(' <Stoped Searching>      '){
             List<File> foundFileList = FileMan.findAllWithProgressBar(searchRootPath, searchFileName, searchIf) { data ->
                 File foundFile = data.item
@@ -80,11 +82,12 @@ class QuestionFindFile extends TaskUtil{
         //Check undo & redo command
         if (checkUndoQuestion(yourAnswer))
             return STATUS_UNDO_QUESTION
-        else if (checkRedoQuestion(yourAnswer))
+
+        if (checkRedoQuestion(yourAnswer))
             return STATUS_REDO_QUESTION
 
         //Remeber 'answer'
-        rememberAnswerLineList.add("${propertyPrefix}answer.default=${yourAnswer}")
+        rememberAnswer(yourAnswer)
 
         //Set 'answer' and 'value' Property
         int seletedIndex = (Integer.parseInt(yourAnswer) -1)

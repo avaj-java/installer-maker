@@ -1,7 +1,7 @@
 package install.task
 
-import install.annotation.Task
-import install.annotation.Value
+import install.configuration.annotation.type.Task
+import install.configuration.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.SocketMan
 
@@ -30,7 +30,7 @@ class TestSocket extends TaskUtil{
 
     @Override
     Integer run(){
-        timeout = timeout ?: 1000
+        timeout  = timeout ?: 1000
         charset  = charset ?: 'euc-kr'
         ip       = ip ?: '127.0.0.1'
         port     = port ?: '5000'

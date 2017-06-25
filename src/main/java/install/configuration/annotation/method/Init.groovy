@@ -1,4 +1,4 @@
-package install.annotation
+package install.configuration.annotation.method
 
 import java.lang.annotation.ElementType
 import java.lang.annotation.Retention
@@ -6,10 +6,12 @@ import java.lang.annotation.RetentionPolicy
 import java.lang.annotation.Target
 
 /**
- * Created by sujkim on 2017-06-09.
+ * Created by sujkim on 2017-06-11.
  */
-@Target(ElementType.TYPE)
+@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@interface Data {
+@interface Init {
+
+    boolean lately() default false
 
 }

@@ -1,8 +1,8 @@
 package install.configuration
 
-import install.annotation.Data
-import install.annotation.Init
-import install.annotation.Method
+import install.configuration.annotation.type.Data
+import install.configuration.annotation.method.Init
+import install.configuration.annotation.method.Method
 import install.bean.BuilderGlobalOption
 import install.bean.InstallerGlobalOption
 import install.bean.ReceptionistGlobalOption

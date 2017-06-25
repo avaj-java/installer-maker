@@ -1,6 +1,6 @@
 package install.configuration
 
-import install.annotation.Data
+import install.configuration.annotation.type.Data
 import org.junit.Test
 
 /**

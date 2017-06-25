@@ -1,6 +1,9 @@
 package install.employee
 
-import install.annotation.*
+import install.configuration.annotation.method.Command
+import install.configuration.annotation.method.Init
+import install.configuration.annotation.type.Employee
+import install.configuration.annotation.type.Task
 import install.bean.ReportSetup
 import install.configuration.PropertyProvider
 import install.util.JobUtil

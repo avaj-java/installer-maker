@@ -1,6 +1,6 @@
 package install.configuration
 
-import install.annotation.Bean
+import install.configuration.annotation.type.Bean
 import install.task.Copy
 import install.task.Jar
 import install.task.MergeProperties
@@ -31,12 +31,6 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
 
     PropMan defaultProperties
     PropMan externalProperties
-
-    PropMan bilderDefaultProperties
-    PropMan receiptionlistDefaultProperties
-    PropMan installerDefaultProperties
-    PropMan macgyverDefaultProperties
-
 
 
 

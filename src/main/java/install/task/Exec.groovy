@@ -1,7 +1,7 @@
 package install.task
 
-import install.annotation.Task
-import install.annotation.Value
+import install.configuration.annotation.type.Task
+import install.configuration.annotation.Value
 import install.util.TaskUtil
 
 /**
@@ -10,7 +10,6 @@ import install.util.TaskUtil
 @Task
 class Exec extends TaskUtil{
 
-    //Ready
     @Value(property='sh.file.path', method='getFilePath')
     String shFilePath
 
@@ -24,7 +23,6 @@ class Exec extends TaskUtil{
 
     @Override
     Integer run(){
-        //DO
         println "<Run SH or BAT>"
         StringBuffer output = new StringBuffer()
         String command

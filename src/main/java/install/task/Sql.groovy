@@ -1,7 +1,7 @@
 package install.task
 
-import install.annotation.Task
-import install.annotation.Value
+import install.configuration.annotation.type.Task
+import install.configuration.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.SqlAnalMan
@@ -34,7 +34,6 @@ class Sql extends TaskUtil{
 
         //1. Default Setup
         sqlman = new SqlMan()
-
 
         //2. Execute All SQL
         println "<SQL>"

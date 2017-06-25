@@ -1,12 +1,14 @@
 package install.task
 
-import install.annotation.Task
-import install.annotation.Value
+import install.configuration.annotation.type.Task
+import install.configuration.annotation.type.Undoable
+import install.configuration.annotation.Value
 import install.util.TaskUtil
 
 /**
  * Created by sujkim on 2017-03-18.
  */
+@Undoable(modeMore=true)
 @Task
 class Notice extends TaskUtil{
 

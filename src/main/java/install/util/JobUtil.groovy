@@ -1,11 +1,9 @@
 package install.util
 
-import install.annotation.Before
-import install.annotation.Inject
+import install.configuration.annotation.method.Before
+import install.configuration.annotation.Inject
 import install.bean.ReportSetup
 import install.configuration.Config
-import install.configuration.InstallerLogGenerator
-import install.configuration.InstallerPropertiesGenerator
 import install.configuration.PropertyProvider
 import install.task.*
 import jaemisseo.man.FileMan
@@ -21,13 +19,14 @@ class JobUtil extends TaskUtil{
     String levelNamesProperty = ''
     String executorNamePrefix = ''
     String propertiesFileName = ''
+
     List<Class> validTaskList = []
     List<Class> invalidTaskList = []
-    def gOpt
-
-    Integer taskResultStatus
     List<Class> undoableList = [Question, QuestionChoice, QuestionYN, QuestionFindFile, Set, Notice]
     List<Class> undoMoreList = [Set, Notice]
+
+    def gOpt
+    Integer taskResultStatus
 
     Config config
     PropertyProvider provider
@@ -39,7 +38,7 @@ class JobUtil extends TaskUtil{
 
     @Before
     void before(){
-        provider.shift( this.getClass().simpleName.toLowerCase() )
+        provider.shift( jobName )
     }
 
 
@@ -275,18 +274,19 @@ class JobUtil extends TaskUtil{
         if ( !checkCondition(propertyPrefix) )
             return
 
+        //Description
+        descript(propertyPrefix)
+
         //Get Task Instance
         // - Find Task
         TaskUtil taskInstance = config.findInstance(taskClazz)
         // - Inject Value
-        provider.shift( this.getClass().simpleName.toLowerCase(), propertyPrefix )
+        provider.shift( jobName, propertyPrefix )
         config.injectValue(taskInstance)
         taskInstance.provider = provider
+        taskInstance.propertyPrefix = propertyPrefix
         taskInstance.rememberAnswerLineList = rememberAnswerLineList
         taskInstance.reportMapList = reportMapList
-
-        //Description
-        descript(propertyPrefix)
 
         try{
             //Start Task

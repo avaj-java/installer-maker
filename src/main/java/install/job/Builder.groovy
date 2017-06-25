@@ -1,12 +1,10 @@
 package install.job
 
-import install.annotation.Command
-import install.annotation.Init
-import install.annotation.Job
-import install.annotation.Task
-import install.bean.BuilderGlobalOption
+import install.configuration.annotation.method.Command
+import install.configuration.annotation.method.Init
+import install.configuration.annotation.type.Job
+import install.configuration.annotation.type.Task
 import install.bean.ReportSetup
-import install.configuration.InstallerPropertiesGenerator
 import install.configuration.PropertyProvider
 import install.util.JobUtil
 import jaemisseo.man.FileMan
