@@ -20,7 +20,7 @@ class TestJDBC extends TaskUtil{
     @Override
     Integer run(){
         //READY
-        ConnectionGenerator connGen = new ConnectionGenerator(propman.properties)
+        ConnectionGenerator connGen = new ConnectionGenerator(provider.propman.properties)
         Map previewMap = connGen.generateDataBaseInfoMap()
         previewMap.query = query ?: "select 'Try To Check Your Query' as TEST from dual"
         Sql sql
