@@ -1,5 +1,6 @@
 package install.data
 
+import install.configuration.InstallerLogGenerator
 import install.configuration.InstallerPropertiesGenerator
 import install.configuration.annotation.type.Data
 import install.configuration.annotation.method.Init
@@ -23,10 +24,19 @@ class PropertyProvider {
     PropMan propman
     String propertyPrefix
     InstallerPropertiesGenerator propGen
+    InstallerLogGenerator logGen
 
     @Init
     void init(){
         this.propman = propGen.getDefaultProperties()
+    }
+
+    void printVersion(){
+        logGen.logVersion(propGen.getDefaultProperties())
+    }
+
+    void printSystem(){
+        logGen.logSystem(propGen.getDefaultProperties())
     }
     
     void shift(String name){

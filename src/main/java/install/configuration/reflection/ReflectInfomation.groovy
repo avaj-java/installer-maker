@@ -7,6 +7,7 @@ class ReflectInfomation {
 
     Class clazz
     Object instance
+    String alias
 
     MethodInfomation initMethod
     boolean checkInitMethod

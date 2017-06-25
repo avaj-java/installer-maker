@@ -43,34 +43,19 @@ class Starter {
         config.scan()
         PropertyProvider provider = config.findInstanceByAnnotation(Data)
         provider.propGen = config.propGen
+        provider.logGen = config.logGen
         config.inject()
         config.init()
 
         /*****
          * Command
          *****/
-        // Your command from Command Line
+        //- Your command from Command Line
         List<String> userCommandList = propmanExternal.get('') ?: []
         config.command(userCommandList)
 
-        // Run Task Directly (Doing Other Task with Command Line Options)
+        //- Run Task Directly (Doing Other Task with Command Line Options)
         config.command('doSomething')
-
-        /*****
-         * Version Check
-         *****/
-        if (propmanExternal.getBoolean(['version', 'v'])){
-            logGen.logVersion(propmanDefault)
-            System.exit(0)
-        }
-
-        /*****
-         * System Check
-         *****/
-        if (propmanExternal.getBoolean(['system', 's'])){
-            logGen.logSystem(propmanDefault)
-            System.exit(0)
-        }
 
         logGen.logFinished()
     }

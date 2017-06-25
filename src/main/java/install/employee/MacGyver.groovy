@@ -1,10 +1,12 @@
 package install.employee
 
 import install.bean.ReportSetup
+import install.configuration.annotation.Alias
 import install.configuration.annotation.method.Command
 import install.configuration.annotation.method.Init
 import install.configuration.annotation.type.Employee
 import install.configuration.annotation.type.Task
+import install.configuration.reflection.ReflectInfomation
 import install.data.PropertyProvider
 import install.util.EmployeeUtil
 import install.util.TaskUtil
@@ -48,23 +50,33 @@ class MacGyver extends EmployeeUtil {
     }
 
 
+
     @Command('doSomething')
     Integer doSomething(){
-        //Get Task Annotated Instance List from Singleton Pool
-        List instanceList = config.findAllInstances([Task])
-        instanceList.each{ instance ->
-            String taskName = instance.getClass()
+        //Run Task
+        //- Get Task Annotated Instance List from Singleton Pool
+        List taskInstanceList = config.findAllInstances([Task])
+        taskInstanceList.each{ instance ->
+            String taskName = instance.getClass().getSimpleName().toLowerCase()
             if (propman.get(taskName))
                 runTask(taskName)
+        }
+
+        //Run Task with Alias
+        Map<Class, ReflectInfomation> aliasTaskReflectionMap = config.reflectionMap.findAll{ clazz, info ->
+            info.alias && propman.get(info.alias)
+        }
+        aliasTaskReflectionMap.each{ clazz, info ->
+            String taskName = info.instance.getClass().getSimpleName().toLowerCase()
+            runTask(taskName)
         }
 
         return TaskUtil.STATUS_TASK_DONE
     }
 
 
-    /**
-     * DO SOMETHING
-     */
+
+    @Alias('m')
     @Command('macgyver')
     void macgyver(){
 
@@ -85,6 +97,8 @@ class MacGyver extends EmployeeUtil {
         writeReport(reportMapList, reportSetup)
     }
 
+
+    
     /**
      * WRITE Report
      */

@@ -9,9 +9,9 @@ import java.lang.annotation.Target
 /**
  * Created by sujkim on 2017-06-11.
  */
+@Inherited
 @Target([ElementType.METHOD, ElementType.FIELD])
 @Retention(RetentionPolicy.RUNTIME)
-@Inherited
 @interface Inject {
 
     String value() default ''

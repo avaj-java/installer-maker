@@ -28,6 +28,7 @@ class Config {
 
     //Job
     Map<String, MethodInfomation> methodCommandNameMap = [:]
+    Map<String, MethodInfomation> methodCommandAliasNameMap = [:]
 
     //Data
     Map<String, MethodInfomation> methodMethodNameMap = [:]
@@ -108,6 +109,13 @@ class Config {
     boolean scanDefault(ReflectInfomation reflect){
         Class clazz = reflect.clazz
         Object instance = reflect.instance
+        //- Type
+        clazz.getAnnotations().each{ annotation ->
+            if (annotation instanceof Alias){
+                reflect.alias = annotation.value()
+            }
+        }
+        //- Method
         clazz.getMethods().each{ Method method ->
             method.getAnnotations().each{ annotation ->
                 if (annotation instanceof Init){
@@ -124,6 +132,7 @@ class Config {
                 }
             }
         }
+        //- Field
         clazz.getDeclaredFields().each { Field field ->
             field.getAnnotations().each{ annotation ->
                 if (annotation instanceof Value){
@@ -133,18 +142,23 @@ class Config {
                 }
             }
         }
-
     }
 
     boolean scanCommand(ReflectInfomation reflect){
         Class clazz = reflect.clazz
         Object instance = reflect.instance
         clazz.getDeclaredMethods().each { Method method ->
-            method.getAnnotations().each { annotation ->
-                if (annotation instanceof Command){
-                    Command commandAnt = annotation as Command
-                    methodCommandNameMap[commandAnt.value()] = new MethodInfomation(instance: instance, clazz: clazz, annotation: annotation, method:method, methodName: method.name)
-                }
+            Command commandAnt = method.getAnnotation(Command)
+            Alias aliasAnt = method.getAnnotation(Alias)
+            String commandName
+            String commandAliasName
+            if (commandAnt){
+                commandName = commandAnt.value()
+                methodCommandNameMap[commandName] = new MethodInfomation(instance: instance, clazz: clazz, annotation: commandAnt, method:method, methodName: method.name)
+            }
+            if (aliasAnt){
+                commandAliasName = aliasAnt.value()
+                methodCommandAliasNameMap[commandAliasName] = methodCommandNameMap[commandName]
             }
         }
     }
@@ -265,7 +279,8 @@ class Config {
     }
 
     void command(String commandName){
-        MethodInfomation commandMethodInfo = methodCommandNameMap[commandName]
+        MethodInfomation commandMethodInfo = methodCommandNameMap[commandName] ?: methodCommandAliasNameMap[commandName]
+
         if (commandMethodInfo){
             Class clazz = commandMethodInfo.clazz
 
@@ -287,7 +302,6 @@ class Config {
             if (reflectionMap[clazz].afterMethod)
                 runMethod(reflectionMap[clazz].afterMethod)
         }
-
     }
 
 
