@@ -1,5 +1,7 @@
 package install.task
 
+import install.annotation.Task
+import install.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
@@ -8,14 +10,23 @@ import jaemisseo.man.util.FileSetup
 /**
  * Created by sujkim on 2017-02-27.
  */
+@Task
 class MergeProperties extends TaskUtil{
+
+    @Value('from')
+    String specificPropertiesFilePath
+
+    @Value('into')
+    String sourceFilePath
+
+    @Value(method='genMergedFileSetup')
+    FileSetup opt
+
+
 
     @Override
     Integer run() {
-        //Ready
-        String specificPropertiesFilePath   = get('from')
-        String sourceFilePath               = get('into')
-        FileSetup opt                       = genMergedFileSetup().put([modeAutoBackup:true])
+        opt.put([modeAutoBackup:true])
 
         logMiddleTitle('START MERGE PROPERTIES')
 

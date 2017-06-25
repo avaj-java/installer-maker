@@ -1,7 +1,9 @@
 package install
 
+import install.annotation.Data
 import install.configuration.Config
 import install.configuration.InstallerLogGenerator
+import install.configuration.PropertyProvider
 import jaemisseo.man.PropMan
 import jaemisseo.man.util.PropertiesGenerator
 
@@ -36,11 +38,23 @@ class Starter {
 
 
         /*****
-         * Command
+         * Config
          *****/
         config.scan()
+        PropertyProvider provider = config.findInstanceByAnnotation(Data)
+        provider.propGen = config.propGen
+        config.inject()
         config.init()
-        config.command()
+
+        /*****
+         * Command
+         *****/
+        // Your command from Command Line
+        List<String> userCommandList = propmanExternal.get('') ?: []
+        config.command(userCommandList)
+
+        // Run Task Directly (Doing Other Task with Command Line Options)
+        config.command('doSomething')
 
         /*****
          * Version Check
@@ -57,12 +71,6 @@ class Starter {
             logGen.logSystem(propmanDefault)
             System.exit(0)
         }
-
-        /*****
-         * Run Task Directly
-         * - Doing Other Task with Command Line Options
-         *****/
-        config.command('doSomething')
 
         logGen.logFinished()
     }

@@ -1,5 +1,7 @@
 package install.task
 
+import install.annotation.Task
+import install.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.QuestionMan
 import jaemisseo.man.util.QuestionSetup
@@ -7,14 +9,19 @@ import jaemisseo.man.util.QuestionSetup
 /**
  * Created by sujkim on 2017-03-18.
  */
+@Task
 class QuestionChoice extends TaskUtil{
+
+    @Value(method='genMergedQuestionSetup')
+    QuestionSetup opt
+
+
 
     @Override
     Integer run(){
 
         //Get Properties
         qman = new QuestionMan().setValidAnswer([undoSign, redoSign])
-        QuestionSetup opt = genMergedQuestionSetup()
 
         //Ask Question
         //Get Answer
@@ -47,8 +54,6 @@ class QuestionChoice extends TaskUtil{
     List<String> buildForm(String propertyPrefix){
         this.propertyPrefix = propertyPrefix
         qman = new QuestionMan().setValidAnswer([undoSign, redoSign])
-        QuestionSetup opt = genMergedQuestionSetup()
-
         return (!opt.modeOnlyInteractive) ? qman.genQuestion(opt) : []
     }
 

@@ -1,20 +1,34 @@
 package install.task
 
+import install.annotation.Task
+import install.annotation.Value
 import install.util.TaskUtil
 
 /**
  * Created by sujkim on 2017-03-10.
  */
+@Task
 class TestEMail extends TaskUtil{
+
+    @Value('host')
+    String host
+
+    @Value('port')
+    String port
+
+    @Value('username')
+    String username
+
+    @Value('password')
+    String password
+
+    @Value(property='smtpAuth', method='parse')
+    Map smtpAuth
+
+
 
     @Override
     Integer run(){
-
-        String host         = get('host')
-        String port         = get('port')
-        String username     = get('username')
-        String password     = get('password')
-        Map smtpAuth        = parse('smtpAuth')
 
         logMiddleTitle 'START CHECK REST'
         println 'Not Supported Yet'

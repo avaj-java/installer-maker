@@ -1,20 +1,28 @@
 package install.task
 
 import groovy.sql.Sql
+import install.annotation.Task
+import install.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.util.ConnectionGenerator
 
 /**
  * Created by sujkim on 2017-01-25.
  */
+@Task
 class TestJDBC extends TaskUtil{
+
+    @Value('query')
+    String query
+
+
 
     @Override
     Integer run(){
         //READY
         ConnectionGenerator connGen = new ConnectionGenerator(propman.properties)
         Map previewMap = connGen.generateDataSourceMap()
-        previewMap.query = get('query') ?: "select 'Try To Check Your Query' as TEST from dual"
+        previewMap.query = query ?: "select 'Try To Check Your Query' as TEST from dual"
         Sql sql
         List list
 

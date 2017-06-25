@@ -1,5 +1,7 @@
 package install.task
 
+import install.annotation.Task
+import install.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.util.FileSetup
@@ -7,17 +9,29 @@ import jaemisseo.man.util.FileSetup
 /**
  * Created by sujkim on 2017-02-22.
  */
+@Task
 class Replace extends TaskUtil{
+
+    //Ready
+    @Value(property='file.path', method='getFilePathList')
+    List<String> filePathList
+
+    @Value(method='genMergedFileSetup')
+    FileSetup fileSetup
+
+    @Value(property='file.replace', method='getMap')
+    Map replaceMap
+
+    @Value(property='file.replace.line', method='getMap')
+    Map replaceLineMap
+
+    @Value(property='file.replace.property', method='getMap')
+    Map replacePropertyMap
+
+
 
     @Override
     Integer run(){
-
-        //Ready
-        List<String> filePathList = getFilePathList('file.path')
-        FileSetup fileSetup = genMergedFileSetup()
-        Map replaceMap = getMap('file.replace')
-        Map replaceLineMap = getMap('file.replace.line')
-        Map replacePropertyMap = getMap('file.replace.property')
 
         //Do
         println "<REPLACE>"

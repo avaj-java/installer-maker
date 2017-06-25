@@ -1,5 +1,7 @@
 package install.task
 
+import install.annotation.Task
+import install.annotation.Value
 import install.util.TaskUtil
 import temp.util.Encryptor
 import temp.util.SEEDUtil
@@ -7,13 +9,20 @@ import temp.util.SEEDUtil
 /**
  * Created by sujkim on 2017-03-10.
  */
+@Task
 class Decrypt extends TaskUtil{
+
+    @Value(property='value', method='getString')
+    String value
+
+    @Value(property='method', method='getString')
+    String method
+
+
 
     @Override
     Integer run(){
-
-        String value = propman.getString('value')
-        String method = propman.getString('method') ?: "SEED"
+        method = method ?: "SEED"
 
         logMiddleTitle 'START DECRYPT'
 

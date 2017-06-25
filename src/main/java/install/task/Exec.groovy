@@ -1,29 +1,37 @@
 package install.task
 
+import install.annotation.Task
+import install.annotation.Value
 import install.util.TaskUtil
 
 /**
  * Created by sujkim on 2017-04-04.
  */
+@Task
 class Exec extends TaskUtil{
+
+    //Ready
+    @Value(property='sh.file.path', method='getFilePath')
+    String shFilePath
+
+    @Value(property='bat.file.path', method='getFilePath')
+    String batFilePath
+
+    @Value(property='os.name', method='getString')
+    String osName
+
+
 
     @Override
     Integer run(){
-
-        //Ready
-        String shFilePath = getFilePath('sh.file.path')
-        String batFilePath = getFilePath('bat.file.path')
-
         //DO
         println "<Run SH or BAT>"
         StringBuffer output = new StringBuffer()
         String command
 
         try{
-            //Check OS
-            boolean isWin = getString('os.name').contains('Win')
             //Gen Command
-            command = (isWin) ? "cmd /c start ${batFilePath}" : "${shFilePath}"
+            command = osName.contains('Win') ? "cmd /c start ${batFilePath}" : "${shFilePath}"
             //Exec
             Process p = Runtime.getRuntime().exec(command)
             p.waitFor()

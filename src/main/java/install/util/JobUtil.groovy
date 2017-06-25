@@ -1,7 +1,12 @@
 package install.util
 
+import install.annotation.Before
+import install.annotation.Inject
+import install.bean.ReportSetup
+import install.configuration.Config
 import install.configuration.InstallerLogGenerator
 import install.configuration.InstallerPropertiesGenerator
+import install.configuration.PropertyProvider
 import install.task.*
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
@@ -12,6 +17,7 @@ import jaemisseo.man.VariableMan
  */
 class JobUtil extends TaskUtil{
 
+    String jobName = this.getClass().simpleName.toLowerCase()
     String levelNamesProperty = ''
     String executorNamePrefix = ''
     String propertiesFileName = ''
@@ -23,14 +29,23 @@ class JobUtil extends TaskUtil{
     List<Class> undoableList = [Question, QuestionChoice, QuestionYN, QuestionFindFile, Set, Notice]
     List<Class> undoMoreList = [Set, Notice]
 
-    InstallerPropertiesGenerator propGen = new InstallerPropertiesGenerator()
-    InstallerLogGenerator logGen = new InstallerLogGenerator()
+    Config config
+    PropertyProvider provider
+
+    @Inject void setConfig(Config config){ this.config = config }
+    @Inject void setProvider(PropertyProvider provider){ this.provider = provider }
 
 
 
-    PropMan setupPropMan(InstallerPropertiesGenerator propGen){
+    @Before
+    void before(){
+        provider.shift( this.getClass().simpleName.toLowerCase() )
+    }
+
+
+    PropMan setupPropMan(PropertyProvider provider){
         String poolName = this.getClass().simpleName.toLowerCase()
-        PropMan propman = propGen.get(poolName)
+        PropMan propman = provider.propGen.get(poolName)
         return propman
     }
 
@@ -39,6 +54,36 @@ class JobUtil extends TaskUtil{
         parsePropMan(propman, varman, executorNamePrefix)
         setBeforeGetProp(propman, varman)
         return varman
+    }
+
+    PropMan parsePropMan(PropMan propmanToDI, VariableMan varman){
+        return parsePropMan(propmanToDI, varman, null)
+    }
+
+    PropMan parsePropMan(PropMan propmanToParse, VariableMan varman, String excludeStartsWith){
+        //Parse ${Variable} Exclude Levels
+        (1..5).each{
+            Map map = propmanToParse.properties
+            varman.putVariables(map)
+            map.each{ String key, def value ->
+                if (value && value instanceof String){
+                    if (!excludeStartsWith || !key.startsWith(excludeStartsWith)){
+                        propmanToParse.set(key, varman.parse(value))
+                    }
+                }
+            }
+        }
+        return propmanToParse
+    }
+
+    PropMan setBeforeGetProp(PropMan propmanToSet, VariableMan varman){
+        propmanToSet.setBeforeGetProp({ String propertyName, def value ->
+            if (value && value instanceof String) {
+                String parsedValue = varman.putVariables(propmanToSet.properties).parse(value)
+                propmanToSet.set(propertyName, parsedValue)
+            }
+        })
+        return propmanToSet
     }
 
 
@@ -180,9 +225,9 @@ class JobUtil extends TaskUtil{
 
 
 
-    /**
-     * RUN TASK
-     */
+    /*************************
+     * 1. RUN TASK
+     *************************/
     Integer runTaskByPrefix(String propertyPrefix) {
         String taskName = getTaskName(propertyPrefix)
         return runTask(taskName, propertyPrefix)
@@ -202,29 +247,124 @@ class JobUtil extends TaskUtil{
         if ( (validTaskList && !validTaskList.contains(taskClazz)) || (invalidTaskList && invalidTaskList.contains(taskClazz)) )
             throw new Exception(" 'Sorry, This is Not my task, [${taskName}]. I Can Not do this.' ")
 
-        //Run Task
-        TaskUtil taskInctance = newTaskInstance(taskClazz.getSimpleName())
-        return taskInctance
-                .setPropman(propman)
-                .setRememberAnswerLineList(rememberAnswerLineList)
-                .setReporter(reportMapList)
-                .start(propertyPrefix)
-
-        return TaskUtil.STATUS_TASK_RUN_FAILED
+        //(Task) Start
+        return start(propertyPrefix, taskClazz)
     }
 
 
 
     String getTaskName(String propertyPrefix){
-        String taskName = getString("${propertyPrefix}task")?.trim()?.toUpperCase()
+        String taskName = provider.getString("${propertyPrefix}task")?.trim()?.toUpperCase()
         return taskName
     }
 
     Class getTaskClass(String taskName){
         Class taskClazz = validTaskList.find{ it.getSimpleName().equalsIgnoreCase(taskName) }
         if (!taskClazz)
-            throw new Exception('Does not exists task.')
+            throw new Exception("${taskName} Does not exists task. or You Can't")
         return taskClazz
+    }
+
+    /*************************
+     * 2. START
+     *************************/
+    Integer start(String propertyPrefix, Class taskClazz){
+        status = STATUS_NOTHING
+
+        //Check Condition
+        if ( !checkCondition(propertyPrefix) )
+            return
+
+        //Get Task Instance
+        // - Find Task
+        TaskUtil taskInstance = config.findInstance(taskClazz)
+        // - Inject Value
+        provider.shift( this.getClass().simpleName.toLowerCase(), propertyPrefix )
+        config.injectValue(taskInstance)
+        taskInstance.provider = provider
+        taskInstance.rememberAnswerLineList = rememberAnswerLineList
+        taskInstance.reportMapList = reportMapList
+
+        //Description
+        descript(propertyPrefix)
+
+        try{
+            //Start Task
+            status = taskInstance.run()
+
+        }catch(e){
+            throw e
+        }finally{
+            if (status != STATUS_UNDO_QUESTION)
+                report(taskInstance)
+        }
+
+        return status
+    }
+
+    protected boolean checkCondition(String propertyPrefix){
+        return provider.checkCondition(propertyPrefix)
+    }
+
+    protected void descript(String propertyPrefix){
+        String descriptionString = provider.get("desc")
+        descriptionString = descriptionString ?: propertyPrefix
+        if (descriptionString)
+            logBigTitle(descriptionString)
+    }
+
+    /*************************
+     * 3. REPORT
+     *************************/
+    void report(TaskUtil taskInstance){
+        ReportSetup reportSetup = provider.genMergedReportSetup()
+
+        if (reportSetup.modeReport){
+            if (reportSetup.modeReportConsole)
+                taskInstance.reportWithConsole(reportSetup, reportMapList)
+
+            if (reportSetup.modeReportText)
+                taskInstance.reportWithText(reportSetup, reportMapList)
+
+            if (reportSetup.modeReportExcel)
+                taskInstance.reportWithExcel(reportSetup, reportMapList)
+        }
+    }
+
+
+
+    protected List<String> getListWithDashRange(String dashRnage){
+        List<String> resultList = []
+        List<String> split = dashRnage.split('[-]')
+        String rangeStart = split[0]
+        String rangeEnd = split[1]
+        if (rangeStart.isNumber() && rangeEnd.isNumber())
+            (Integer.parseInt(rangeStart)..Integer.parseInt(rangeEnd)).each{
+                resultList << it.toString()
+            }
+        else{
+            (rangeStart..rangeEnd).each{
+                resultList << it.toString()
+            }
+        }
+        return resultList
+    }
+
+    protected List<String> getListWithDotDotRange(String dashRnage){
+        List<String> resultList = []
+        List<String> split = dashRnage.split('[.][.]')
+        String rangeStart = split[0]
+        String rangeEnd = split[1]
+        if (rangeStart.isNumber() && rangeEnd.isNumber())
+            (Integer.parseInt(rangeStart)..Integer.parseInt(rangeEnd)).each{
+                resultList << it.toString()
+            }
+        else{
+            (rangeStart..rangeEnd).each{
+                resultList << it.toString()
+            }
+        }
+        return resultList
     }
 
 }

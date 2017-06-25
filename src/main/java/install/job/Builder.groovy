@@ -1,12 +1,14 @@
 package install.job
 
-import install.util.JobUtil
 import install.annotation.Command
 import install.annotation.Init
 import install.annotation.Job
+import install.annotation.Task
 import install.bean.BuilderGlobalOption
 import install.bean.ReportSetup
 import install.configuration.InstallerPropertiesGenerator
+import install.configuration.PropertyProvider
+import install.util.JobUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.ReportMan
@@ -24,33 +26,18 @@ class Builder extends JobUtil{
         levelNamesProperty = 'b.level'
         executorNamePrefix = 'b'
         propertiesFileName = 'builder.properties'
-        validTaskList = Util.findAllClasses(packageNameForTask)
+        validTaskList = Util.findAllClasses('install', [Task])
 
-        this.propman = setupPropMan(propGen)
+        this.propman = setupPropMan(provider)
         this.varman = setupVariableMan(propman, executorNamePrefix)
-        this.gOpt = new BuilderGlobalOption().merge(new BuilderGlobalOption(
-                fileSetup           : genGlobalFileSetup(),
-                reportSetup         : genReportSetup(),
-
-                installerName            : getString('installer.name') ?: 'installer',
-                installerHomeToLibRelPath: getString('installer.home.to.lib.relpath') ?: './lib',
-                installerHomeToBinRelPath: getString('installer.home.to.bin.relpath') ?: './bin',
-                installerHomeToRspRelPath: getString('installer.home.to.rsp.relpath') ?: './rsp',
-                buildDir            : getFilePath('build.dir'),
-                buildTempDir        : getFilePath('build.temp.dir'),
-                buildDistDir        : getFilePath('build.dist.dir'),
-                buildInstallerHome  : getFilePath('build.installer.home'),
-                modeAutoRsp         : getFilePath('mode.auto.rsp'),
-                modeAutoZip         : getFilePath('mode.auto.zip'),
-                modeAutoTar         : getFilePath('mode.auto.tar'),
-                propertiesDir       : getString('properties.dir') ?: './',
-        ))
+        provider.shift(jobName)
+        this.gOpt = provider.getBuilderGlobalOption()
     }
 
-    PropMan setupPropMan(InstallerPropertiesGenerator propGen){
-        PropMan propmanForBuilder = propGen.get('builder')
-        PropMan propmanDefault = propGen.getDefaultProperties()
-        PropMan propmanExternal = propGen.getExternalProperties()
+    PropMan setupPropMan(PropertyProvider provider){
+        PropMan propmanForBuilder = provider.propGen.get('builder')
+        PropMan propmanDefault = provider.propGen.getDefaultProperties()
+        PropMan propmanExternal = provider.propGen.getExternalProperties()
         String propertiesDir = propmanExternal.get('properties.dir') ?: propmanDefault.get('user.dir')
 
         propmanForBuilder.merge("${propertiesDir}/builder.properties")
@@ -75,7 +62,7 @@ class Builder extends JobUtil{
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
         fileSetup.modeAutoOverWrite = false
-        String propertiesDir = getFilePath('properties.dir') ?: FileMan.getFullPath('./')
+        String propertiesDir = provider.getFilePath('properties.dir') ?: FileMan.getFullPath('./')
         String filePath
         String destPath
 
@@ -164,12 +151,12 @@ class Builder extends JobUtil{
     }
 
     void buildForm(){
-        propGen.getDefaultProperties().set('mode.build.form', true)
-
-        Receptionist receptionist = new Receptionist()
-        receptionist.propGen = propGen
-        receptionist.init()
-        receptionist.buildForm()
+        provider.propGen.getDefaultProperties().set('mode.build.form', true)
+        config.command('form')
+//        Receptionist receptionist = new Receptionist()
+//        receptionist.propGen = propGen
+//        receptionist.init()
+//        receptionist.buildForm()
     }
 
     /*************************
@@ -220,8 +207,8 @@ class Builder extends JobUtil{
         String binToHomeRelPath = FileMan.getRelativePath(binDestPath, buildInstallerHome)
         String binToHomeRelPathForWin = binToHomeRelPath.replace('/','\\')
         String homeToLibRelPathForWin = homeToLibRelPath.replace('/','\\')
-        String libDir = getFilePath('lib.dir')
-        String libPath = getFilePath('lib.path')
+        String libDir = provider.getFilePath('lib.dir')
+        String libPath = provider.getFilePath('lib.path')
         String thisFileName = FileMan.getLastFileName(libPath)
         String tempNowDir = "${buildTempDir}/temp_${new Date().format('yyyyMMdd_HHmmssSSS')}"
         String libSourcePath = "${libDir}/*.*"

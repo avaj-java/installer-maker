@@ -1,5 +1,7 @@
 package install.task
 
+import install.annotation.Task
+import install.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.SqlAnalMan
@@ -13,16 +15,25 @@ import java.sql.SQLException
 /**
  * Created by sujkim on 2017-02-17.
  */
+@Task
 class Sql extends TaskUtil{
+
+    @Value(method='genMergedSqlSetup')
+    SqlSetup sqlSetup
+
+    @Value(property='file.path', method='getFilePathList')
+    List<String> filePathList
+
+    @Value(method='genGlobalReportSetup')
+    ReportSetup reportSetup
+
+
 
     @Override
     Integer run(){
 
         //1. Default Setup
         sqlman = new SqlMan()
-        SqlSetup sqlSetup = genMergedSqlSetup()
-        List<String> filePathList = getFilePathList('file.path', 'sql')
-        ReportSetup reportSetup = genGlobalReportSetup()
 
 
         //2. Execute All SQL

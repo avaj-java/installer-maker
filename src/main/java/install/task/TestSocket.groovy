@@ -1,20 +1,40 @@
 package install.task
 
+import install.annotation.Task
+import install.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.SocketMan
 
 /**
  * Created by sujkim on 2017-03-10.
  */
+@Task
 class TestSocket extends TaskUtil{
+
+    @Value('timeout')
+    Integer timeout
+
+    @Value('charset')
+    String charset
+
+    @Value('ip')
+    String ip
+
+    @Value('port')
+    String port
+
+    @Value('msg')
+    String msg
+
+
 
     @Override
     Integer run(){
-        Integer timeout = get('timeout') ?: 1000
-        String charset  = get('charset') ?: 'euc-kr'
-        String ip       = get('ip') ?: '127.0.0.1'
-        String port     = get('port') ?: '5000'
-        String msg      = get('msg') ?: null
+        timeout = timeout ?: 1000
+        charset  = charset ?: 'euc-kr'
+        ip       = ip ?: '127.0.0.1'
+        port     = port ?: '5000'
+        msg      = msg ?: null
         String response
 
         logMiddleTitle 'START CHECK SOCKET'

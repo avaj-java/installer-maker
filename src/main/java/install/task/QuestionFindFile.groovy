@@ -1,5 +1,7 @@
 package install.task
 
+import install.annotation.Task
+import install.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.QuestionMan
@@ -9,22 +11,40 @@ import jaemisseo.man.util.Util
 /**
  * Created by sujkim on 2017-03-18.
  */
+@Task
 class QuestionFindFile extends TaskUtil{
+
+    @Value(method='genMergedQuestionSetup')
+    QuestionSetup opt
+
+    @Value("find.root.path")
+    String searchRootPath
+
+    @Value("find.file.name")
+    String searchFileName
+
+    @Value("find.result.edit.relpath")
+    String editResultPath
+
+    @Value(property='find.if', method='parse')
+    def searchIf
+
+
 
     @Override
     Integer run(){
 
         //Get Properties
         qman = new QuestionMan().setValidAnswer([undoSign, redoSign])
-        QuestionSetup opt = genMergedQuestionSetup()
 
         List<File> itemList = []
-        String searchRootPath   = get("find.root.path")
-        String searchFileName   = get("find.file.name")
-        String editResultPath   = get("find.result.edit.relpath")
-        def searchIf            = parse("find.if")
+
 
         //Thread-Searcher - START
+        println "FIND Root Path: $searchRootPath"
+        println "FIND File Name: $searchFileName"
+        println "FIND Condition: $searchIf"
+
         println " <Searching>"
         Thread threadSearcher = Util.newThread(' <Stoped Searching>      '){
             List<File> foundFileList = FileMan.findAllWithProgressBar(searchRootPath, searchFileName, searchIf) { data ->
@@ -85,8 +105,6 @@ class QuestionFindFile extends TaskUtil{
     List<String> buildForm(String propertyPrefix){
         this.propertyPrefix = propertyPrefix
         qman = new QuestionMan().setValidAnswer([undoSign, redoSign])
-        QuestionSetup opt = genMergedQuestionSetup()
-
         return (!opt.modeOnlyInteractive) ? qman.genQuestion(opt) : []
     }
 

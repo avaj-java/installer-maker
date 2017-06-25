@@ -1,10 +1,12 @@
 package install.task
 
+import install.annotation.Task
 import install.util.TaskUtil
 
 /**
  * Created by sujkim on 2017-03-18.
  */
+@Task
 class Set extends TaskUtil{
 
     @Override

@@ -1,5 +1,7 @@
 package install.task
 
+import install.annotation.Task
+import install.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.PropMan
 import jaemisseo.man.RestMan
@@ -7,22 +9,32 @@ import jaemisseo.man.RestMan
 /**
  * Created by sujkim on 2017-03-10.
  */
+@Task
 class TestREST extends TaskUtil{
 
-    TestREST(PropMan propman){
-        this.propman = propman
-    }
+    @Value('url')
+    String url
+
+    @Value('method')
+    String method
+
+    @Value('type')
+    String type
+
+    @Value('accept')
+    String accept
+
+    @Value(property='param', method='parse')
+    Map paramMap
+
+    @Value(property='header', method='parse')
+    Map headerMap
 
 
 
     @Override
     Integer run(){
-        String url      = get('url')
-        String method   = get('method') ?: "POST"
-        String type     = get('type')
-        String accept   = get('accept')
-        Map paramMap    = parse('param')
-        Map headerMap   = parse('header')
+        method = method ?: "POST"
 
         //REQUEST & GET RESPONSE
         RestMan restman = new RestMan().addHeader(headerMap)

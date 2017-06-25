@@ -1,15 +1,12 @@
 package install.employee
 
+import install.annotation.*
+import install.bean.ReportSetup
+import install.configuration.PropertyProvider
 import install.util.JobUtil
 import install.util.TaskUtil
-import install.annotation.Command
-import install.annotation.Employee
-import install.annotation.Init
-import install.bean.ReportSetup
-import install.configuration.InstallerPropertiesGenerator
 import jaemisseo.man.PropMan
 import jaemisseo.man.ReportMan
-import jaemisseo.man.util.Util
 
 /**
  * Created by sujkim on 2017-02-17.
@@ -23,14 +20,14 @@ class MacGyver extends JobUtil {
         executorNamePrefix = 'm'
         propertiesFileName = 'macgyver.properties'
 
-        this.propman = setupPropMan(propGen)
+        this.propman = setupPropMan(provider)
         this.varman = setupVariableMan(propman, executorNamePrefix)
     }
 
-    PropMan setupPropMan(InstallerPropertiesGenerator propGen){
-        PropMan propmanForMacgyver = propGen.get('macgyver')
-        PropMan propmanDefault = propGen.getDefaultProperties()
-        PropMan propmanExternal = propGen.getExternalProperties()
+    PropMan setupPropMan(PropertyProvider provider){
+        PropMan propmanForMacgyver = provider.propGen.get('macgyver')
+        PropMan propmanDefault = provider.propGen.getDefaultProperties()
+        PropMan propmanExternal = provider.propGen.getExternalProperties()
 
         //From User's FileSystem or Resource
         String userSetPropertiesDir = propmanExternal['properties.dir']
@@ -45,14 +42,13 @@ class MacGyver extends JobUtil {
         return propmanForMacgyver
     }
 
-    
 
     @Command('doSomething')
     Integer doSomething(){
-        List<Class> clazzList = Util.findAllClasses(packageNameForTask)
-
-        clazzList.each{ clazz ->
-            String taskName = clazz.getSimpleName()
+        //Get Task Annotated Instance List from Singleton Pool
+        List instanceList = config.findAllInstances([Task])
+        instanceList.each{ instance ->
+            String taskName = instance.getClass()
             if (propman.get(taskName))
                 runTask(taskName)
         }
@@ -67,7 +63,7 @@ class MacGyver extends JobUtil {
     @Command('macgyver')
     void macgyver(){
 
-        ReportSetup reportSetup = genGlobalReportSetup()
+        ReportSetup reportSetup = provider.genGlobalReportSetup()
 
         //Each level by level
         eachLevelForTask{ String propertyPrefix ->

@@ -1,12 +1,12 @@
 package install.job
 
-import install.util.JobUtil
 import install.annotation.Command
 import install.annotation.Init
 import install.annotation.Job
-import install.bean.InstallerGlobalOption
+import install.annotation.Task
 import install.bean.ReportSetup
-import install.configuration.InstallerPropertiesGenerator
+import install.configuration.PropertyProvider
+import install.util.JobUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.ReportMan
@@ -23,23 +23,19 @@ class Installer extends JobUtil{
         levelNamesProperty = 'i.level'
         executorNamePrefix = 'i'
         propertiesFileName = 'installer.properties'
-        validTaskList = Util.findAllClasses(packageNameForTask)
+        validTaskList = Util.findAllClasses('install', [Task])
 
-        this.propman = setupPropMan(propGen)
+        this.propman = setupPropMan(provider)
         this.varman = setupVariableMan(propman, executorNamePrefix)
-        parsePropMan(propman, varman, executorNamePrefix)
-        setBeforeGetProp(propman, varman)
-        this.gOpt = new InstallerGlobalOption().merge(new InstallerGlobalOption(
-                fileSetup                  : genGlobalFileSetup(),
-                reportSetup                : genGlobalReportSetup(),
-        ))
+        provider.shift(jobName)
+        this.gOpt = provider.getInstallerGlobalOption()
     }
 
-    PropMan setupPropMan(InstallerPropertiesGenerator propGen){
-        PropMan propmanForInstaller = propGen.get('installer')
-        PropMan propmanForReceptionist = propGen.get('receptionist')
-        PropMan propmanDefault = propGen.getDefaultProperties()
-        PropMan propmanExternal = propGen.getExternalProperties()
+    PropMan setupPropMan(PropertyProvider provider){
+        PropMan propmanForInstaller = provider.propGen.get('installer')
+        PropMan propmanForReceptionist = provider.propGen.get('receptionist')
+        PropMan propmanDefault = provider.propGen.getDefaultProperties()
+        PropMan propmanExternal = provider.propGen.getExternalProperties()
 
         String libtohomeRelPath = FileMan.getFileFromResource('.libtohome')?.text.replaceAll('\\s*', '') ?: '../'
         String installerHome = FileMan.getFullPath(propmanDefault.get('lib.dir'), libtohomeRelPath)

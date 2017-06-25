@@ -1,17 +1,31 @@
 package install.task
 
+import install.annotation.Task
+import install.annotation.Value
 import install.util.TaskUtil
 
 /**
  * Created by sujkim on 2017-02-27.
  */
+@Task
 class TestPort extends TaskUtil{
+
+    @Value('port')
+    String port
+
+    @Value('from')
+    String from
+
+    @Value('to')
+    String to
+
+
 
     @Override
     Integer run(){
         //Ready
-        def rangeFrom   = (get('port') ?: get('from') ?: 0) as int
-        def rangeTo     = (get('to') ?: rangeFrom) as int
+        def rangeFrom   = (port ?: from ?: 0) as int
+        def rangeTo     = (to ?: rangeFrom) as int
         // - No Reverse
         if (rangeFrom > rangeTo){
             def temp = rangeTo
