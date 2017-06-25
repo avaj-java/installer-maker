@@ -1,10 +1,14 @@
 package install.configuration
 
-import install.util.JobUtil
 import install.annotation.*
+import install.configuration.reflection.FieldInfomation
+import install.configuration.reflection.MethodInfomation
+import install.configuration.reflection.ReflectInfomation
+import install.util.JobUtil
 import jaemisseo.man.PropMan
 import jaemisseo.man.util.Util
 
+import java.lang.reflect.Field
 import java.lang.reflect.Method
 
 /**
@@ -12,15 +16,15 @@ import java.lang.reflect.Method
  */
 class Config {
 
-    Map<Class, Object> instanceMap = [:]
+    //Default
+    Map<Class, ReflectInfomation> reflectionMap = [:]
 
-    Map<String, MethodInfomation> initMap = [:]
-    Map<String, MethodInfomation> initCheckMap = [:]
-    Map<String, MethodInfomation> initLatelyMap = [:]
+    //Job
+    Map<String, MethodInfomation> methodCommandNameMap = [:]
 
-    Map<String, MethodInfomation> beforeMap = [:]
-    Map<String, MethodInfomation> afterMap = [:]
-    Map<String, MethodInfomation> commandMap = [:]
+    //Data
+    Map<String, MethodInfomation> methodMethodNameMap = [:]
+
 
     InstallerPropertiesGenerator propGen
     InstallerLogGenerator logGen
@@ -48,110 +52,290 @@ class Config {
      *****/
     void scan(){
         try {
+            //Scan Method,
             List<Class> jobList = Util.findAllClasses('install', [Job, Employee])
             List<Class> taskList = Util.findAllClasses('install', [Task])
+            List<Class> dataList = Util.findAllClasses('install', [Data])
 
-            jobList.each { Class clazz ->
-                instanceMap[clazz] = clazz.newInstance()
-                (instanceMap[clazz] as JobUtil).propGen = propGen
+            println "하하하 ${jobList.size()} / ${taskList.size()} / ${dataList.size()}"
+
+            //Scan Config
+            Class configClazz =this.getClass()
+            reflectionMap[configClazz] = new ReflectInfomation(clazz: configClazz, instance: this)
+
+            jobList.each{ Class clazz ->
+                reflectionMap[clazz] = new ReflectInfomation(clazz: clazz, instance: clazz.newInstance())
+                scanDefault(reflectionMap[clazz])
+                scanCommand(reflectionMap[clazz])
             }
 
-            //Scan Method,
-            jobList.each { Class clazz ->
-                clazz.getDeclaredMethods().each { Method method ->
-                    method.getAnnotations().each { annotation ->
-                        if (annotation instanceof Init) {
-                            initMap[clazz] = new MethodInfomation(instance: instanceMap[clazz], clazz: clazz, methodName: method.name)
-                            boolean isLately = annotation.lately()
-                            initLatelyMap[clazz] = isLately
-                            initCheckMap[clazz] = false
-                        }else if (annotation instanceof Command){
-                            Command commandAnt = annotation as Command
-                            commandMap[commandAnt.value()] = new MethodInfomation(instance: instanceMap[clazz], clazz: clazz, methodName: method.name)
-                        }else if (annotation instanceof Before){
-                            beforeMap[clazz] = new MethodInfomation(instance: instanceMap[clazz], clazz: clazz, methodName: method.name)
-                        }else if (annotation instanceof After){
-                            afterMap[clazz] = new MethodInfomation(instance: instanceMap[clazz], clazz: clazz, methodName: method.name)
-                        }
-                    }
-                }
+            taskList.each{ Class clazz ->
+                reflectionMap[clazz] = new ReflectInfomation(clazz: clazz, instance: clazz.newInstance())
+                scanDefault(reflectionMap[clazz])
             }
+
+            dataList.each { Class clazz ->
+                reflectionMap[clazz] = new ReflectInfomation(clazz: clazz, instance: clazz.newInstance())
+                scanDefault(reflectionMap[clazz])
+                scanMethod(reflectionMap[clazz])
+            }
+
         }catch(Exception e){
             e.printStackTrace()
             throw e
         }
     }
 
-    /*****
-     * Init Instance
-     *****/
-    void init(){
-        initMap.each{
-            MethodInfomation info = it.value
-            Class clazz = info.clazz
-            if (!initLatelyMap[clazz] && initMap[clazz] && !initCheckMap[clazz]){
-                initInstance(clazz)
+    boolean scanDefault(ReflectInfomation reflect){
+        Class clazz = reflect.clazz
+        Object instance = reflect.instance
+        clazz.getMethods().each{ Method method ->
+            method.getAnnotations().each{ annotation ->
+                if (annotation instanceof Init){
+                    reflect.initMethod = new MethodInfomation(instance: instance, clazz: clazz, annotation: annotation, method:method, methodName: method.name)
+                    boolean isLately = annotation.lately()
+                    reflect.isLatelyInitMethod = isLately
+                    reflect.checkInitMethod = false
+                }else if (annotation instanceof Before){
+                    reflect.beforeMethod = new MethodInfomation(instance: instance, clazz: clazz, annotation: annotation, method:method, methodName: method.name)
+                }else if (annotation instanceof After){
+                    reflect.afterMethod = new MethodInfomation(instance: instance, clazz: clazz, annotation: annotation, method:method, methodName: method.name)
+                }else if (annotation instanceof Inject){
+                    reflect.injectMethodNameMap[method.name] = new MethodInfomation(instance: instance, clazz: clazz, annotation: annotation, method:method, methodName: method.name)
+                }
+            }
+        }
+        clazz.getDeclaredFields().each { Field field ->
+            field.getAnnotations().each{ annotation ->
+                if (annotation instanceof Value){
+                    reflect.valueFieldNameMap[field.name] = new FieldInfomation(instance: instance, clazz: clazz, annotation: annotation, field:field, fieldName: field.name)
+                }else if (annotation instanceof Inject){
+                    reflect.injectFieldNameMap[field.name] = new FieldInfomation(instance: instance, clazz: clazz, annotation: annotation, field:field, fieldName: field.name)
+                }
+            }
+        }
+
+    }
+
+    boolean scanCommand(ReflectInfomation reflect){
+        Class clazz = reflect.clazz
+        Object instance = reflect.instance
+        clazz.getDeclaredMethods().each { Method method ->
+            method.getAnnotations().each { annotation ->
+                if (annotation instanceof Command){
+                    Command commandAnt = annotation as Command
+                    methodCommandNameMap[commandAnt.value()] = new MethodInfomation(instance: instance, clazz: clazz, annotation: annotation, method:method, methodName: method.name)
+                }
             }
         }
     }
 
-    void initInstance(Class clazz) {
-        MethodInfomation info = initMap[clazz]
+    boolean scanMethod(ReflectInfomation reflect){
+        Class clazz = reflect.clazz
+        Object instance = reflect.instance
+        clazz.getDeclaredMethods().each { Method method ->
+            method.getAnnotations().each { annotation ->
+                if (annotation instanceof install.annotation.Method) {
+                    methodMethodNameMap[method.name] = new MethodInfomation(instance: instance, clazz: clazz, annotation: annotation, method:method, methodName: method.name)
+                }
+            }
+        }
+    }
+
+    /*************************
+     * INEJCT
+     *************************/
+    void inject(){
+        //Inject to field
+        List<FieldInfomation> injectFieldList = reflectionMap.findAll{ clazz, reflect ->
+            reflect.injectFieldNameMap
+        }.collect{ clazz, reflect ->
+            reflect.injectFieldNameMap.collect{ it.value }
+        }
+        injectFieldList.each{ info ->
+            Class clazz = info.clazz
+            Object instance = info.instance
+            Object injector = findInstance(clazz)
+            instance[info.fieldName] = injector
+        }
+        //Inject to method
+        List<MethodInfomation> injectMethodList = []
+        reflectionMap.each{ clazz, reflect ->
+            reflect.injectMethodNameMap.each{ methodName, methodInfo -> methodInfo
+                injectMethodList << methodInfo
+            }
+        }
+        injectMethodList.each{ info ->
+            Class clazz = info.clazz
+            Object instance = info.instance
+            Object[] parameters = info.method.parameterTypes.collect{ findInstance(it) }
+            runMethod(instance, info.method, parameters)
+        }
+    }
+
+
+
+    /*************************
+     * FIND INSTANCE
+     *************************/
+    Object findInstance(Class clazz){
+        return findInstanceByClass(clazz)
+    }
+
+    Object findInstanceByClass(Class clazz){
+        return reflectionMap[clazz].instance
+    }
+
+    Object findInstanceByAnnotation(Class annotation){
+        List<Object> foundedInstanceList = findAllInstances([annotation])
+        return foundedInstanceList.find{ return true }
+    }
+
+    List<Object> findAllInstances(Class annotation){
+        return findAllInstances([annotation])
+    }
+
+    List<Object> findAllInstances(List<Class> annotationList){
+        List<Object> foundedInstanceList = reflectionMap.findAll{ clazz, info ->
+            Object o = info.clazz.getAnnotations().find{ annotationList.contains(it.annotationType()) }
+            return o
+        }.collect{ clazz, info ->
+            info.instance
+        }
+        return foundedInstanceList
+    }
+
+
+
+    /*************************
+     * INJECT VALUE
+     *************************/
+    Object injectValue(Object instance){
+        //field to inject
+        Map<String, FieldInfomation> valueFieldNameMap = reflectionMap[instance.getClass()].valueFieldNameMap
+        valueFieldNameMap.each{ fieldName, info ->
+            Value ant = (info.annotation as Value)
+            String property = ant.value() ?: ant.property()
+            String method = ant.method()
+            def value = get(property, method)
+            instance[fieldName] = value
+        }
+        return instance
+    }
+
+    def get(String property){
+        return get(property, '')
+    }
+
+    def get(String property, String methodName){
+        MethodInfomation info = methodMethodNameMap[methodName]
+        if (!info)
+            throw new Exception ("Doesn't Exist Value Data's Method")
+        return (property) ? runMethod(info, [property].toArray()) : runMethod(info)
+    }
+
+
+
+    /*****
+     * Init Instance
+     *****/
+    void init(){
+        List<MethodInfomation> initMethodList = reflectionMap.findAll{ clazz, reflect -> reflect.initMethod }.collect{ clazz, reflect -> reflect.initMethod }
+        initMethodList.each{ info ->
+            Class clazz = info.clazz
+            if (!reflectionMap[clazz].isLatelyInitMethod
+                && reflectionMap[clazz].initMethod
+                && !reflectionMap[clazz].checkInitMethod){
+                    initInstance(info)
+            }
+        }
+    }
+
+    void initInstance(MethodInfomation info) {
+        Class clazz = info.clazz
         Object instance = info.instance
-        Method method = clazz.getMethod(info.methodName, null)
+        Method method = info.method
         try {
             method.invoke(instance, null)
         }catch(e){
             e.printStackTrace()
             throw e
         }
-        initCheckMap[clazz] = true
+        reflectionMap[clazz].checkInitMethod = true
     }
+
+
 
     /*****
      * Command
      *****/
-    void command(){
-        PropMan propmanDefault = propGen.getDefaultProperties()
-        PropMan propmanExternal = propGen.getExternalProperties()
-        List<String> userCommandList = propmanExternal.get('') ?: []
+    void command(List<String> userCommandList){
         userCommandList.each{ commandName ->
             command(commandName)
         }
     }
 
     void command(String commandName){
-        MethodInfomation info = commandMap[commandName]
-        if (info){
-            Class clazz = info.clazz
+        MethodInfomation commandMethodInfo = methodCommandNameMap[commandName]
+        if (commandMethodInfo){
+            Class clazz = commandMethodInfo.clazz
 
             //Lately Init
-            if (initLatelyMap[clazz] && initMap[clazz]  && !initCheckMap[clazz])
-                initInstance(clazz)
+            if (reflectionMap[clazz].isLatelyInitMethod
+                && reflectionMap[clazz].initMethod
+                && !reflectionMap[clazz].checkInitMethod){
+                    initInstance(reflectionMap[clazz].initMethod)
+            }
 
             //Before
-            if (beforeMap[clazz])
-                runMethod(beforeMap[clazz])
+            if (reflectionMap[clazz].beforeMethod)
+                runMethod(reflectionMap[clazz].beforeMethod)
 
             //Command
-            runMethod(info)
+            runMethod(commandMethodInfo)
             
             //After
-            if (afterMap[clazz])
-                runMethod(afterMap[clazz])
+            if (reflectionMap[clazz].afterMethod)
+                runMethod(reflectionMap[clazz].afterMethod)
         }
 
     }
 
+
+
+    /*****
+     * RUN METHOD
+     *****/
     Object runMethod(MethodInfomation info){
-        return runMethod(info.instance, info.methodName)
+        return runMethod(info.instance, info.method)
+    }
+
+    Object runMethod(MethodInfomation info, Object[] parameters){
+        return runMethod(info.instance, info.method, parameters)
     }
 
     Object runMethod(Object instance, String methodName){
+        return runMethod(instance, methodName, null, null)
+    }
+
+    Object runMethod(Object instance, String methodName, Class[] parameterTypes, Object[] parameters){
+        try {
+            Method method = instance.getClass().getMethod(methodName, parameterTypes)
+            return runMethod(instance, method, parameters)
+        }catch(e){
+            e.printStackTrace()
+            throw e
+        }
+    }
+
+    Object runMethod(Object instance, Method method){
+        return runMethod(instance, method, null)
+    }
+
+    Object runMethod(Object instance, Method method, Object[] parameters){
         Object result
         try {
-            Method method = instance.getClass().getMethod(methodName, null)
-            result = method.invoke(instance, null)
+            result = method.invoke(instance, parameters)
         }catch(e){
             e.printStackTrace()
             throw e

@@ -1,5 +1,6 @@
 package install.configuration
 
+import install.annotation.Bean
 import install.task.Copy
 import install.task.Jar
 import install.task.MergeProperties
@@ -22,6 +23,7 @@ import java.security.CodeSource
 /**
  * Created by sujkim on 2017-03-29.
  */
+@Bean
 class InstallerPropertiesGenerator extends PropertiesGenerator{
 
     Map<String, PropMan> dataMap = [:]
