@@ -15,11 +15,8 @@ class ConfigTest {
     void SimplTest(){
         config.scan()
         PropertyProvider provider = (config.findInstanceByAnnotation(Data) as PropertyProvider)
-        println provider
         provider.propGen = config.propGen
         config.inject()
-        config.init()
-        println config
     }
 
 }
