@@ -1,27 +1,29 @@
 package install.employee
 
+import install.bean.ReportSetup
 import install.configuration.annotation.method.Command
 import install.configuration.annotation.method.Init
 import install.configuration.annotation.type.Employee
 import install.configuration.annotation.type.Task
-import install.bean.ReportSetup
 import install.data.PropertyProvider
-import install.util.JobUtil
+import install.util.EmployeeUtil
 import install.util.TaskUtil
 import jaemisseo.man.PropMan
 import jaemisseo.man.ReportMan
+import jaemisseo.man.util.Util
 
 /**
  * Created by sujkim on 2017-02-17.
  */
 @Employee
-class MacGyver extends JobUtil {
+class MacGyver extends EmployeeUtil {
 
     @Init
     void init(){
         levelNamesProperty = 'macgyver.level'
         executorNamePrefix = 'm'
         propertiesFileName = 'macgyver.properties'
+        validTaskList = Util.findAllClasses('install', [Task])
 
         this.propman = setupPropMan(provider)
         this.varman = setupVariableMan(propman, executorNamePrefix)
