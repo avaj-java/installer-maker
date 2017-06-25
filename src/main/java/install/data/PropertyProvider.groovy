@@ -1,5 +1,6 @@
-package install.configuration
+package install.data
 
+import install.configuration.InstallerPropertiesGenerator
 import install.configuration.annotation.type.Data
 import install.configuration.annotation.method.Init
 import install.configuration.annotation.method.Method

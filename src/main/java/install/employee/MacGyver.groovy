@@ -5,7 +5,7 @@ import install.configuration.annotation.method.Init
 import install.configuration.annotation.type.Employee
 import install.configuration.annotation.type.Task
 import install.bean.ReportSetup
-import install.configuration.PropertyProvider
+import install.data.PropertyProvider
 import install.util.JobUtil
 import install.util.TaskUtil
 import jaemisseo.man.PropMan

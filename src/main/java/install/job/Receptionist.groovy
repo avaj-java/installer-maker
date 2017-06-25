@@ -3,7 +3,7 @@ package install.job
 import install.configuration.annotation.method.Command
 import install.configuration.annotation.method.Init
 import install.configuration.annotation.type.Job
-import install.configuration.PropertyProvider
+import install.data.PropertyProvider
 import install.task.*
 import install.util.JobUtil
 import install.util.TaskUtil

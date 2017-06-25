@@ -3,7 +3,7 @@ package install
 import install.configuration.annotation.type.Data
 import install.configuration.Config
 import install.configuration.InstallerLogGenerator
-import install.configuration.PropertyProvider
+import install.data.PropertyProvider
 import jaemisseo.man.PropMan
 import jaemisseo.man.util.PropertiesGenerator
 

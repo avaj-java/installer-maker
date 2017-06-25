@@ -4,7 +4,7 @@ import install.configuration.annotation.method.Before
 import install.configuration.annotation.Inject
 import install.bean.ReportSetup
 import install.configuration.Config
-import install.configuration.PropertyProvider
+import install.data.PropertyProvider
 import install.task.*
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan

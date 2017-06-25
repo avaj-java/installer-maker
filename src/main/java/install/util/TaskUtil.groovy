@@ -1,12 +1,8 @@
 package install.util
 
 import install.bean.ReportSetup
-import install.configuration.PropertyProvider
+import install.data.PropertyProvider
 import jaemisseo.man.*
-import jaemisseo.man.util.FileSetup
-import jaemisseo.man.util.QuestionSetup
-import jaemisseo.man.util.SqlSetup
-import jaemisseo.man.util.Util
 
 /**
  * Created by sujkim on 2017-03-11.

@@ -5,6 +5,7 @@ import install.configuration.annotation.method.After
 import install.configuration.annotation.method.Before
 import install.configuration.annotation.method.Command
 import install.configuration.annotation.method.Init
+import install.configuration.annotation.type.Bean
 import install.configuration.annotation.type.Data
 import install.configuration.annotation.type.Employee
 import install.configuration.annotation.type.Job
@@ -52,38 +53,50 @@ class Config {
     }
 
 
-    /*****
+    /*************************
      * 1. Scan Class
      * 2. New Instance
-     *****/
+     *************************/
     void scan(){
         try {
-            //Scan Method,
+            //1. Scan Classes
             List<Class> jobList = Util.findAllClasses('install', [Job, Employee])
             List<Class> taskList = Util.findAllClasses('install', [Task])
             List<Class> dataList = Util.findAllClasses('install', [Data])
+            List<Class> beanList = Util.findAllClasses('install', [Bean])
 
-            println "하하하 ${jobList.size()} / ${taskList.size()} / ${dataList.size()}"
+            //SJTEST
+//            println "Job:${jobList.size()} / Task:${taskList.size()} / Data:${dataList.size()} / Bean:${beanList.size()}"
 
-            //Scan Config
+            //2. Scan Method & Field
+            //- Config
             Class configClazz =this.getClass()
             reflectionMap[configClazz] = new ReflectInfomation(clazz: configClazz, instance: this)
 
+            //- Job
             jobList.each{ Class clazz ->
                 reflectionMap[clazz] = new ReflectInfomation(clazz: clazz, instance: clazz.newInstance())
                 scanDefault(reflectionMap[clazz])
                 scanCommand(reflectionMap[clazz])
             }
 
+            //- Task
             taskList.each{ Class clazz ->
                 reflectionMap[clazz] = new ReflectInfomation(clazz: clazz, instance: clazz.newInstance())
                 scanDefault(reflectionMap[clazz])
             }
 
+            //- Data
             dataList.each { Class clazz ->
                 reflectionMap[clazz] = new ReflectInfomation(clazz: clazz, instance: clazz.newInstance())
                 scanDefault(reflectionMap[clazz])
                 scanMethod(reflectionMap[clazz])
+            }
+
+            //- Bean
+            beanList.each{ Class clazz ->
+                reflectionMap[clazz] = new ReflectInfomation(clazz: clazz, instance: clazz.newInstance())
+                scanDefault(reflectionMap[clazz])
             }
 
         }catch(Exception e){
@@ -148,6 +161,10 @@ class Config {
         }
     }
 
+
+
+
+
     /*************************
      * INEJCT
      *************************/
@@ -179,40 +196,6 @@ class Config {
         }
     }
 
-
-
-    /*************************
-     * FIND INSTANCE
-     *************************/
-    Object findInstance(Class clazz){
-        return findInstanceByClass(clazz)
-    }
-
-    Object findInstanceByClass(Class clazz){
-        return reflectionMap[clazz].instance
-    }
-
-    Object findInstanceByAnnotation(Class annotation){
-        List<Object> foundedInstanceList = findAllInstances([annotation])
-        return foundedInstanceList.find{ return true }
-    }
-
-    List<Object> findAllInstances(Class annotation){
-        return findAllInstances([annotation])
-    }
-
-    List<Object> findAllInstances(List<Class> annotationList){
-        List<Object> foundedInstanceList = reflectionMap.findAll{ clazz, info ->
-            Object o = info.clazz.getAnnotations().find{ annotationList.contains(it.annotationType()) }
-            return o
-        }.collect{ clazz, info ->
-            info.instance
-        }
-        return foundedInstanceList
-    }
-
-
-
     /*************************
      * INJECT VALUE
      *************************/
@@ -242,9 +225,9 @@ class Config {
 
 
 
-    /*****
-     * Init Instance
-     *****/
+    /*************************
+     * INIT INSTANCE
+     *************************/
     void init(){
         List<MethodInfomation> initMethodList = reflectionMap.findAll{ clazz, reflect -> reflect.initMethod }.collect{ clazz, reflect -> reflect.initMethod }
         initMethodList.each{ info ->
@@ -272,9 +255,9 @@ class Config {
 
 
 
-    /*****
+    /*************************
      * Command
-     *****/
+     *************************/
     void command(List<String> userCommandList){
         userCommandList.each{ commandName ->
             command(commandName)
@@ -347,6 +330,36 @@ class Config {
             throw e
         }
         return result
+    }
+
+    /*************************
+     * FIND INSTANCE
+     *************************/
+    Object findInstance(Class clazz){
+        return findInstanceByClass(clazz)
+    }
+
+    Object findInstanceByClass(Class clazz){
+        return reflectionMap[clazz].instance
+    }
+
+    Object findInstanceByAnnotation(Class annotation){
+        List<Object> foundedInstanceList = findAllInstances([annotation])
+        return foundedInstanceList.find{ return true }
+    }
+
+    List<Object> findAllInstances(Class annotation){
+        return findAllInstances([annotation])
+    }
+
+    List<Object> findAllInstances(List<Class> annotationList){
+        List<Object> foundedInstanceList = reflectionMap.findAll{ clazz, info ->
+            Object o = info.clazz.getAnnotations().find{ annotationList.contains(it.annotationType()) }
+            return o
+        }.collect{ clazz, info ->
+            info.instance
+        }
+        return foundedInstanceList
     }
 
 }

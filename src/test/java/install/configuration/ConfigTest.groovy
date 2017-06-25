@@ -1,6 +1,7 @@
 package install.configuration
 
 import install.configuration.annotation.type.Data
+import install.data.PropertyProvider
 import org.junit.Test
 
 /**
