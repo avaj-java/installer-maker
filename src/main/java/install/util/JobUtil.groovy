@@ -282,8 +282,6 @@ class JobUtil extends TaskUtil{
         TaskUtil taskInstance = config.findInstance(taskClazz)
         // - Inject Value
         provider.shift( jobName, propertyPrefix )
-        println jobName
-        println propertyPrefix
         config.injectValue(taskInstance)
 //        taskInstance.provider = provider
         taskInstance.propertyPrefix = propertyPrefix
