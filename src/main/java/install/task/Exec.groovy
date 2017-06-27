@@ -3,9 +3,7 @@ package install.task
 import install.configuration.annotation.type.Task
 import install.configuration.annotation.Value
 import install.util.TaskUtil
-import temp.util.StreamGobbler
-
-import java.util.concurrent.Executors
+import jaemisseo.man.util.Util
 
 /**
  * Created by sujkim on 2017-04-04.
@@ -43,7 +41,7 @@ class Exec extends TaskUtil{
             String userCommand = (commandForAll) ? commandForAll : (isWindows) ? commandForWin : commandForLin
 
             //Exec Command
-            commandWIthStyleA(userCommand)
+            commandWIthStyleB(userCommand)
 
         }catch(e){
             throw e
@@ -72,13 +70,49 @@ class Exec extends TaskUtil{
 
         //Execute Command
         ProcessBuilder builder = new ProcessBuilder().command(commandArray).directory( new File(userDir) )
+        builder.redirectErrorStream(true);
         Process process = builder.start()
         doProcess(process)
     }
 
     void doProcess(Process process){
-        StreamGobbler streamGobbler = new StreamGobbler(process.getInputStream())
-        Executors.newSingleThreadExecutor().submit(streamGobbler)
+//        List<String> lineList = new BufferedReader(new InputStreamReader(process.getInputStream())).readLines()
+//        lineList.each{
+//            println it
+//        }
+        Util.newThread {
+            OutputStream stdin = process.getOutputStream(); // <- Eh?
+            InputStream stdout = process.getInputStream();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stdout));
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stdin));
+
+            Scanner scan = new Scanner(stdout);
+            String line
+
+            while (scan.hasNext()) {
+                String input = scan.nextLine();
+                if (input.trim().equals("exit")) {
+                    // Putting 'exit' amongst the echo --EOF--s below doesn't work.
+                    writer.write("exit\n");
+                } else {
+//                String dd = new Scanner(System.in).nextLine();
+//                writer.write(dd)
+                    writer.write("((" + input + ") && echo --EOF--) || echo --EOF--\n");
+                }
+                writer.flush();
+
+                line = reader.readLine();
+                while (line != null && !line.trim().equals("--EOF--")) {
+                    java.lang.System.out.println(line);
+                    line = reader.readLine();
+                }
+                if (line == null) {
+                    break;
+                }
+            }
+        }
+
         int exitCode = process.waitFor()
         assert exitCode == 0
     }
