@@ -1,6 +1,8 @@
 package install.util
 
 import install.bean.ReportSetup
+import install.configuration.Config
+import install.configuration.annotation.Inject
 import install.data.PropertyProvider
 import jaemisseo.man.*
 
@@ -16,7 +18,6 @@ class TaskUtil{
     public static final Integer STATUS_REDO_QUESTION = 4
 
 
-    PropertyProvider provider
     PropMan propman
     VariableMan varman
     SqlMan sqlman
@@ -30,7 +31,11 @@ class TaskUtil{
     String undoSign = '<'
     String redoSign = '>'
 
+    Config config
+    PropertyProvider provider
 
+    @Inject void setConfig(Config config){ this.config = config }
+    @Inject void setProvider(PropertyProvider provider){ this.provider = provider }
 
     /*************************
      * RUN

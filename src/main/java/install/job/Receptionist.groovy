@@ -173,7 +173,7 @@ class Receptionist extends JobUtil{
             //(Task) Inject Value
             provider.shift( jobName, propertyPrefix )
             config.injectValue(taskInstance)
-            taskInstance.provider = provider
+//            taskInstance.provider = provider
             taskInstance.propertyPrefix = propertyPrefix
             taskInstance.rememberAnswerLineList = rememberAnswerLineList
             taskInstance.reportMapList = reportMapList

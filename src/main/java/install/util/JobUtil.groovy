@@ -38,7 +38,7 @@ class JobUtil extends TaskUtil{
 
     @Before
     void before(){
-        provider.shift( jobName )
+        provider.shift( jobName, propertyPrefix )
     }
 
 
@@ -282,8 +282,10 @@ class JobUtil extends TaskUtil{
         TaskUtil taskInstance = config.findInstance(taskClazz)
         // - Inject Value
         provider.shift( jobName, propertyPrefix )
+        println jobName
+        println propertyPrefix
         config.injectValue(taskInstance)
-        taskInstance.provider = provider
+//        taskInstance.provider = provider
         taskInstance.propertyPrefix = propertyPrefix
         taskInstance.rememberAnswerLineList = rememberAnswerLineList
         taskInstance.reportMapList = reportMapList
