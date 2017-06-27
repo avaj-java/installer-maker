@@ -25,7 +25,6 @@ class TaskUtil{
     QuestionMan qman
 
     Integer status
-    String propertyPrefix = ''
     List reportMapList = []
     List rememberAnswerLineList = []
     String undoSign = '<'
@@ -106,6 +105,7 @@ class TaskUtil{
      * Remember Answer
      *************************/
     protected void rememberAnswer(String yourAnswer){
+        String propertyPrefix = provider.propertyPrefix
         rememberAnswerLineList.add("${propertyPrefix}answer.default=${yourAnswer}")
     }
 

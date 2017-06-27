@@ -1,5 +1,6 @@
 package install.util
 
+import install.configuration.annotation.method.After
 import install.configuration.annotation.method.Before
 import install.configuration.annotation.Inject
 import install.bean.ReportSetup
@@ -19,6 +20,7 @@ class JobUtil extends TaskUtil{
     String levelNamesProperty = ''
     String executorNamePrefix = ''
     String propertiesFileName = ''
+    String propertyPrefix = ''
 
     List<Class> validTaskList = []
     List<Class> invalidTaskList = []
@@ -28,6 +30,12 @@ class JobUtil extends TaskUtil{
     def gOpt
     Integer taskResultStatus
 
+
+
+    /*************************
+     * - Config: System Controller
+     * - PropertyProvider: Data Controller
+     *************************/
     Config config
     PropertyProvider provider
 
@@ -36,10 +44,24 @@ class JobUtil extends TaskUtil{
 
 
 
+    /*************************
+     * A thing to do, Before running command.
+     *************************/
     @Before
     void before(){
         provider.shift( jobName, propertyPrefix )
     }
+
+
+
+    /*************************
+     * A thing to do After running command.
+     *************************/
+    @After
+    void after(){
+        this.propertyPrefix = ''
+    }
+
 
 
     PropMan setupPropMan(PropertyProvider provider){
@@ -284,7 +306,7 @@ class JobUtil extends TaskUtil{
         provider.shift( jobName, propertyPrefix )
         config.injectValue(taskInstance)
 //        taskInstance.provider = provider
-        taskInstance.propertyPrefix = propertyPrefix
+//        taskInstance.propertyPrefix = propertyPrefix
         taskInstance.rememberAnswerLineList = rememberAnswerLineList
         taskInstance.reportMapList = reportMapList
 
