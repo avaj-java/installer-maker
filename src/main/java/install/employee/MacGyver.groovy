@@ -98,6 +98,23 @@ class MacGyver extends EmployeeUtil {
     }
 
 
+
+    @Alias('h')
+    @Command('help')
+    void help(){
+        runTask('help')
+    }
+
+
+
+    @Command('test')
+    void test(){
+        config.command('clean')
+        config.command('build')
+        config.command('run')
+    }
+
+
     
     /**
      * WRITE Report

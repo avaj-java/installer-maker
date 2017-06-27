@@ -115,7 +115,9 @@ class Builder extends JobUtil{
         try{
             ReportSetup reportSetup = gOpt.reportSetup
             //1. Gen Starter and Response File
-            genLibAndBin()
+            String binPath = genLibAndBin()
+            //- set bin path on builded installer
+            provider.setRaw('build.installer.bin.path', binPath)
 
             //2. Each level by level
             eachLevelForTask{ String propertyPrefix ->
@@ -146,6 +148,16 @@ class Builder extends JobUtil{
             e.printStackTrace()
             throw e
         }
+    }
+
+    @Command('run')
+    void runCommand(){
+        String binPath = provider.get('build.installer.bin.path')
+        String installBinPathForWIn = "${binPath}/install.bat".replaceAll(/[\/\\]+/, "\\$File.separator")
+        String installBinPathForLin = "${binPath}/install".replaceAll(/[\/\\]+/, "/")
+        provider.setRaw('exec.command.win', installBinPathForWIn)
+        provider.setRaw('exec.command.lin', installBinPathForLin)
+        runTask('exec')
     }
 
     void buildForm(){
@@ -191,7 +203,7 @@ class Builder extends JobUtil{
      *  2. Generate Lib
      *  3. Generate Bin
      *************************/
-    private void genLibAndBin(){
+    private String genLibAndBin(){
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
         FileSetup fileSetupForLin = fileSetup.clone([lineBreak:'\n'])
@@ -291,6 +303,7 @@ class Builder extends JobUtil{
             'set REL_PATH_HOME_TO_LIB=' : "set REL_PATH_HOME_TO_LIB=${homeToLibRelPathForWin}"
         ])
         .write(binInstallerBatDestPath)
+        return binDestPath
     }
 
     /*************************
