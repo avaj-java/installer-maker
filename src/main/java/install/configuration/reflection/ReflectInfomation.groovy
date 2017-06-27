@@ -16,6 +16,8 @@ class ReflectInfomation {
     MethodInfomation afterMethod
 
     Map<String, FieldInfomation> valueFieldNameMap = [:]
+    Map<String, MethodInfomation> valueMethodNameMap = [:]
+
     Map<String, FieldInfomation> injectFieldNameMap = [:]
     Map<String, MethodInfomation> injectMethodNameMap = [:]
 

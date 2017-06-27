@@ -125,8 +125,10 @@ class Config {
                     reflect.checkInitMethod = false
                 }else if (annotation instanceof Before){
                     reflect.beforeMethod = new MethodInfomation(instance: instance, clazz: clazz, annotation: annotation, method:method, methodName: method.name)
-                }else if (annotation instanceof After){
-                    reflect.afterMethod = new MethodInfomation(instance: instance, clazz: clazz, annotation: annotation, method:method, methodName: method.name)
+                }else if (annotation instanceof After) {
+                    reflect.afterMethod = new MethodInfomation(instance: instance, clazz: clazz, annotation: annotation, method: method, methodName: method.name)
+                }else if (annotation instanceof Value){
+                    reflect.valueMethodNameMap[method.name] = new MethodInfomation(instance: instance, clazz: clazz, annotation: annotation, method:method, methodName: method.name)
                 }else if (annotation instanceof Inject){
                     reflect.injectMethodNameMap[method.name] = new MethodInfomation(instance: instance, clazz: clazz, annotation: annotation, method:method, methodName: method.name)
                 }
@@ -180,10 +182,10 @@ class Config {
 
 
     /*************************
-     * INEJCT
+     * INEJCT Bean
      *************************/
     void inject(){
-        //Inject to field
+        //1. INJECT to FIELD
         List<FieldInfomation> injectFieldList = reflectionMap.findAll{ clazz, reflect ->
             reflect.injectFieldNameMap
         }.collect{ clazz, reflect ->
@@ -193,9 +195,10 @@ class Config {
             Class clazz = info.clazz
             Object instance = info.instance
             Object injector = findInstance(clazz)
+            //inject
             instance[info.fieldName] = injector
         }
-        //Inject to method
+        //2. INJECT to METHOD
         List<MethodInfomation> injectMethodList = []
         reflectionMap.each{ clazz, reflect ->
             reflect.injectMethodNameMap.each{ methodName, methodInfo -> methodInfo
@@ -203,34 +206,48 @@ class Config {
             }
         }
         injectMethodList.each{ info ->
-            Class clazz = info.clazz
-            Object instance = info.instance
             Object[] parameters = info.method.parameterTypes.collect{ findInstance(it) }
-            runMethod(instance, info.method, parameters)
+            //inject
+            runMethod(info.instance, info.method, parameters)
         }
     }
 
     /*************************
-     * INJECT VALUE
+     * INJECT Value
      *************************/
     Object injectValue(Object instance){
-        //field to inject
-        Map<String, FieldInfomation> valueFieldNameMap = reflectionMap[instance.getClass()].valueFieldNameMap
+        Class clazz = instance.getClass()
+        //1. INJECT VALUE to FIELD
+        Map<String, FieldInfomation> valueFieldNameMap = reflectionMap[clazz].valueFieldNameMap
         valueFieldNameMap.each{ fieldName, info ->
+            //Get Value
             Value ant = (info.annotation as Value)
             String property = ant.value() ?: ant.property()
             String method = ant.method()
-            def value = get(property, method)
+            def value = getFromProvider(property, method)
+            //Inject
             instance[fieldName] = value
+        }
+        //2. INJECT VALUE to METHOD
+        Map<String, MethodInfomation> valueMethodNameMap = reflectionMap[clazz].valueMethodNameMap
+        valueMethodNameMap.each{ String methodName, MethodInfomation info ->
+            //Get Value
+            Value ant = (info.annotation as Value)
+            String property = ant.value() ?: ant.property()
+            String method = ant.method()
+            def value = getFromProvider(property, method)
+            Object[] parameters = [value] as Object[]
+            //Inject
+            runMethod(instance, info.method, parameters)
         }
         return instance
     }
 
-    def get(String property){
-        return get(property, '')
+    def getFromProvider(String property){
+        return getFromProvider(property, '')
     }
 
-    def get(String property, String methodName){
+    def getFromProvider(String property, String methodName){
         MethodInfomation info = methodMethodNameMap[methodName]
         if (!info)
             throw new Exception ("Doesn't Exist Value Data's Method")

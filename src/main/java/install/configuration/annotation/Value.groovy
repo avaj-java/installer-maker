@@ -10,7 +10,7 @@ import java.lang.annotation.Target
  * Created by sujkim on 2017-06-11.
  */
 @Inherited
-@Target(ElementType.FIELD)
+@Target([ElementType.FIELD, ElementType.METHOD])
 @Retention(RetentionPolicy.RUNTIME)
 @interface Value {
 
