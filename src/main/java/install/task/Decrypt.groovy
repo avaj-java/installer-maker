@@ -47,7 +47,7 @@ class Decrypt extends TaskUtil{
         println "<RESULT>"
         println decryptedText
 
-        logMiddleTitle 'FINISHED CHECK REST'
+        logMiddleTitle 'FINISHED DECRYPT'
 
         return STATUS_TASK_DONE
     }

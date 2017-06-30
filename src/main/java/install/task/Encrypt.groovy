@@ -34,7 +34,7 @@ class Encrypt extends TaskUtil{
 
         switch (method){
             case "SEED":
-                encryptedText = SEEDUtil.getSeedDecrypt(value, SEEDUtil.getSeedRoundKey("1234567890123456"))
+                encryptedText = SEEDUtil.getSeedEncrypt(value, SEEDUtil.getSeedRoundKey("1234567890123456"))
                 break
             case "AES":
                 encryptedText = new Encryptor().encrypt(value)
@@ -47,7 +47,7 @@ class Encrypt extends TaskUtil{
         println "<RESULT>"
         println encryptedText
 
-        logMiddleTitle 'FINISHED CHECK REST'
+        logMiddleTitle 'FINISHED ENCRYPT'
 
         return STATUS_TASK_DONE
     }
