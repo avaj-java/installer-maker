@@ -47,6 +47,8 @@ class Exec extends TaskUtil{
             throw e
         }
 
+        logMiddleTitle 'FINISHED EXEC'
+
         return STATUS_TASK_DONE
     }
 
@@ -55,7 +57,7 @@ class Exec extends TaskUtil{
     void commandWIthStyleA(String userCommand){
         //Data
         String command = (isWindows) ? "cmd.exe /c ${userCommand}" : "sh -c ${userCommand}"
-        println command
+        println "Command> ${command}"
 
         //Execute Command
         Process process = Runtime.getRuntime().exec("${command} ${userDir}")
@@ -76,10 +78,6 @@ class Exec extends TaskUtil{
     }
 
     void doProcess(Process process){
-//        List<String> lineList = new BufferedReader(new InputStreamReader(process.getInputStream())).readLines()
-//        lineList.each{
-//            println it
-//        }
         Util.newThread {
             OutputStream stdin = process.getOutputStream(); // <- Eh?
             InputStream stdout = process.getInputStream();
@@ -87,30 +85,20 @@ class Exec extends TaskUtil{
             BufferedReader reader = new BufferedReader(new InputStreamReader(stdout));
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stdin));
 
-            Scanner scan = new Scanner(stdout);
-            String line
-
-            while (scan.hasNext()) {
-                String input = scan.nextLine();
-                if (input.trim().equals("exit")) {
-                    // Putting 'exit' amongst the echo --EOF--s below doesn't work.
-                    writer.write("exit\n");
-                } else {
-//                String dd = new Scanner(System.in).nextLine();
-//                writer.write(dd)
-                    writer.write("((" + input + ") && echo --EOF--) || echo --EOF--\n");
-                }
-                writer.flush();
-
-                line = reader.readLine();
-                while (line != null && !line.trim().equals("--EOF--")) {
-                    java.lang.System.out.println(line);
-                    line = reader.readLine();
-                }
-                if (line == null) {
-                    break;
-                }
+            //Method 1. Print by Character
+            int c
+            while ((c = reader.read()) != -1) {
+                print ((char) c)
             }
+            reader.close()
+            
+            //Method 2. Print by Line
+//            String line
+//            line = reader.readLine()
+//            while (line != null && !line.trim().equals("--EOF--")){
+//                println line
+//                line = reader.readLine()
+//            }
         }
 
         int exitCode = process.waitFor()
