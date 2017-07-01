@@ -183,7 +183,10 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
      *
      */
     InstallerPropertiesGenerator makeExternalProperties(String[] args){
-        externalProperties = new PropMan(genPropertiesValueMap(args))
+        Map argsMap = genPropertiesValueMap(args)
+        externalProperties = new PropMan(argsMap)
+        externalProperties.set('args', args.join(' '))
+        externalProperties.set('args.except.command', argsMap.findAll{ it.key }.collect{ "-${it.key}=${it.value}" }.join(' '))
         return this
     }
 
