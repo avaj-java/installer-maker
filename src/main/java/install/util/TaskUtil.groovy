@@ -117,9 +117,8 @@ class TaskUtil{
     }
 
     protected void setPropValue(){
-        //Set Some Property
+        //- Set Some Property
         def property = provider.parse("property")
-
         if (property instanceof String){
             def value = provider.get("value")
             provider.setRaw(property, value)
@@ -128,6 +127,13 @@ class TaskUtil{
             (property as Map).each{ String propName, def propValue ->
                 provider.setRaw(propName, propValue)
             }
+        }
+
+        //- Set Some Properties from Properties File
+        def propertiesFIlePath = provider.getString("properties.file.path")
+        if (propertiesFIlePath){
+            String fullPath = FileMan.getFullPath(propertiesFIlePath)
+            provider.propman.mergeFile(fullPath)
         }
     }
 
