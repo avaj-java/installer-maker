@@ -153,11 +153,14 @@ class Builder extends JobUtil{
     @Command('run')
     void runCommand(){
         String binPath = provider.get('build.installer.bin.path')
+        String argsExceptCommand = provider.get('args.except.command')
         String installBinPathForWIn = "${binPath}/install.bat".replaceAll(/[\/\\]+/, "\\$File.separator")
         String installBinPathForLin = "${binPath}/install".replaceAll(/[\/\\]+/, "/")
-        provider.setRaw('exec.command.win', installBinPathForWIn)
-        provider.setRaw('exec.command.lin', installBinPathForLin)
+        provider.setRaw('exec.command.win', "${installBinPathForWIn} ${argsExceptCommand}")
+        provider.setRaw('exec.command.lin', "${installBinPathForLin} ${argsExceptCommand}")
         runTask('exec')
+        provider.setRaw('exec.command.win', "")
+        provider.setRaw('exec.command.lin', "")
     }
 
     void buildForm(){
