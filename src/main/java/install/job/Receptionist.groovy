@@ -77,7 +77,9 @@ class Receptionist extends JobUtil{
     }
 
     boolean checkResponseFile(){
+        //1. Get Response File Path
         String responseFilePath = gOpt.responseFilePath
+        //2. Try To Load Response File
         if (responseFilePath){
             if (new File(responseFilePath).exists()){
                 return true
