@@ -57,11 +57,11 @@ class PropertyProvider {
 
 
     void set(String propertyName, def value){
-        propman.set("${propertyPrefix}${propertyName}", value)
+        propman.set("${propertyPrefix}${propertyName}", value ?: '')
     }
 
     void setRaw(String propertyName, def value){
-        propman.set(propertyName, value)
+        propman.set(propertyName, value ?: '')
     }
 
 
