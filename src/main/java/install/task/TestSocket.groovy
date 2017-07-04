@@ -37,7 +37,8 @@ class TestSocket extends TaskUtil{
         msg      = msg ?: null
         String response
 
-        logMiddleTitle 'START CHECK SOCKET'
+        //START
+        logMiddleTitle 'START SOCKET'
         println "<REQUEST> - CHECK"
         println " - IP      : ${ip}"
         println " - PORT    : ${port}"
@@ -46,7 +47,9 @@ class TestSocket extends TaskUtil{
         println " - MSG     : ${msg}"
         println ""
 
-        //SEND
+        //RUN
+        println "<Socket>"
+        println "Sending..."
         new SocketMan()
                 .setTimeout(timeout)
                 .setCharset(charset)
@@ -62,10 +65,13 @@ class TestSocket extends TaskUtil{
                     socketMan.disconnect()
                     println "3. Disconnected From Server - OK\n"
                 }
+        println "Done"
 
+        //RESPONSE
         println "<RESPONSE (Sorry, Not Supported)>\n${response}"
-        logMiddleTitle 'FINISHED CHECK SOCKET'
 
+        //FINISH
+        logMiddleTitle 'FINISHED SOCKET'
         return STATUS_TASK_DONE
     }
 

@@ -35,15 +35,14 @@ class TestREST extends TaskUtil{
     Integer run(){
         method = method ?: "POST"
 
-        //REQUEST & GET RESPONSE
         RestMan restman = new RestMan().addHeader(headerMap)
         if (type)
             restman.setType(type)
         if (accept)
             restman.setAccept(accept)
 
-        logMiddleTitle 'START CHECK REST'
-
+        //START
+        logMiddleTitle 'START TESTREST'
         println "<REQUEST> - CHECK"
         println " - URL       : ${url}"
         println " - METHOD    : ${method}"
@@ -53,14 +52,18 @@ class TestREST extends TaskUtil{
         println " - HEADER    : ${headerMap}"
         println ""
 
+        //RUN
+        println "<REST>"
+        println "Requesting..."
         String response =  restman.request(url, method, paramMap)
+        println "Done"
 
+        //RESPONSE
+        println "<RESPONSE>"
+        println response
 
-        //LOG
-        println "<RESPONSE>\n${response}"
-
-        logMiddleTitle 'FINISHED CHECK REST'
-
+        //FINISH
+        logMiddleTitle 'FINISHED TESTREST'
         return STATUS_TASK_DONE
     }
 

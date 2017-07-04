@@ -26,11 +26,13 @@ class TestJDBC extends TaskUtil{
         Sql sql
         List list
 
-        //DO TEST
-        logMiddleTitle 'START CHECK DB'
-        println '<DATASOURCE AND SELECT QUERY> - CHECK'
+        //START
+        logMiddleTitle 'START TESTJDBC'
+        println '<REQUEST> - CHECK'
         logInfo(previewMap)
 
+        //RUN
+        println "<JDBC>"
         try{
             printStep '1. Connect to DB'
             sql = new Sql(connGen.generate())
@@ -55,11 +57,12 @@ class TestJDBC extends TaskUtil{
             }
         }
 
+        //RETURN DATA
         println "<RETURNED DATA(Count:${list.size()})> - CHECK"
         list.each{ println it }
 
-        logMiddleTitle 'FINISHED CHECK DB'
-
+        //FINISH
+        logMiddleTitle 'FINISHED TESTJDBC'
         return STATUS_TASK_DONE
     }
 

@@ -33,11 +33,15 @@ class TestPort extends TaskUtil{
             rangeFrom = temp
         }
 
-        //DO TEST
-        logMiddleTitle "START CHECK PORT (${rangeFrom}${(rangeFrom!=rangeTo)?' to '+rangeTo:''})"
+        //START
+        logMiddleTitle "START TESTPORT (${rangeFrom}${(rangeFrom!=rangeTo)?' to '+rangeTo:''})"
+
+        //RUN
         Map portMap = getUsingPortMap(rangeFrom, rangeTo)
         println "\n - Port Count (You Can Use): ${portMap.findAll{ !it.value }.size()}"
 
+        //FINISH
+        logMiddleTitle 'FINISHED TESTPORT'
         return STATUS_TASK_DONE
     }
 
