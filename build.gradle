@@ -3,14 +3,18 @@ apply plugin: "java"
 apply plugin: "application"
 apply plugin: "idea"
 
+/*************************
+ * SETUP
+ *************************/
 sourceCompatibility = "1.6"
 targetCompatibility = "1.6"
 
 String projectName = "installer-maker"
 version = "git describe --tags".execute([], project.projectDir).text.trim()
-String libFileName = "${projectName}-${version}"
+applicationName = projectName
 group = "jaemmisseo"
 mainClassName = "install.Starter"
+String libFileName = "${projectName}-${version}"
 String installerHome = "$System.env.INSTALLER_HOME"
 
 buildscript {
@@ -28,6 +32,9 @@ buildscript {
     }
 }
 
+/*************************
+ * SOURCE SET
+ *************************/
 sourceSets {
     main {
         groovy {
@@ -58,10 +65,10 @@ task writeVersion << {
  *****/
 jar {
     dependsOn writeVersion
-    
+
     /** MANIFEST **/
     manifest {
-        attributes  'Title': 'installer-maker', 'Version': version, 'Main-Class': mainClassName
+        attributes  'Title': projectName, 'Version': version, 'Main-Class': mainClassName
     }
 
     /** Jarfile Name **/
@@ -79,8 +86,18 @@ jar {
 //    }
 }
 
+/*****
+ * ZIP
+ *****/
 distZip {
     archiveName "${libFileName}.zip"
+}
+
+/*****
+ * TAR
+ *****/
+distTar {
+    archiveName "${libFileName}.tar"
 }
 
 /*****
@@ -94,13 +111,16 @@ applicationDistribution.from([
 }
 
 /*****
- * Before deployLocal
+ * Before deployLocal 2
  *****/
 task extractZip(type: Copy){
     from zipTree("$buildDir/distributions/${libFileName}.zip")
     into "$buildDir/distributions"
 }
 
+/*****
+ * Before deployLocal 3
+ *****/
 task cleanHome(type: Delete){
     delete installerHome
 }
