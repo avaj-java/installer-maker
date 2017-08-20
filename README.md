@@ -1,5 +1,4 @@
-[![build status](http://192.168.0.208/dg/installer/badges/master/build.svg)](http://192.168.0.208/dg/installer/commits/master)
-
+[![Build Status](https://travis-ci.org/avaj-java/installer-maker.svg?branch=master)](https://travis-ci.org/avaj-java/installer-maker)
 -----
 # Developer Menual
 
