@@ -13,3 +13,11 @@ branches:
 script:
   - gradle clean build
   
+deploy:
+  provider: releases
+  api_key:
+    secure: YOUR_API_KEY_ENCRYPTED
+  file: build/libs/*
+  skip_cleanup: true
+  on:
+    tags: true
