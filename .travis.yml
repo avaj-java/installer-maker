@@ -24,7 +24,7 @@ deploy:
   provider: releases
   api_key:
     secure: byn8+MSCgtBfYaGHaQQah0b+b17Uf68F4IgJvXkTdfNb93bkCU12wrw6R8CaWAsqi+BizGr43IHY+JPbxOak3OnLnZsctYsosG6aMsl8m53/JkNvQ3ekxcWetBufAzH6nM3ded64Uksdx2LVbzcUNnJ54x9xAntL0NcJwDlW3vB7xKQK34Hs0bkRRMIBCk38wkFWyFyfaNebxL0NzASZksG30jUDetgVSiEU+WJvM2wUrRrl/1UdQH/2ff9ZkgZY7TNGPuMLZj9Yl1L9zkO+1W0IipL3bkHhUYxF9xcbzy8bvfllIauVbHUlWZjwOBp/FBwgp9eeafPP4agqWl1KkEgXaPQE4eJXj0HY4wQsiur7KC661iYZGrsygwFAvtNoAFOM8kwG0hJlw/5OnqGmRTCn3jf1m85Tv/tUAvt3QnaNw1urnm8uY8WnGvzsVUwbNmcTO5iWDWAMWCCyJH0cwqaBO1wWIS+/Mf0JDnnT1LhJ99ntdJXC/BVGfLUmsjFXoHugl4zhKstgjcsXwq9EEtRnwGrT9oEHCt6fmSMVbe/WO0FreOWQdkjiWt59NHqX/9DbqKMq8d2BfcZQ58sGHIYNEST2+ez3SqgXv+bG+8gO/eJrxTABkMVNPTG8ZdD+529qNVhWdm7TliWWLi5KByn/BQCbdnP7OjGWp/Meq6A=
-  file: "build/libs/distributions"
+  file: "build/libs/distributions/*.zip"
   file_glob: "true"
   skip_cleanup: true
   on:
