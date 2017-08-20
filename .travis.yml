@@ -24,7 +24,7 @@ script:
 deploy:
   provider: releases
   api_key:
-    secure: 77341d928ed67eb76a683abf70cc9b7d1199c5c5
+    secure: "77341d928ed67eb76a683abf70cc9b7d1199c5c5"
   file: build/libs/*
   skip_cleanup: true
   on:
