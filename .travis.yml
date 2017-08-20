@@ -1,0 +1,16 @@
+language: java
+
+jdk:
+  - openjdk6
+
+os:
+  - linux
+
+branches:
+  only:
+    - master
+
+
+script:
+  - ./gradlew clean build
+  
