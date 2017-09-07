@@ -4,7 +4,9 @@ apply plugin: "application"
 apply plugin: "idea"
 
 /*************************
+ *
  * SETUP
+ * 
  *************************/
 sourceCompatibility = "1.6"
 targetCompatibility = "1.6"
@@ -32,8 +34,18 @@ buildscript {
     }
 }
 
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.12'
+}
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
 /*************************
+ * 
  * SOURCE SET
+ *
  *************************/
 sourceSets {
     main {
@@ -50,9 +62,13 @@ sourceSets {
 }
 
 
-/*****
- * Before jar
- *****/
+
+/*************************
+ *
+ * JAR
+ *
+ *************************/
+/** Before jar **/
 task writeVersion << {
     new File("$buildDir/resources/main/.version").write(version)
     new File("$buildDir/resources/main/.compiler").write("Java ${System.getProperty('java.version')}")
@@ -60,9 +76,6 @@ task writeVersion << {
     new File("$buildDir/resources/main/.libtohome").write('../')
 }
 
-/*****
- * jar
- *****/
 jar {
     dependsOn writeVersion
 
@@ -86,23 +99,12 @@ jar {
 //    }
 }
 
-/*****
- * ZIP
- *****/
-distZip {
-    archiveName "${libFileName}.zip"
-}
-
-/*****
- * TAR
- *****/
-distTar {
-    archiveName "${libFileName}.tar"
-}
-
-/*****
- * Before distZip
- *****/
+/*************************
+ *
+ * DIST ZIP
+ *
+ *************************/
+/** Before distZip **/
 applicationDistribution.from([
         "src/main/resources/binForBuilder/macgyver",
         "src/main/resources/binForBuilder/macgyver.bat",
@@ -110,37 +112,70 @@ applicationDistribution.from([
     into "bin"
 }
 
-/*****
- * Before deployLocal 2
- *****/
-task extractZip(type: Copy){
-    from zipTree("$buildDir/distributions/${libFileName}.zip")
-    into "$buildDir/distributions"
+distZip {
+    archiveName "${libFileName}.zip"
 }
 
-/*****
- * Before deployLocal 3
- *****/
+/*************************
+ *
+ * DIST TAR
+ *
+ *************************/
+distTar {
+    archiveName "${libFileName}.tar"
+}
+
+
+/*************************
+ *
+ * BUILD
+ *
+ *************************/
+/** Before build **/
+task extractZipToTemp(type: Copy){
+    String distPath = "${buildDir}/distributions"
+    from zipTree("${distPath}/${libFileName}.zip")
+    into "${distPath}"
+    doLast{
+        file("${distPath}/${libFileName}").renameTo(file("${distPath}/${projectName}"))
+    }
+}
+
+build.dependsOn extractZipToTemp
+
+
+/*************************
+ *
+ * deployLocal
+ *  - Deploy to INSTALLER_HOME
+ *
+ *************************/
+/** Before deployLocal **/
 task cleanHome(type: Delete){
     delete installerHome
 }
 
-/*****
- * Before deployLocal
- * Deploy to INSTALLER_HOME
- *****/
 task deployLocal(type: Copy){
-    dependsOn distZip, extractZip, cleanHome
-    from "$buildDir/distributions/${libFileName}"
+    dependsOn distZip, extractZipToTemp, cleanHome
+    from "$buildDir/distributions/${projectName}"
     into installerHome
 }
 
 
 
-configurations.all {
-    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
-}
 
+
+
+
+
+
+
+
+/*************************
+ *
+ * Dependencies
+ *
+ *************************/
 repositories {
     jcenter()
     maven { url "https://jitpack.io" }
@@ -170,6 +205,3 @@ dependencies {
     testCompile "junit:junit:4.11"
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '1.12'
-}
