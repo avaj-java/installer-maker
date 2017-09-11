@@ -16,8 +16,9 @@ version = "git describe --tags".execute([], project.projectDir).text.trim()
 applicationName = projectName
 group = "jaemmisseo"
 mainClassName = "install.Starter"
+String distributionPath = "${buildDir}/distributions"
 String libFileName = "${projectName}-${version}"
-String installerHome = "$System.env.INSTALLER_HOME"
+String SystemEnv_INSTALLER_MAKER_HOME = "$System.env.INSTALLER_MAKER_HOME"
 
 buildscript {
     ext {
@@ -133,11 +134,10 @@ distTar {
  *************************/
 /** Before build **/
 task extractZipToTemp(type: Copy){
-    String distPath = "${buildDir}/distributions"
-    from zipTree("${distPath}/${libFileName}.zip")
-    into "${distPath}"
+    from zipTree("${distributionPath}/${libFileName}.zip")
+    into "${distributionPath}"
     doLast{
-        file("${distPath}/${libFileName}").renameTo(file("${distPath}/${projectName}"))
+        file("${distributionPath}/${libFileName}").renameTo(file("${distributionPath}/${projectName}"))
     }
 }
 
@@ -147,18 +147,18 @@ build.dependsOn extractZipToTemp
 /*************************
  *
  * deployLocal
- *  - Deploy to INSTALLER_HOME
+ *  - Deploy to INSTALLER_MAKER_HOME
  *
  *************************/
 /** Before deployLocal **/
 task cleanHome(type: Delete){
-    delete installerHome
+    delete SystemEnv_INSTALLER_MAKER_HOME
 }
 
 task deployLocal(type: Copy){
     dependsOn distZip, extractZipToTemp, cleanHome
-    from "$buildDir/distributions/${projectName}"
-    into installerHome
+    from "${distributionPath}/${projectName}"
+    into SystemEnv_INSTALLER_MAKER_HOME
 }
 
 
