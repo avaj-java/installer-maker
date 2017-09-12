@@ -7,6 +7,14 @@ branches:
   only:
   - master
 before_cache:
+  - echo ""
+  - echo ""
+  - echo ""
+  - echo "#########################"
+  - echo "#"
+  - echo "# CACHE (gradle)"
+  - echo "#"
+  - echo "#########################"
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
@@ -18,7 +26,14 @@ script:
 
 before_deploy:
   - export RELEASE_PKG_FILE=$(ls *.deb)
-  - echo "deploying $RELEASE_PKG_FILE to GitHub releases"
+  - echo ""
+  - echo ""
+  - echo ""
+  - echo "#########################"
+  - echo "#"
+  - echo "# Deploying $RELEASE_PKG_FILE to GitHub releases"
+  - echo "#"
+  - echo "#########################"
   
 deploy:
   provider: releases
