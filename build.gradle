@@ -133,6 +133,16 @@ distTar {
  *
  *************************/
 /** Before build **/
+task checkDistributions{
+    doLast{
+        println "\n#########################"
+        println "##### Check Distributions"
+        println "#########################"
+        new File(distributionPath).listFiles().each{ println it }
+        println ""
+    }
+}
+
 task extractZipToTemp(type: Copy){
     from zipTree("${distributionPath}/${libFileName}.zip")
     into "${distributionPath}"
@@ -141,7 +151,7 @@ task extractZipToTemp(type: Copy){
     }
 }
 
-build.dependsOn extractZipToTemp
+build.dependsOn checkDistributions, extractZipToTemp
 
 
 /*************************
