@@ -38,4 +38,4 @@ goto execute
 set CMD_LINE_ARGS=%$
 
 :execute
-java -cp "%PATH_TO_LIB_DIR%/*" install.Starter %CMD_LINE_ARGS%
+java -cp "%PATH_TO_LIB_DIR%\*" install.Starter %CMD_LINE_ARGS%
