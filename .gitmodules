@@ -1,0 +1,15 @@
+[submodule "fileman"]
+	path = fileman
+	url = https://github.com/avaj-java/fileman.git
+[submodule "common-man"]
+	path = common-man
+	url = https://github.com/avaj-java/common-man.git
+[submodule "restman"]
+	path = restman
+	url = https://github.com/avaj-java/restman.git
+[submodule "reportman"]
+	path = reportman
+	url = https://github.com/avaj-java/reportman.git
+[submodule "common-util"]
+	path = common-util
+	url = https://github.com/avaj-java/common-util.git

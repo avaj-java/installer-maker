@@ -19,6 +19,7 @@ mainClassName = "install.Starter"
 String distributionPath = "${buildDir}/distributions"
 String libFileName = "${projectName}-${version}"
 String SystemEnv_INSTALLER_MAKER_HOME = "$System.env.INSTALLER_MAKER_HOME"
+boolean hadDeployment = false
 
 buildscript {
     ext {
@@ -162,22 +163,34 @@ build.dependsOn checkDistributions, extractZipToTemp
  *************************/
 /** Before deployLocal **/
 task cleanHome(type: Delete){
+    hadDeployment = new File(SystemEnv_INSTALLER_MAKER_HOME).exists()
     delete SystemEnv_INSTALLER_MAKER_HOME
+    doLast{
+        if (hadDeployment){
+            println "\n#########################"
+            println "##### Deleted Deployment!!! Path: ${SystemEnv_INSTALLER_MAKER_HOME}"
+            println "#########################"
+            println ""
+        }
+    }
 }
 
 task deployLocal(type: Copy){
     dependsOn distZip, extractZipToTemp, cleanHome
     from "${distributionPath}/${projectName}"
     into SystemEnv_INSTALLER_MAKER_HOME
+    doLast{
+        println "\n#########################"
+        if (hadDeployment){
+            println "##### Re-Deployed !!! Path: ${SystemEnv_INSTALLER_MAKER_HOME}"
+        }else{
+            println "##### Newly-Deployed !!! Path: ${SystemEnv_INSTALLER_MAKER_HOME}"
+        }
+        println "#########################"
+        new File(SystemEnv_INSTALLER_MAKER_HOME).listFiles().each{ println it }
+        println ""
+    }
 }
-
-
-
-
-
-
-
-
 
 
 
@@ -195,12 +208,11 @@ repositories {
 
 dependencies {
 
-    //JAEMISSEO
-    compile "com.github.avaj-java:common-util:0.1.62"
-    compile "com.github.avaj-java:common-man:0.1.63"
-    compile "com.github.avaj-java:fileman:0.1.63"
-    compile "com.github.avaj-java:reportman:0.0.1"
-    compile "com.github.avaj-java:restman:0.0.1"
+    compile  (rootProject?.findProject('common-util')) ? project(':common-util') : 'com.github.avaj-java:common-util:0.1.61'
+    compile  (rootProject?.findProject('common-man')) ? project(':common-man') : 'com.github.avaj-java:common-man:0.1.61'
+    compile  (rootProject?.findProject('fileman')) ? project(':fileman') : 'com.github.avaj-java:fileman:0.1.61'
+    compile  (rootProject?.findProject('reportman')) ? project(':reportman') : 'com.github.avaj-java:reportman:0.1.61'
+    compile  (rootProject?.findProject('restman')) ? project(':restman') : 'com.github.avaj-java:restman:0.1.61'
 
     //GROOVY
     compile 'org.codehaus.groovy:groovy-all:2.1.3'
