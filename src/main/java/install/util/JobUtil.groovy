@@ -82,15 +82,33 @@ class JobUtil extends TaskUtil{
     }
 
     PropMan parsePropMan(PropMan propmanToParse, VariableMan varman, String excludeStartsWith){
-        //Parse ${Variable} Exclude Levels
-        (1..5).each{
-            Map map = propmanToParse.properties
-            varman.putVariables(map)
+        /** Parse ${Variable} Exclude Levels **/
+        // -BasicVariableOnly
+        Map map = propmanToParse.properties
+        if (excludeStartsWith){
             map.each{ String key, def value ->
-                if (value && value instanceof String){
-                    if (!excludeStartsWith || !key.startsWith(excludeStartsWith)){
+                if (value && value instanceof String && !key.startsWith(excludeStartsWith))
+                    propmanToParse.set(key, varman.parseBasicVariableOnly(value))
+            }
+        }else{
+            map.each{ String key, def value ->
+                if (value && value instanceof String)
+                    propmanToParse.set(key, varman.parseBasicVariableOnly(value))
+            }
+        }
+        // -All
+        (1..5).each{
+            map = propmanToParse.properties
+            varman.putVariables(map)
+            if (excludeStartsWith){
+                map.each{ String key, def value ->
+                    if (value && value instanceof String && !key.startsWith(excludeStartsWith))
                         propmanToParse.set(key, varman.parse(value))
-                    }
+                }
+            }else{
+                map.each{ String key, def value ->
+                    if (value && value instanceof String)
+                        propmanToParse.set(key, varman.parse(value))
                 }
             }
         }
@@ -296,9 +314,6 @@ class JobUtil extends TaskUtil{
         if ( !checkCondition(propertyPrefix) )
             return
 
-        //Description
-        descript(propertyPrefix)
-
         //Get Task Instance
         // - Find Task
         TaskUtil taskInstance = config.findInstance(taskClazz)
@@ -311,6 +326,10 @@ class JobUtil extends TaskUtil{
         taskInstance.reportMapList = reportMapList
 
         try{
+
+            //Description
+            descript(propertyPrefix)
+
             //Start Task
             status = taskInstance.run()
 
