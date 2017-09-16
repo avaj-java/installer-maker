@@ -1,2 +1,1 @@
-gradle clean distZip
-./open
+gradle clean build

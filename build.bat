@@ -1,2 +1,0 @@
-gradle clean distZip
-open
