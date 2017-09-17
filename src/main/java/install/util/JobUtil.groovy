@@ -88,12 +88,12 @@ class JobUtil extends TaskUtil{
         if (excludeStartsWith){
             map.each{ String key, def value ->
                 if (value && value instanceof String && !key.startsWith(excludeStartsWith))
-                    propmanToParse.set(key, varman.parseBasicVariableOnly(value))
+                    propmanToParse.set(key, varman.parseDefaultVariableOnly(value))
             }
         }else{
             map.each{ String key, def value ->
                 if (value && value instanceof String)
-                    propmanToParse.set(key, varman.parseBasicVariableOnly(value))
+                    propmanToParse.set(key, varman.parseDefaultVariableOnly(value))
             }
         }
         // -All

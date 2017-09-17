@@ -42,8 +42,12 @@ class InstallerLogGenerator extends PropertiesGenerator{
     }
 
     void logFinished(){
+        logFinished('')
+    }
+
+    void logFinished(String message){
         println ""
-        println "   <<< Bye >>>"
+        println "   <<< Finish >>> ${message?:''}"
         println ""
     }
 
