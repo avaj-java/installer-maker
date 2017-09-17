@@ -9,6 +9,7 @@ import install.util.JobUtil
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
+import jaemisseo.man.VariableMan
 import jaemisseo.man.util.FileSetup
 
 /**
@@ -62,7 +63,9 @@ class Receptionist extends JobUtil{
     void ask(){
         //0. Check Response File
         if (checkResponseFile()){
-            propman.merge(getResponsePropMan())
+            PropMan responsePropMan = getResponsePropMan()
+            PropMan parsedResponsePropMan = parsePropMan(responsePropMan, new VariableMan(), executorNamePrefix)
+            propman.merge(parsedResponsePropMan)
             propman.set('answer.repeat.limit', 0)
             logBigTitle('Add Response File Answer')
         }
