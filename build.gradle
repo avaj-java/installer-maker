@@ -3,64 +3,11 @@ apply plugin: "java"
 apply plugin: "application"
 apply plugin: "idea"
 
-/*************************
- *
- * Define Variable&Function
- * 
- *************************/
-sourceCompatibility = "1.6"
-targetCompatibility = "1.6"
-
-String projectName = "installer-maker"
-version = "git describe --tags".execute([], project.projectDir).text.trim()
-applicationName = projectName
-group = "jaemmisseo"
-mainClassName = "install.Starter"
-String distributionPath = "${buildDir}/distributions"
-String libFileName = "${projectName}-${version}"
-String SystemEnv_INSTALLER_MAKER_HOME = "$System.env.INSTALLER_MAKER_HOME"
-boolean hadDeployment = false
-
-ext.getBoolean = { String propertyName ->
-    boolean result
-    if (project.hasProperty('dev')){
-        String value = project.property('dev')
-        result = (!value || value == 'true')
-    }else{
-        result = false
-    }
-    return result
-}
-
-ext.checkProject = { String subProjectName ->
-    return (getBoolean('dev') && rootProject?.findProject(subProjectName))
-}
-
-ext.getDependency = { String dependencyProjectName ->
-    List projectItems = dependencyProjectName.split(':').toList()
-    String path = projectItems[0]
-    String name = projectItems[1]
-    String version = projectItems[2]?:''
-    return checkProject(name) ? project(":${name}") : dependencyProjectName
-}
-
-/*************************
- * Develop Mode
- *************************/
-if (getBoolean('dev')){
-    println "#########################"
-    println "#####"
-    println "##### Development Mode"
-    println "#####"
-    println "#########################"
-}
-
-        
-/*************************
+/**************************************************
  *
  * SETUP
  *
- *************************/
+ **************************************************/
 buildscript {
     ext {
         groovyVersion = '2.1.3'
@@ -84,12 +31,8 @@ configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 
-
-
 /*************************
- * 
  * SOURCE SET
- *
  *************************/
 sourceSets {
     main {
@@ -105,11 +48,175 @@ sourceSets {
     }
 }
 
+/**************************************************
+ *
+ * Define Variable&Function
+ *
+ **************************************************/
+sourceCompatibility = "1.6"
+targetCompatibility = "1.6"
 
+String projectName = "installer-maker"
+version = "git describe --tags".execute([], project.projectDir).text.trim()
+applicationName = projectName
+group = "jaemmisseo"
+mainClassName = "install.Starter"
+
+String distributionPath = "${buildDir}/distributions"
+String libFileName = "${projectName}-${version}"
+String SystemEnv_INSTALLER_MAKER_HOME = "$System.env.INSTALLER_MAKER_HOME"
+boolean hadDeployment = false
+List<Dependency> moduleList = []
+
+ext.getString = { String propertyName -> return project.hasProperty(propertyName) ? project.property(propertyName) : null }
+ext.getBoolean = { String propertyName -> return (project.hasProperty(propertyName)) ? (!project.property(propertyName) || project.property(propertyName) == 'true') : false }
+ext.checkProject = { String subProjectName -> return (getBoolean('dev') && rootProject?.findProject(subProjectName)) }
+ext.getDependency = { String dependencyString -> String name = dependencyString.split(':').toList()[1]; return checkProject(name) ? project(":${name}") : dependencyString;}
+
+static void printSubject(String subjectName){
+    println "\n========================="
+    println "= ${subjectName}"
+    println "========================="
+}
+
+static int getLongestLength(List list, String fieldName){
+    return getLongestLength( list.collect{it[fieldName]} )
+}
+
+static int getLongestLength(List<String> list){
+    int longestLength = -1
+    list.each{ def text ->
+        int length = text?.length()
+        if (longestLength < length)
+            longestLength = length
+    }
+    return longestLength
+}
+
+static String getSpacesToLineUp(String stringItem, int bestLongerLength){
+    return (stringItem.length() < bestLongerLength) ? (1..(bestLongerLength - stringItem.length())).collect{' '}.join('') : ''
+}
+
+static String getUserSetedVersionFromModuleList(List dependencyStringList, String moduleName){
+    String dependencyString = dependencyStringList.find{ String dependencyString ->
+        List projectItems = dependencyString.split(':').toList()
+        String path = projectItems[0]
+        String name = projectItems[1]
+        String version = projectItems[2] ?: ''
+        return name == moduleName
+    }
+    return (dependencyString) ?: ''
+}
+
+class Dependency {
+    String path
+    String name
+    String branchName
+    String version
+}
+
+/**************************************************
+ *
+ * Dependencies
+ *
+ **************************************************/
+List<String> subprojectList = [
+        'com.github.avaj-java:common-util:0.1.62',
+        'com.github.avaj-java:common-man:0.1.63',
+        'com.github.avaj-java:fileman:0.1.63',
+        'com.github.avaj-java:reportman:0.0.1',
+        'com.github.avaj-java:restman:0.0.1'
+]
+List<String> dependencyList = [
+        'org.codehaus.groovy:groovy-all:2.1.3',
+        'com.sun.mail:javax.mail:1.5.5',
+        "com.oracle:ojdbc6:11.2.0.3",
+]
+repositories {
+    jcenter()
+    maven { url "https://jitpack.io" }
+    maven { url 'http://repo.spring.io/milestone' }
+    maven { url "http://maven.springframework.org/release" }
+}
+dependencies {
+    //JAEMISSEO
+    subprojectList.each{ compile(getDependency(it)) }
+    //Others
+    dependencyList.each{ compile(it) }
+    //Test
+    testCompile "junit:junit:4.11"
+}
+
+/**************************************************
+ *
+ * Setup Each Sub Projects
+ *
+ **************************************************/
+subprojects {
+    /*************************
+     * Gethering Module's Git Info
+     *************************/
+    moduleList << new Dependency(
+            name        : project.name,
+            branchName  : 'git rev-parse --abbrev-ref HEAD'.execute([], project.projectDir).text.trim(),
+            version     : (getBoolean('dev')) ? 'git describe --tags'.execute([], project.projectDir).text.trim() : getUserSetedVersionFromModuleList(subprojectList, project.name)
+    )
+    group = 'jaemmisseo'
+    version = moduleList[(moduleList.size() -1)].version
+}
+
+
+
+/**************************************************
+ *
+ * Print Information
+ *
+ **************************************************/
+/*************************
+ * Print Java Version
+ *************************/
+printSubject "Java"
+println ' - Compile Environment '
+exec{ executable 'java';  args "-version"; }
 
 /*************************
+ * Print Module's Git Info
+ *************************/
+printSubject "Git"
+// Get best long length 'moduleName' and 'branchName' to adjust spacing
+int bestLongModuleNameLength = getLongestLength(moduleList, 'name')
+int bestLongBranchNameLength = getLongestLength(moduleList, 'branchName')
+// Adjust spacing And Print Git Module, Branch, Version
+moduleList.each{ Dependency module ->
+    String moduleNameSpace = getSpacesToLineUp(module.name, bestLongModuleNameLength)
+    String branchNameSpace = getSpacesToLineUp(module.branchName, bestLongBranchNameLength)
+    println " - ${module.name}${moduleNameSpace} (${module.branchName})${branchNameSpace} Version. ${module.version}"
+}
+
+/*************************
+ * Print Build Options
+ *************************/
+printSubject "Build Option"
+// Get Lincense Option
+boolean modeLicense = getBoolean('dev')
+// Print
+println "[${modeLicense?'v':' '}] Development Mode"
+
+/*************************
+ * Print Next
+ *************************/
+printSubject "Start Task"
+
+
+
+/**************************************************
  *
- * JAR
+ * Tasks 
+ *
+ **************************************************/
+/*************************
+ *
+ * TASK - jar
  *
  *************************/
 /** Before jar **/
@@ -147,7 +254,7 @@ jar {
 
 /*************************
  *
- * DIST ZIP
+ * TASK - distZIp
  *
  *************************/
 /** Before distZip **/
@@ -164,7 +271,7 @@ distZip {
 
 /*************************
  *
- * DIST TAR
+ * TASK - distTar
  *
  *************************/
 distTar {
@@ -174,7 +281,7 @@ distTar {
 
 /*************************
  *
- * BUILD
+ * TASK - build
  *
  *************************/
 /** Before build **/
@@ -198,7 +305,7 @@ build.doLast {
 
 /*************************
  *
- * deployLocal
+ * TASK - deployLocal
  *  - Deploy to INSTALLER_MAKER_HOME
  *
  *************************/
@@ -233,38 +340,4 @@ task deployLocal(type: Copy){
     }
 }
 
-
-
-/*************************
- *
- * Dependencies
- *
- *************************/
-repositories {
-    jcenter()
-    maven { url "https://jitpack.io" }
-    maven { url 'http://repo.spring.io/milestone' }
-    maven { url "http://maven.springframework.org/release" }
-}
-
-dependencies {
-    //JAEMISSEO
-    compile( getDependency('com.github.avaj-java:common-util:0.1.62') )
-    compile( getDependency('com.github.avaj-java:common-man:0.1.63') )
-    compile( getDependency('com.github.avaj-java:fileman:0.1.63') )
-    compile( getDependency('com.github.avaj-java:reportman:0.0.1') )
-    compile( getDependency('com.github.avaj-java:restman:0.0.1') )
-
-    //GROOVY
-    compile 'org.codehaus.groovy:groovy-all:2.1.3'
-
-    //MAIL
-    compile 'com.sun.mail:javax.mail:1.5.5'
-
-    //JDBC
-    compile "com.oracle:ojdbc6:11.2.0.3"
-
-    //TEST
-    testCompile "junit:junit:4.11"
-}
 
