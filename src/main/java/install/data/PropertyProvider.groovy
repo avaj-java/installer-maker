@@ -180,6 +180,7 @@ class PropertyProvider {
                 modeSqlFileGenerate             : propman.getBoolean("${propertyPrefix}mode.sql.file.generate"),
                 modeSqlIgnoreErrorExecute       : propman.getBoolean("${propertyPrefix}mode.sql.ignore.error.execute"),
                 modeSqlIgnoreErrorCheckBefore   : propman.getBoolean("${propertyPrefix}mode.sql.ignore.error.check.before"),
+                modeSqlProgressBar              : propman.getBoolean("${propertyPrefix}mode.sql.progress.bar"),
 
         )
     }
