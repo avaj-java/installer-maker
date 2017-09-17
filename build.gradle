@@ -69,9 +69,11 @@ boolean hadDeployment = false
 List<Dependency> moduleList = []
 
 ext.getString = { String propertyName -> return project.hasProperty(propertyName) ? project.property(propertyName) : null }
-ext.getBoolean = { String propertyName -> return (project.hasProperty(propertyName)) ? (!project.property(propertyName) || project.property(propertyName) == 'true') : false }
-ext.checkProject = { String subProjectName -> return (getBoolean('dev') && rootProject?.findProject(subProjectName)) }
-ext.getDependency = { String dependencyString -> String name = dependencyString.split(':').toList()[1]; return checkProject(name) ? project(":${name}") : dependencyString;}
+ext.getBoolean = { String propertyName -> return project.hasProperty(propertyName) && (!project.property(propertyName) || project.property(propertyName) == 'true') }
+ext.getDependency = { String dependencyString ->
+    String name = dependencyString.split(':').toList()[1]
+    return rootProject?.findProject(name) ? project(":${name}") : dependencyString
+}
 
 static void printSubject(String subjectName){
     println "\n========================="
@@ -97,18 +99,21 @@ static String getSpacesToLineUp(String stringItem, int bestLongerLength){
     return (stringItem.length() < bestLongerLength) ? (1..(bestLongerLength - stringItem.length())).collect{' '}.join('') : ''
 }
 
+static Dependency getDependencyFromDependencyString(String dependencyString){
+    List projectItems = dependencyString.split(':').toList()
+    return new Dependency(dependencyString: dependencyString, path:projectItems[0], name:projectItems[1], branchName:'', version:projectItems[2] ?: '')
+}
+
 static String getUserSetedVersionFromModuleList(List dependencyStringList, String moduleName){
     String dependencyString = dependencyStringList.find{ String dependencyString ->
-        List projectItems = dependencyString.split(':').toList()
-        String path = projectItems[0]
-        String name = projectItems[1]
-        String version = projectItems[2] ?: ''
-        return name == moduleName
+        Dependency dependency = getDependencyFromDependencyString(dependencyString)
+        return dependency.name == moduleName
     }
     return (dependencyString) ?: ''
 }
 
 class Dependency {
+    String dependencyString
     String path
     String name
     String branchName
@@ -159,12 +164,15 @@ subprojects {
     moduleList << new Dependency(
             name        : project.name,
             branchName  : 'git rev-parse --abbrev-ref HEAD'.execute([], project.projectDir).text.trim(),
-            version     : (getBoolean('dev')) ? 'git describe --tags'.execute([], project.projectDir).text.trim() : getUserSetedVersionFromModuleList(subprojectList, project.name)
+            version     : 'git describe --tags'.execute([], project.projectDir).text.trim()
     )
     group = 'jaemmisseo'
-    version = moduleList[(moduleList.size() -1)].version
+    version = moduleList[(moduleList.size()-1)].version
 }
 
+if (!moduleList){
+    moduleList = subprojectList.collect{ String dependencyString -> getDependencyFromDependencyString(dependencyString) }
+}
 
 
 /**************************************************
@@ -198,9 +206,9 @@ moduleList.each{ Dependency module ->
  *************************/
 printSubject "Build Option"
 // Get Lincense Option
-boolean modeLicense = getBoolean('dev')
+boolean modeDevelopment = project.hasProperty('dev')
 // Print
-println "[${modeLicense?'v':' '}] Development Mode"
+println "[${modeDevelopment?'v':' '}] Development Mode"
 
 /*************************
  * Print Next

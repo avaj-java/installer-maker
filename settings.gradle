@@ -1,1 +1,13 @@
-include "common-util", "common-man", "fileman", "reportman", "restman"
+if (hasProperty('dev')){
+    println """
+    ###########################################################################
+    #####       
+    #####       DEVELOPMENT MODE
+    #####       
+    #####       - INCLUDE SUBPROJECTS  
+    #####
+    ###########################################################################
+    """
+    include "common-util", "common-man", "fileman", "reportman", "restman"
+}
+
