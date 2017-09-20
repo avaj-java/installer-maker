@@ -175,7 +175,7 @@ subprojects {
     ext.setProperty('modeParentDev', modeDevelopment)
 }
 
-if (!moduleList){
+if (!modeDevelopment){
     moduleList = subprojectList.collect{ String dependencyString -> getDependencyFromDependencyString(dependencyString) }
 }
 
