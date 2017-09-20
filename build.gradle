@@ -65,6 +65,7 @@ mainClassName = "install.Starter"
 String distributionPath = "${buildDir}/distributions"
 String libFileName = "${projectName}-${version}"
 String SystemEnv_INSTALLER_MAKER_HOME = "$System.env.INSTALLER_MAKER_HOME"
+boolean modeDevelopment = project.hasProperty('dev')
 boolean hadDeployment = false
 List<Dependency> moduleList = []
 
@@ -72,7 +73,8 @@ ext.getString = { String propertyName -> return project.hasProperty(propertyName
 ext.getBoolean = { String propertyName -> return project.hasProperty(propertyName) && (!project.property(propertyName) || project.property(propertyName) == 'true') }
 ext.getDependency = { String dependencyString ->
     String name = dependencyString.split(':').toList()[1]
-    return rootProject?.findProject(name) ? project(":${name}") : dependencyString
+    boolean enableDependency = (modeDevelopment && rootProject?.findProject(name))
+    return (enableDependency) ? project(":${name}") : dependencyString
 }
 
 static void printSubject(String subjectName){
@@ -168,6 +170,9 @@ subprojects {
     )
     group = 'jaemmisseo'
     version = moduleList[(moduleList.size()-1)].version
+
+    //Message to Sub Gradle
+    ext.setProperty('modeParentDev', modeDevelopment)
 }
 
 if (!moduleList){
@@ -205,10 +210,8 @@ moduleList.each{ Dependency module ->
  * Print Build Options
  *************************/
 printSubject "Build Option"
-// Get Lincense Option
-boolean modeDevelopment = project.hasProperty('dev')
 // Print
-println "[${modeDevelopment?'v':' '}] Development Mode"
+println "[${modeDevelopment?'v':' '}] Development Mode( -Pdev )"
 
 /*************************
  * Print Next
@@ -337,11 +340,7 @@ task deployLocal(type: Copy){
     into SystemEnv_INSTALLER_MAKER_HOME
     doLast{
         println "\n#########################"
-        if (hadDeployment){
-            println "##### Re-Deployed !!! (Path: ${SystemEnv_INSTALLER_MAKER_HOME} )"
-        }else{
-            println "##### Newly-Deployed !!! (Path: ${SystemEnv_INSTALLER_MAKER_HOME} )"
-        }
+        println "##### ${(hadDeployment)?'Re-Deployed':'Newly-Deployed'} !!! (Path: ${SystemEnv_INSTALLER_MAKER_HOME} )"
         println "#########################"
         new File(SystemEnv_INSTALLER_MAKER_HOME).listFiles().each{ println it }
         println ""

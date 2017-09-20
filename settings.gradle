@@ -1,13 +1,2 @@
-if (hasProperty('dev')){
-    println """
-    ###########################################################################
-    #####       
-    #####       DEVELOPMENT MODE
-    #####       
-    #####       - INCLUDE SUBPROJECTS  
-    #####
-    ###########################################################################
-    """
-    include "common-util", "common-man", "fileman", "reportman", "restman"
-}
+include "common-util", "common-man", "fileman", "reportman", "restman"
 
