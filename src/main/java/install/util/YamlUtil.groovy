@@ -10,27 +10,17 @@ class YamlUtil {
     /*************************
      * Generate PropertiesMap From file(YAML or YML)
      *************************/
-   static Map<String, Object> generatePropertiesMapFromYmlFile(String filePath){
+   static Map<String, Object> generatePropertiesMap(String filePath){
        Map<String, Object> propertiesMap
-        // Load Yml File
-        try{
-            String absolutePath = getFullPath(filePath)
-            File file = new File(absolutePath)
-            propertiesMap = generatePropertiesMap(file)
-
-        }catch(Exception e){
-            throw e
-        }
+        String absolutePath = getFullPath(filePath)
+        File file = new File(absolutePath)
+        propertiesMap = generatePropertiesMap(file)
         return propertiesMap
     }
 
-
-
-
-
-    private static Map<String, Object> generatePropertiesMap(File file){
+    static Map<String, Object> generatePropertiesMap(File file){
         Map<String, Object> resultMap = [:]
-        return extractPropertiesRecursivly( file, resultMap)
+        return extractPropertiesRecursivly(file, resultMap)
     }
 
     private static Map<String, Object> extractPropertiesRecursivly(File file, Map<String, Object> properties){
@@ -54,7 +44,7 @@ class YamlUtil {
             }else if (nextItem instanceof Boolean){
                 properties[nextPropertyName] = nextItem ? 'true' : 'false'
             }else if (nextItem){
-                properties[nextPropertyName] = nextItem
+                properties[nextPropertyName] = String.valueOf(nextItem)
             }
         }
         return properties

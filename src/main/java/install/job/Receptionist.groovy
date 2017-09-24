@@ -18,11 +18,14 @@ import jaemisseo.man.util.FileSetup
 @Job
 class Receptionist extends JobUtil{
 
+    Receptionist() {
+        propertiesFileName = 'receptionist'
+        executorNamePrefix = 'receptionist'
+        levelNamesProperty = 'receptionist.level'
+    }
+
     @Init(lately=true)
     void init(){
-        levelNamesProperty = 'r.level'
-        executorNamePrefix = 'r'
-        propertiesFileName = 'receptionist.properties'
         validTaskList = [Notice, Question, QuestionChoice, QuestionYN, QuestionFindFile, Set]
 
         this.propman = setupPropMan(provider)
@@ -39,22 +42,39 @@ class Receptionist extends JobUtil{
         if (propmanDefault.getBoolean('mode.build.form')){
             //Mode Build Form
             PropMan propmanForBuilder = provider.propGen.get('builder')
+
+            //From User's FileSystem
             String propertiesDir = propmanExternal.get('properties.dir') ?: propmanDefault.get('user.dir')
-            propmanForReceptionist.merge("${propertiesDir}/receptionist.properties").mergeNew(propmanForBuilder)
+            if (propertiesDir){
+                propertiesFile = FileMan.find(propertiesDir, propertiesFileName, ["yml", "yaml", "properties"])
+            }
+            propertiesFileExtension = FileMan.getExtension(propertiesFile)
+            Map propertiesMap = generatePropertiesMap(propertiesFile)
+
+            propmanForReceptionist.merge(propertiesMap)
+                                    .mergeNew(propmanForBuilder)
 
         }else{
             //Normally
             String libtohomeRelPath = FileMan.getFileFromResource('.libtohome')?.text.replaceAll('\\s*', '') ?: '../'
             String installerHome = FileMan.getFullPath(propmanDefault.get('lib.dir'), libtohomeRelPath)
+
             //From User's FileSystem or Resource
             String userSetPropertiesDir = propmanExternal['properties.dir']
-            if (userSetPropertiesDir)
-                propmanForReceptionist.merge("${userSetPropertiesDir}/receptionist.properties")
-            else
-                propmanForReceptionist.mergeResource("receptionist.properties")
-            propmanForReceptionist.merge(propmanExternal).mergeNew(propmanDefault).merge(['installer.home': installerHome])
+            if (userSetPropertiesDir){
+                propertiesFile = FileMan.find(userSetPropertiesDir, propertiesFileName, ["yml", "yaml", "properties"])
+            }else{
+                propertiesFile = FileMan.findResource(null, propertiesFileName, ["yml", "yaml", "properties"])
+            }
+            propertiesFileExtension = FileMan.getExtension(propertiesFile)
+            Map propertiesMap = generatePropertiesMap(propertiesFile)
+
+            propmanForReceptionist.merge(propertiesMap)
+                                    .merge(propmanExternal)
+                                    .mergeNew(propmanDefault)
+                                    .merge(['installer.home': installerHome])
         }
-        
+
         return propmanForReceptionist
     }
 
@@ -164,7 +184,7 @@ class Receptionist extends JobUtil{
         //Each level by level
         eachLevel{ String propertyPrefix ->
             String taskName = getTaskName(propertyPrefix)
-            Class taskClazz  = getTaskClass(taskName)
+            Class taskClazz = getTaskClass(taskName)
 
             //Check Valid Task
             if (!taskName || !taskClazz)

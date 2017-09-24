@@ -10,6 +10,7 @@ import install.task.*
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.VariableMan
+import sun.org.mozilla.javascript.internal.FunctionObject
 
 /**
  * Created by sujkim on 2017-04-07.
@@ -17,9 +18,11 @@ import jaemisseo.man.VariableMan
 class JobUtil extends TaskUtil{
 
     String jobName = this.getClass().simpleName.toLowerCase()
-    String levelNamesProperty = ''
-    String executorNamePrefix = ''
-    String propertiesFileName = ''
+    String levelNamesProperty = "${jobName}.level"
+    String executorNamePrefix = jobName
+    String propertiesFileName = jobName
+    String propertiesFileExtension = ''
+    File propertiesFile
     String propertyPrefix = ''
 
     List<Class> validTaskList = []
@@ -82,6 +85,11 @@ class JobUtil extends TaskUtil{
     }
 
     PropMan parsePropMan(PropMan propmanToParse, VariableMan varman, String excludeStartsWith){
+        varman.putFuncs([
+                fullpath: { VariableMan.FuncObject it ->
+                    it.substitutes = (it.substitutes) ? FileMan.getFullPath(it.substitutes) : ""
+                }
+        ])
         /** Parse ${Variable} Exclude Levels **/
         // -BasicVariableOnly
         Map map = propmanToParse.properties
@@ -125,12 +133,21 @@ class JobUtil extends TaskUtil{
         return propmanToSet
     }
 
+    Map generatePropertiesMap(File propertiesFile){
+        Map prop
+        if (propertiesFile.name.endsWith('.yml') || propertiesFile.name.endsWith('.yaml'))
+            prop = YamlUtil.generatePropertiesMap(propertiesFile)
+        else
+            prop = new PropMan(propertiesFile).properties
+        return prop
+    }
+
 
 
     //level by level For Task
     protected void eachLevelForTask(Closure closure){
         //1. Try to get levels from level property
-        List<String> levelList = getSpecificLevelList(levelNamesProperty) ?: geLinetOrderedLevelList(propertiesFileName, executorNamePrefix)
+        List<String> levelList = getSpecificLevelList(levelNamesProperty) ?: getLineOrderedLevelList(propertiesFileName, propertiesFileExtension, executorNamePrefix)
         List<String> prefixList = levelList.collect{ "${executorNamePrefix}.${it}." }
         List<Class> taskClassList = prefixList.collect{ getTaskClass(getTaskName(it)) }
 
@@ -139,6 +156,7 @@ class JobUtil extends TaskUtil{
         for (int i=0; i<levelList.size(); i++){
             String levelName = levelList[i]
             String propertyPrefix = "${executorNamePrefix}.${levelName}."
+
             //- Do Task
             taskResultStatus = closure(propertyPrefix)
             //- Check Status
@@ -154,7 +172,7 @@ class JobUtil extends TaskUtil{
     //level by level
     protected void eachLevel(Closure closure){
         //1. Try to get levels from level property
-        List<String> levelList = getSpecificLevelList(levelNamesProperty) ?: geLinetOrderedLevelList(propertiesFileName, executorNamePrefix)
+        List<String> levelList = getSpecificLevelList(levelNamesProperty) ?: getLineOrderedLevelList(propertiesFileName, propertiesFileExtension, executorNamePrefix)
 
         //2. Do Each Tasks
         levelList.eachWithIndex{ levelName, i ->
@@ -180,20 +198,39 @@ class JobUtil extends TaskUtil{
         return resultList
     }
 
-    protected List<String> geLinetOrderedLevelList(String fileName, String executorName){
+    protected List<String> getLineOrderedLevelList(String fileName, String fileExtension, String executorName){
         Map levelNameMap = [:]
         String userSetPropertiesDir = propman.get('properties.dir')
-        File scriptFile = (userSetPropertiesDir) ? new File("${userSetPropertiesDir}/${fileName}") : FileMan.getFileFromResource(fileName)
-        scriptFile.text.eachLine{ String line ->
-            String propertyName = line.split('[=]')[0]
-            List<String> propElementList = propertyName.split('[.]').toList()
-            if (propElementList && propElementList.size() > 2){
-                String executorElementName = propElementList[0]
-                String levelElementName = propElementList[1]
-                if (executorElementName.equals(executorName)
-                && !propertyName.equals(levelNamesProperty)
-                && !levelNameMap[levelElementName]){
-                    levelNameMap[levelElementName] = true
+        File scriptFile = (userSetPropertiesDir) ? new File("${userSetPropertiesDir}/${fileName}.${fileExtension}") : FileMan.getFileFromResource("${fileName}.${fileExtension}")
+
+        //-YML or YAML
+        if (fileExtension == 'yml' || fileExtension == 'yaml'){
+            Map scriptMap = generatePropertiesMap(scriptFile)
+            scriptMap.each{ String propertyName, String value ->
+                List<String> propElementList = propertyName.split('[.]').toList()
+                if (propElementList && propElementList.size() > 2){
+                    String executorElementName = propElementList[0]
+                    String levelElementName = propElementList[1]
+                    if (executorElementName.equals(executorName)
+                            && !propertyName.equals(levelNamesProperty)
+                            && !levelNameMap[levelElementName]){
+                        levelNameMap[levelElementName] = true
+                    }
+                }
+            }
+        //-PROPERTIES
+        }else{
+            scriptFile.text.eachLine{ String line ->
+                String propertyName = line.split('[=]')[0]
+                List<String> propElementList = propertyName.split('[.]').toList()
+                if (propElementList && propElementList.size() > 2){
+                    String executorElementName = propElementList[0]
+                    String levelElementName = propElementList[1]
+                    if (executorElementName.equals(executorName)
+                            && !propertyName.equals(levelNamesProperty)
+                            && !levelNameMap[levelElementName]){
+                        levelNameMap[levelElementName] = true
+                    }
                 }
             }
         }

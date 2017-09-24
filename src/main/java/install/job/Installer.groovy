@@ -7,6 +7,7 @@ import install.configuration.annotation.type.Task
 import install.bean.ReportSetup
 import install.data.PropertyProvider
 import install.util.JobUtil
+import install.util.YamlUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.ReportMan
@@ -18,11 +19,14 @@ import jaemisseo.man.util.Util
 @Job
 class Installer extends JobUtil{
 
+    Installer(){
+        propertiesFileName = 'installer'
+        executorNamePrefix = 'installer'
+        levelNamesProperty = 'installer.level'
+    }
+
     @Init(lately=true)
     void init(){
-        levelNamesProperty = 'i.level'
-        executorNamePrefix = 'i'
-        propertiesFileName = 'installer.properties'
         validTaskList = Util.findAllClasses('install', [Task])
 
         this.propman = setupPropMan(provider)
@@ -42,12 +46,16 @@ class Installer extends JobUtil{
 
         //From User's FileSystem or Resource
         String userSetPropertiesDir = propmanExternal['properties.dir']
-        if (userSetPropertiesDir)
-            propmanForInstaller.merge("${userSetPropertiesDir}/installer.properties")
-        else
-            propmanForInstaller.mergeResource("installer.properties")
+        if (userSetPropertiesDir){
+            propertiesFile = FileMan.find(userSetPropertiesDir, propertiesFileName, ["yml", "yaml", "properties"])
+        }else{
+            propertiesFile = FileMan.findResource(null, propertiesFileName, ["yml", "yaml", "properties"])
+        }
+        propertiesFileExtension = FileMan.getExtension(propertiesFile)
+        Map propertiesMap = generatePropertiesMap(propertiesFile)
 
-        propmanForInstaller.merge(propmanForReceptionist)
+        propmanForInstaller.merge(propertiesMap)
+                            .merge(propmanForReceptionist)
                             .mergeNew(propmanDefault)
                             .merge(['installer.home': installerHome])
 

@@ -19,11 +19,14 @@ import jaemisseo.man.util.Util
 @Job
 class Builder extends JobUtil{
 
+    Builder(){
+        propertiesFileName = 'builder'
+        executorNamePrefix = 'builder'
+        levelNamesProperty = 'builder.level'
+    }
+
     @Init(lately=true)
     void init(){
-        levelNamesProperty = 'b.level'
-        executorNamePrefix = 'b'
-        propertiesFileName = 'builder.properties'
         validTaskList = Util.findAllClasses('install', [Task])
 
         this.propman = setupPropMan(provider)
@@ -36,12 +39,21 @@ class Builder extends JobUtil{
         PropMan propmanForBuilder = provider.propGen.get('builder')
         PropMan propmanDefault = provider.propGen.getDefaultProperties()
         PropMan propmanExternal = provider.propGen.getExternalProperties()
-        String propertiesDir = propmanExternal.get('properties.dir') ?: propmanDefault.get('user.dir')
 
-        propmanForBuilder.merge("${propertiesDir}/builder.properties")
+        //From User's FileSystem
+        String propertiesDir = propmanExternal.get('properties.dir') ?: propmanDefault.get('user.dir')
+        propertiesFile = FileMan.find(propertiesDir, propertiesFileName, ["yml", "yaml", "properties"])
+        propertiesFileExtension = FileMan.getExtension(propertiesFile)
+        Map propertiesMap = generatePropertiesMap(propertiesFile)
+
+        propmanForBuilder.merge(propertiesMap)
                         .merge(propmanExternal)
                         .mergeNew(propmanDefault)
                         .merge(['builder.home': FileMan.getFullPath(propmanDefault.get('lib.dir'), '../')])
+
+        println propmanForBuilder.get('startup.meta')
+        println propmanForBuilder.get('startup.meta') == true
+        println propmanForBuilder.get('startup.meta') == 'true'
 
         return propmanForBuilder
     }
@@ -252,9 +264,20 @@ class Builder extends JobUtil{
 
         //2. Convert Init Script to Script Editd By User
         FileMan.unjar(libPath, tempNowDir, opt)
-        FileMan.copy("builder.properties", tempNowDir, opt)
-        FileMan.copy("receptionist.properties", tempNowDir, opt)
-        FileMan.copy("installer.properties", tempNowDir, opt)
+
+        //Search scriptfiles from User's FileSystem
+        PropMan propmanExternal = provider.propGen.getExternalProperties()
+        String userSetPropertiesDir = propmanExternal['properties.dir']
+        Builder builder = config.findInstance(Builder)
+        Receptionist receptionist = config.findInstance(Receptionist)
+        Installer installer = config.findInstance(Installer)
+        File builderPropertiesFile = FileMan.find(userSetPropertiesDir, builder.propertiesFileName, ["yml", "yaml", "properties"])
+        File receptionistPropertiesFile = FileMan.find(userSetPropertiesDir, receptionist.propertiesFileName, ["yml", "yaml", "properties"])
+        File installerPropertiesFile = FileMan.find(userSetPropertiesDir, installer.propertiesFileName, ["yml", "yaml", "properties"])
+
+        FileMan.copy(builderPropertiesFile.path, tempNowDir, opt)
+        FileMan.copy(receptionistPropertiesFile.path, tempNowDir, opt)
+        FileMan.copy(installerPropertiesFile.path, tempNowDir, opt)
         FileMan.write("${tempNowDir}/.libtohome", libToHomeRelPath, opt)
         FileMan.jar("${tempNowDir}/*", "${libDestPath}/${thisFileName}", opt)
 

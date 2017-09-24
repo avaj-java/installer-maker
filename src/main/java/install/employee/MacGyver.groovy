@@ -10,6 +10,7 @@ import install.configuration.reflection.ReflectInfomation
 import install.data.PropertyProvider
 import install.util.EmployeeUtil
 import install.util.TaskUtil
+import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.ReportMan
 import jaemisseo.man.util.Util
@@ -20,13 +21,15 @@ import jaemisseo.man.util.Util
 @Employee
 class MacGyver extends EmployeeUtil {
 
+    MacGyver(){
+        propertiesFileName = 'macgyver'
+        executorNamePrefix = 'macgyver'
+        levelNamesProperty = 'macgyver.level'
+    }
+
     @Init
     void init(){
-        levelNamesProperty = 'macgyver.level'
-        executorNamePrefix = 'm'
-        propertiesFileName = 'macgyver.properties'
         validTaskList = Util.findAllClasses('install', [Task])
-
         this.propman = setupPropMan(provider)
         this.varman = setupVariableMan(propman, executorNamePrefix)
     }
@@ -38,12 +41,16 @@ class MacGyver extends EmployeeUtil {
 
         //From User's FileSystem or Resource
         String userSetPropertiesDir = propmanExternal['properties.dir']
-        if (userSetPropertiesDir)
-            propmanForMacgyver.merge("${userSetPropertiesDir}/macgyver.properties")
-        else
-            propmanForMacgyver.mergeResource("macgyver.properties")
+        if (userSetPropertiesDir){
+            propertiesFile = FileMan.find(userSetPropertiesDir, propertiesFileName, ["yml", "yaml", "properties"])
+        }else{
+            propertiesFile = FileMan.findResource(null, propertiesFileName, ["yml", "yaml", "properties"])
+        }
+        propertiesFileExtension = FileMan.getExtension(propertiesFile)
+        Map propertiesMap = generatePropertiesMap(propertiesFile)
 
-        propmanForMacgyver.merge(propmanExternal)
+        propmanForMacgyver.merge(propertiesMap)
+                            .merge(propmanExternal)
                             .mergeNew(propmanDefault)
 
         return propmanForMacgyver
