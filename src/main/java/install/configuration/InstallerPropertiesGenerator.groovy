@@ -62,7 +62,7 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
                     if (valueOrderList.size() >= valueList.size()){
                         valueList.eachWithIndex{ def value, int i ->
                             String propName = valueOrderList[i]
-                            propValueMap[propName] = value
+                            propValueMap[propName] = parseValue(value)
                         }
                     }else{
                         throw new Exception("So Many arguments!. Check ${exPropName}'s Arguments")
@@ -72,7 +72,7 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
                 // -KEY
                 if (exPropName){
                     String propName = exPropName
-                    propValueMap[propName] = valueList ?: true
+                    propValueMap[propName] = parseValue(valueList) ?: true
 
                 // VALUE VALUE ..
                 }else{
@@ -82,12 +82,20 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
             }else{
                 // -KEY=VALUE
                 String propName = exPropName
-                def value = valueList
+                def value = parseValue(valueList)
                 propValueMap[propName] = value
             }
         }
 
         return propValueMap
+    }
+
+    def parseValue(def value){
+        if (['true', 'True', 'TRUE'].contains(value))
+            return true
+        if (['false', 'False', 'FALSE'].contains(value))
+            return false
+        return value
     }
 
 
