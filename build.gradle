@@ -127,11 +127,11 @@ class Dependency {
  *
  **************************************************/
 List<String> subprojectList = [
-        'com.github.avaj-java:common-util:0.1.7',
-        'com.github.avaj-java:common-man:0.1.72',
-        'com.github.avaj-java:fileman:0.1.72',
-        'com.github.avaj-java:reportman:0.0.2',
-        'com.github.avaj-java:restman:0.0.2'
+        'com.github.avaj-java:common-util:0.2.0',
+        'com.github.avaj-java:common-man:0.2.0',
+        'com.github.avaj-java:fileman:0.2.0',
+        'com.github.avaj-java:reportman:0.0.3',
+        'com.github.avaj-java:restman:0.0.3'
 ]
 List<String> dependencyList = [
         'org.codehaus.groovy:groovy-all:2.1.3',
