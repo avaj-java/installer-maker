@@ -1,16 +1,15 @@
 package install.util
 
-import install.configuration.annotation.method.After
-import install.configuration.annotation.method.Before
-import install.configuration.annotation.Inject
 import install.bean.ReportSetup
 import install.configuration.Config
+import install.configuration.annotation.Inject
+import install.configuration.annotation.method.After
+import install.configuration.annotation.method.Before
 import install.data.PropertyProvider
 import install.task.*
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.VariableMan
-import sun.org.mozilla.javascript.internal.FunctionObject
 
 /**
  * Created by sujkim on 2017-04-07.
