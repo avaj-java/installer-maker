@@ -12,10 +12,10 @@ import jaemisseo.man.util.FileSetup
 @Task
 class Unzip extends TaskUtil{
 
-    @Value(property='file.path', method='getFilePath')
+    @Value(property='from', method='getFilePath')
     String filePath
 
-    @Value(property='dest.path', method='getFilePath')
+    @Value(property='to', method='getFilePath')
     String destPath
 
     @Value(method='genMergedFileSetup')

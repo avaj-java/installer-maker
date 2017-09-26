@@ -165,7 +165,7 @@ class PropertyProvider {
                 commnadListThatObjectMustExist: propman.parse("${propertyPrefix}sql.command.that.object.must.exist"),
                 commnadListThatObjectMustNotExist: propman.parse("${propertyPrefix}sql.command.that.object.must.not.exist"),
                 //-Replacement
-                replace             : propman.parse("${propertyPrefix}sql.replace"),
+                replaceAll          : propman.parse("${propertyPrefix}sql.replace.all"),
                 replaceTable        : propman.parse("${propertyPrefix}sql.replace.table"),
                 replaceIndex        : propman.parse("${propertyPrefix}sql.replace.index"),
                 replaceSequence     : propman.parse("${propertyPrefix}sql.replace.sequence"),

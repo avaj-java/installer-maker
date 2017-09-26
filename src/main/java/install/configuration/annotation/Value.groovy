@@ -20,4 +20,8 @@ import java.lang.annotation.Target
 
     String method() default 'get'
 
+    boolean required() default false
+
+    String[] validList() default []
+
 }

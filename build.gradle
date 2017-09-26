@@ -121,14 +121,22 @@ class Dependency {
     String version
 }
 
+
+
 /**************************************************
  *
  * Dependencies
  *
  **************************************************/
+repositories {
+    jcenter()
+    maven { url "https://jitpack.io" }
+    maven { url 'http://repo.spring.io/milestone' }
+    maven { url "http://maven.springframework.org/release" }
+}
 List<String> subprojectList = [
-        'com.github.avaj-java:common-util:0.2.0',
-        'com.github.avaj-java:common-man:0.2.0',
+        'com.github.avaj-java:common-util:0.2.1',
+        'com.github.avaj-java:common-man:0.2.1',
         'com.github.avaj-java:fileman:0.2.0',
         'com.github.avaj-java:reportman:0.0.3',
         'com.github.avaj-java:restman:0.0.3'
@@ -139,12 +147,6 @@ List<String> dependencyList = [
         "com.oracle:ojdbc6:11.2.0.3",
         'org.yaml:snakeyaml:1.18',
 ]
-repositories {
-    jcenter()
-    maven { url "https://jitpack.io" }
-    maven { url 'http://repo.spring.io/milestone' }
-    maven { url "http://maven.springframework.org/release" }
-}
 dependencies {
     //JAEMISSEO
     subprojectList.each{ compile(getDependency(it)) }
@@ -153,6 +155,8 @@ dependencies {
     //Test
     testCompile "junit:junit:4.11"
 }
+
+
 
 /**************************************************
  *
@@ -178,6 +182,7 @@ subprojects {
 if (modeRemoteDependencies){
     moduleList = subprojectList.collect{ String dependencyString -> getDependencyFromDependencyString(dependencyString) }
 }
+
 
 
 /**************************************************
