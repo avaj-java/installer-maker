@@ -102,20 +102,20 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
     //Protocol of exProperty value
     Map<Class, List> getValueProtocolListMap(){
         Map<Class, List> valueOrderListMap = [:]
-        valueOrderListMap[Zip]    = ['file.path', 'dest.path']
-        valueOrderListMap[Tar]    = ['file.path', 'dest.path']
-        valueOrderListMap[Jar]    = ['file.path', 'dest.path']
-        valueOrderListMap[Unzip]  = ['file.path', 'dest.path']
-        valueOrderListMap[Unjar]  = ['file.path', 'dest.path']
-        valueOrderListMap[Untar]  = ['file.path', 'dest.path']
-        valueOrderListMap[Copy]   = ['file.path', 'dest.path']
+        valueOrderListMap[Zip]    = ['from', 'to']
+        valueOrderListMap[Tar]    = ['from', 'to']
+        valueOrderListMap[Jar]    = ['from', 'to']
+        valueOrderListMap[Unzip]  = ['from', 'to']
+        valueOrderListMap[Unjar]  = ['from', 'to']
+        valueOrderListMap[Untar]  = ['from', 'to']
+        valueOrderListMap[Copy]   = ['from', 'to']
 
-        valueOrderListMap[TestSocket] = ['file.path', 'dest.path']
+        valueOrderListMap[TestSocket] = ['from', 'to']
         valueOrderListMap[TestREST]   = ['url', 'param', 'header']
         valueOrderListMap[TestJDBC]   = ['id', 'pw', 'ip', 'port', 'db']
         valueOrderListMap[TestPort]   = ['from', 'to']
         valueOrderListMap[MergeProperties]   = ['from', 'into']
-        valueOrderListMap[Sql]        = ['file.path']
+        valueOrderListMap[Sql]        = ['file']
 
         return valueOrderListMap
     }
