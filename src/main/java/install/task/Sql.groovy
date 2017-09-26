@@ -21,7 +21,7 @@ class Sql extends TaskUtil{
     @Value(method='genMergedSqlSetup')
     SqlSetup sqlSetup
 
-    @Value(property='file.path', method='getFilePathList')
+    @Value(property='file', method='getFilePathList')
     List<String> filePathList
 
     @Value(method='genGlobalReportSetup')

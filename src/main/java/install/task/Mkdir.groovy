@@ -12,7 +12,7 @@ import jaemisseo.man.util.FileSetup
 @Task
 class Mkdir extends TaskUtil{
 
-    @Value(property='dest.path', method='getFilePath')
+    @Value(property='to', method='getFilePath')
     String destPath
 
     @Value(property='structure', method='getMap')

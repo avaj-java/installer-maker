@@ -12,19 +12,19 @@ import jaemisseo.man.util.FileSetup
 @Task
 class Replace extends TaskUtil{
 
-    @Value(property='file.path', method='getFilePathList')
+    @Value(property='file', method='getFilePathList')
     List<String> filePathList
 
     @Value(method='genMergedFileSetup')
     FileSetup fileSetup
 
-    @Value(property='file.replace', method='getMap')
+    @Value(property='replace.all', method='getMap')
     Map replaceMap
 
-    @Value(property='file.replace.line', method='getMap')
+    @Value(property='replace.line', method='getMap')
     Map replaceLineMap
 
-    @Value(property='file.replace.property', method='getMap')
+    @Value(property='replace.property', method='getMap')
     Map replacePropertyMap
 
 
