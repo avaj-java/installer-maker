@@ -2,6 +2,7 @@ package install.task
 
 import install.configuration.annotation.type.Task
 import install.configuration.annotation.Value
+import install.configuration.annotation.type.TerminalValueProtocol
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.util.FileSetup
@@ -10,6 +11,7 @@ import jaemisseo.man.util.FileSetup
  * Created by sujkim on 2017-02-22.
  */
 @Task
+@TerminalValueProtocol(['to', 'structure'])
 class Mkdir extends TaskUtil{
 
     @Value(property='to', method='getFilePath')

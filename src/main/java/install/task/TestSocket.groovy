@@ -2,6 +2,7 @@ package install.task
 
 import install.configuration.annotation.type.Task
 import install.configuration.annotation.Value
+import install.configuration.annotation.type.TerminalValueProtocol
 import install.util.TaskUtil
 import jaemisseo.man.SocketMan
 
@@ -9,6 +10,7 @@ import jaemisseo.man.SocketMan
  * Created by sujkim on 2017-03-10.
  */
 @Task
+@TerminalValueProtocol(['ip', 'port', 'msg'])
 class TestSocket extends TaskUtil{
 
     @Value('timeout')

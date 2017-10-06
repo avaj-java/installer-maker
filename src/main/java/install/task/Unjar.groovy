@@ -1,5 +1,6 @@
 package install.task
 
+import install.configuration.annotation.type.TerminalValueProtocol
 import install.configuration.annotation.type.Task
 import install.configuration.annotation.Value
 import install.util.TaskUtil
@@ -10,6 +11,7 @@ import jaemisseo.man.util.FileSetup
  * Created by sujkim on 2017-02-22.
  */
 @Task
+@TerminalValueProtocol(['from', 'to'])
 class Unjar extends TaskUtil{
 
     @Value(property='from', method='getFilePath')

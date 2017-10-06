@@ -2,6 +2,7 @@ package install.task
 
 import install.configuration.annotation.Value
 import install.configuration.annotation.type.Task
+import install.configuration.annotation.type.TerminalValueProtocol
 import install.util.TaskUtil
 
 import javax.mail.*
@@ -12,6 +13,7 @@ import javax.mail.internet.MimeMessage
  * Created by sujkim on 2017-03-10.
  */
 @Task
+@TerminalValueProtocol(['mail.smtp.host', 'mail.smtp.port', 'mail.username', 'mail.password'])
 class TestEMail extends TaskUtil{
 
     @Value('mail.smtp.host')

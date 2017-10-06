@@ -2,6 +2,7 @@ package install.task
 
 import install.configuration.annotation.type.Task
 import install.configuration.annotation.Value
+import install.configuration.annotation.type.TerminalValueProtocol
 import install.util.TaskUtil
 import temp.util.Encryptor
 import temp.util.SEEDUtil
@@ -10,6 +11,7 @@ import temp.util.SEEDUtil
  * Created by sujkim on 2017-03-10.
  */
 @Task
+@TerminalValueProtocol(['value', 'method'])
 class Encrypt extends TaskUtil{
 
     @Value(property='value', method='getString')

@@ -1,6 +1,7 @@
 package install.task
 
 import install.configuration.annotation.type.Task
+import install.configuration.annotation.type.TerminalIgnore
 import install.configuration.annotation.type.Undoable
 import install.configuration.annotation.Value
 import install.util.TaskUtil
@@ -12,6 +13,7 @@ import jaemisseo.man.util.QuestionSetup
  */
 @Undoable
 @Task
+@TerminalIgnore
 class QuestionChoice extends TaskUtil{
 
     @Value(method='genMergedQuestionSetup')

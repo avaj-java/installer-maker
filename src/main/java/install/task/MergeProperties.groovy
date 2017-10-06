@@ -2,6 +2,7 @@ package install.task
 
 import install.configuration.annotation.type.Task
 import install.configuration.annotation.Value
+import install.configuration.annotation.type.TerminalValueProtocol
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
@@ -11,6 +12,7 @@ import jaemisseo.man.util.FileSetup
  * Created by sujkim on 2017-02-27.
  */
 @Task
+@TerminalValueProtocol(['from', 'into'])
 class MergeProperties extends TaskUtil{
 
     @Value('from')

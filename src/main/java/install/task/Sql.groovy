@@ -1,7 +1,9 @@
 package install.task
 
+import install.configuration.annotation.type.Document
 import install.configuration.annotation.type.Task
 import install.configuration.annotation.Value
+import install.configuration.annotation.type.TerminalValueProtocol
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.SqlAnalMan
@@ -15,7 +17,11 @@ import java.sql.SQLException
 /**
  * Created by sujkim on 2017-02-17.
  */
+@Document("""
+    It can run sql file with JDBC 
+""")
 @Task
+@TerminalValueProtocol(['file'])
 class Sql extends TaskUtil{
 
     @Value(method='genMergedSqlSetup')
