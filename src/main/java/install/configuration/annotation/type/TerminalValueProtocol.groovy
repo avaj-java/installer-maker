@@ -8,7 +8,7 @@ import java.lang.annotation.*
 @Inherited
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@interface TerminalValueRule {
+@interface TerminalValueProtocol {
 
     String[] value() default []
 

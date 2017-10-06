@@ -37,31 +37,30 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
     //Generate Properties Perspective Map
     Map genPropertiesValueMap(String[] args){
         Map valueListMap = super.genValueListMap(args)
-        Map propertiesValueMap = genPropertiesValueMap(valueListMap)
+
         //Check
 //        println "- Check Arguments."
 //        propertiesValueMap.each{
 //            println "${it.key}=${it.value}"
 //        }
 //        println ""
-        return propertiesValueMap
+        return valueListMap
     }
 
 
     //Generate Properties Perspective Map
-    Map genPropertiesValueMap(Map valueListMap){
+    Map genPropertiesValueMap(Map valueListMap, Map<Class, List> lowerTaskNameAndValueProtocolListMap){
         Map propValueMap = [:]
-        Map<Class, List> valueProtocolListMap = getValueProtocolListMap()
 
         valueListMap.each{ String exPropName, def valueList ->
-            List valueOrderList = valueProtocolListMap[exPropName.toUpperCase()]
             if (valueList instanceof List){
 
                 // -KEY VALUE VALUE ..
-                if (valueOrderList){
-                    if (valueOrderList.size() >= valueList.size()){
+                List valueProtocolList = lowerTaskNameAndValueProtocolListMap[exPropName.toLowerCase()]
+                if (valueProtocolList){
+                    if (valueProtocolList.size() >= valueList.size()){
                         valueList.eachWithIndex{ def value, int i ->
-                            String propName = valueOrderList[i]
+                            String propName = valueProtocolList[i]
                             propValueMap[propName] = parseValue(value)
                         }
                     }else{
@@ -96,28 +95,6 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
         if (['false', 'False', 'FALSE'].contains(value))
             return false
         return value
-    }
-
-
-    //Protocol of exProperty value
-    Map<Class, List> getValueProtocolListMap(){
-        Map<Class, List> valueOrderListMap = [:]
-        valueOrderListMap[Zip]    = ['from', 'to']
-        valueOrderListMap[Tar]    = ['from', 'to']
-        valueOrderListMap[Jar]    = ['from', 'to']
-        valueOrderListMap[Unzip]  = ['from', 'to']
-        valueOrderListMap[Unjar]  = ['from', 'to']
-        valueOrderListMap[Untar]  = ['from', 'to']
-        valueOrderListMap[Copy]   = ['from', 'to']
-
-        valueOrderListMap[TestSocket] = ['from', 'to']
-        valueOrderListMap[TestREST]   = ['url', 'param', 'header']
-        valueOrderListMap[TestJDBC]   = ['id', 'pw', 'ip', 'port', 'db']
-        valueOrderListMap[TestPort]   = ['from', 'to']
-        valueOrderListMap[MergeProperties]   = ['from', 'into']
-        valueOrderListMap[Sql]        = ['file']
-
-        return valueOrderListMap
     }
 
 
@@ -190,9 +167,10 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
     /**
      *
      */
-    InstallerPropertiesGenerator makeExternalProperties(String[] args){
+    InstallerPropertiesGenerator makeExternalProperties(String[] args, Map<Class, List> valueProtocolListMap){
         Map argsMap = genPropertiesValueMap(args)
-        externalProperties = new PropMan(argsMap)
+        Map propertiesValueMap = genPropertiesValueMap(argsMap, valueProtocolListMap)
+        externalProperties = new PropMan(propertiesValueMap)
         externalProperties.set('args', args.join(' '))
         externalProperties.set('args.except.command', argsMap.findAll{ it.key }.collect{ "-${it.key}=${it.value}" }.join(' '))
         return this

@@ -10,8 +10,12 @@ class FieldInfomation {
 
     Object instance
     Class clazz
-    Annotation annotation
+    List<Annotation> annotationList
     Field field
     String fieldName
+
+    Annotation findAnnotation(Class annotationClass){
+        return annotationList.find{ it.annotationType() == annotationClass }
+    }
 
 }

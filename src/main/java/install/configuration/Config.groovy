@@ -10,12 +10,15 @@ import install.configuration.annotation.type.Data
 import install.configuration.annotation.type.Employee
 import install.configuration.annotation.type.Job
 import install.configuration.annotation.type.Task
+import install.configuration.annotation.type.TerminalValueProtocol
 import install.configuration.reflection.FieldInfomation
 import install.configuration.reflection.MethodInfomation
 import install.configuration.reflection.ReflectInfomation
 import jaemisseo.man.util.Util
 
+import java.lang.annotation.Annotation
 import java.lang.reflect.Field
+import java.lang.reflect.Member
 import java.lang.reflect.Method
 
 /**
@@ -33,6 +36,8 @@ class Config {
     //Data
     Map<String, MethodInfomation> methodMethodNameMap = [:]
 
+    //Task's Value Protocol
+    Map<String, List<String>> lowerTaskNameAndValueProtocolListMap = [:]
 
     InstallerPropertiesGenerator propGen
     InstallerLogGenerator logGen
@@ -41,7 +46,7 @@ class Config {
 
     void makeProperties(String[] args){
         propGen = new InstallerPropertiesGenerator()
-        propGen.makeExternalProperties(args)
+        propGen.makeExternalProperties(args, lowerTaskNameAndValueProtocolListMap)
         propGen.makeDefaultProperties()
         propGen.genResourceSingleton('builder', 'defaultProperties/builder.default.properties')
         propGen.genResourceSingleton('receptionist', 'defaultProperties/receptionist.default.properties')
@@ -85,6 +90,10 @@ class Config {
             taskList.each{ Class clazz ->
                 reflectionMap[clazz] = new ReflectInfomation(clazz: clazz, instance: clazz.newInstance())
                 scanDefault(reflectionMap[clazz])
+                // ValueProtocol
+                TerminalValueProtocol protocolAnt = clazz.getAnnotation(TerminalValueProtocol)
+                if (protocolAnt && protocolAnt.value())
+                    lowerTaskNameAndValueProtocolListMap[clazz.getSimpleName().toLowerCase()] = protocolAnt.value().toList()
             }
 
             //- Data
@@ -119,18 +128,18 @@ class Config {
         clazz.getMethods().each{ Method method ->
             method.getAnnotations().each{ annotation ->
                 if (annotation instanceof Init){
-                    reflect.initMethod = new MethodInfomation(instance: instance, clazz: clazz, annotation: annotation, method:method, methodName: method.name)
+                    reflect.initMethod = new MethodInfomation(instance: instance, clazz: clazz, annotationList: method.getAnnotations().toList(), method:method, methodName: method.name)
                     boolean isLately = annotation.lately()
                     reflect.isLatelyInitMethod = isLately
                     reflect.checkInitMethod = false
                 }else if (annotation instanceof Before){
-                    reflect.beforeMethod = new MethodInfomation(instance: instance, clazz: clazz, annotation: annotation, method:method, methodName: method.name)
+                    reflect.beforeMethod = new MethodInfomation(instance: instance, clazz: clazz, annotationList: method.getAnnotations().toList(), method:method, methodName: method.name)
                 }else if (annotation instanceof After) {
-                    reflect.afterMethod = new MethodInfomation(instance: instance, clazz: clazz, annotation: annotation, method: method, methodName: method.name)
+                    reflect.afterMethod = new MethodInfomation(instance: instance, clazz: clazz, annotationList: method.getAnnotations().toList(), method: method, methodName: method.name)
                 }else if (annotation instanceof Value){
-                    reflect.valueMethodNameMap[method.name] = new MethodInfomation(instance: instance, clazz: clazz, annotation: annotation, method:method, methodName: method.name)
+                    reflect.valueMethodNameMap[method.name] = new MethodInfomation(instance: instance, clazz: clazz, annotationList: method.getAnnotations().toList(), method:method, methodName: method.name)
                 }else if (annotation instanceof Inject){
-                    reflect.injectMethodNameMap[method.name] = new MethodInfomation(instance: instance, clazz: clazz, annotation: annotation, method:method, methodName: method.name)
+                    reflect.injectMethodNameMap[method.name] = new MethodInfomation(instance: instance, clazz: clazz, annotationList: method.getAnnotations().toList(), method:method, methodName: method.name)
                 }
             }
         }
@@ -138,9 +147,9 @@ class Config {
         clazz.getDeclaredFields().each { Field field ->
             field.getAnnotations().each{ annotation ->
                 if (annotation instanceof Value){
-                    reflect.valueFieldNameMap[field.name] = new FieldInfomation(instance: instance, clazz: clazz, annotation: annotation, field:field, fieldName: field.name)
+                    reflect.valueFieldNameMap[field.name] = new FieldInfomation(instance: instance, clazz: clazz, annotationList: field.getAnnotations().toList(), field:field, fieldName: field.name)
                 }else if (annotation instanceof Inject){
-                    reflect.injectFieldNameMap[field.name] = new FieldInfomation(instance: instance, clazz: clazz, annotation: annotation, field:field, fieldName: field.name)
+                    reflect.injectFieldNameMap[field.name] = new FieldInfomation(instance: instance, clazz: clazz, annotationList: field.getAnnotations().toList(), field:field, fieldName: field.name)
                 }
             }
         }
@@ -156,7 +165,7 @@ class Config {
             String commandAliasName
             if (commandAnt){
                 commandName = commandAnt.value()
-                methodCommandNameMap[commandName] = new MethodInfomation(instance: instance, clazz: clazz, annotation: commandAnt, method:method, methodName: method.name)
+                methodCommandNameMap[commandName] = new MethodInfomation(instance: instance, clazz: clazz, annotationList: method.getAnnotations().toList(), method:method, methodName: method.name)
             }
             if (aliasAnt){
                 commandAliasName = aliasAnt.value()
@@ -171,7 +180,7 @@ class Config {
         clazz.getDeclaredMethods().each { Method method ->
             method.getAnnotations().each { annotation ->
                 if (annotation instanceof install.configuration.annotation.method.Method) {
-                    methodMethodNameMap[method.name] = new MethodInfomation(instance: instance, clazz: clazz, annotation: annotation, method:method, methodName: method.name)
+                    methodMethodNameMap[method.name] = new MethodInfomation(instance: instance, clazz: clazz, annotationList: method.getAnnotations().toList(), method:method, methodName: method.name)
                 }
             }
         }
@@ -221,7 +230,7 @@ class Config {
         Map<String, FieldInfomation> valueFieldNameMap = reflectionMap[clazz].valueFieldNameMap
         valueFieldNameMap.each{ fieldName, info ->
             //Get Value
-            Value ant = (info.annotation as Value)
+            Value ant = info.findAnnotation(Value)
             String property = ant.value() ?: ant.property()
             String method = ant.method()
             def value = getFromProvider(property, method)
@@ -232,7 +241,7 @@ class Config {
         Map<String, MethodInfomation> valueMethodNameMap = reflectionMap[clazz].valueMethodNameMap
         valueMethodNameMap.each{ String methodName, MethodInfomation info ->
             //Get Value
-            Value ant = (info.annotation as Value)
+            Value ant = info.findAnnotation(Value)
             String property = ant.value() ?: ant.property()
             String method = ant.method()
             def value = getFromProvider(property, method)
@@ -391,6 +400,61 @@ class Config {
             info.instance
         }
         return foundedInstanceList
+    }
+
+
+    /*************************
+     * FIND ALL ANNOTATION (from Class)
+     *************************/
+    List<Annotation> findAllAnnotationFromClass(Class clazz){
+        return clazz.getAnnotations().toList()
+    }
+
+    List<Annotation> findAllAnnotationFromClass(Class clazz, Class annotationClass){
+        return findAllAnnotationFromClass(clazz, [annotationClass])
+    }
+
+    List<Annotation> findAllAnnotationFromClass(Class clazz, List<Class> annotationClassList){
+        List<Annotation> resultList = []
+        if (clazz.getAnnotations().toList().findAll{ annotationClassList.contains(it.annotationType()) })
+            resultList = clazz.getAnnotations().toList()
+        return resultList
+    }
+
+
+
+
+    /*************************
+     * FIND ALL ANNOTATION (from Class's Member)
+     *************************/
+    Map<Member, List<Annotation>> findAllAnnotationFromClassMember(Class clazz){
+        Map resultMap = [:]
+        clazz.getMethods().each { Method method ->
+            resultMap[method] = method.getAnnotations().toList()
+        }
+        clazz.getMethods().each { Field field ->
+            resultMap[field] = field.getAnnotations().toList()
+        }
+        return resultMap
+    }
+
+    Map<Member, List<Annotation>> findAllAnnotationFromClassMember(Class clazz, Class annotationClass){
+        return findAllAnnotationFromClassMember(clazz, [annotationClass])
+    }
+
+    Map<Member, List<Annotation>> findAllAnnotationFromClassMember(Class clazz, List<Class> annotationClassList){
+        Map resultMap = [:]
+        clazz.getMethods().each { Method method ->
+            List<Annotation> foundAnnotationClassList = method.getAnnotations().findAll{ annotationClassList.contains(it.annotationType()) }
+            if (foundAnnotationClassList)
+                resultMap[method] = foundAnnotationClassList
+        }
+        clazz.getDeclaredFields().each { Field field ->
+            List<Annotation> foundAnnotationClassList = field.getAnnotations().findAll{ annotationClassList.contains(it.annotationType()) }
+            if (foundAnnotationClassList)
+                resultMap[field] = foundAnnotationClassList
+        }
+        return resultMap
     }
 
 }

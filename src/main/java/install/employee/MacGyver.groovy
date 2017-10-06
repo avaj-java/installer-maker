@@ -2,6 +2,7 @@ package install.employee
 
 import install.bean.ReportSetup
 import install.configuration.annotation.Alias
+import install.configuration.annotation.HelpIgnore
 import install.configuration.annotation.method.Command
 import install.configuration.annotation.method.Init
 import install.configuration.annotation.type.Employee
@@ -57,25 +58,61 @@ class MacGyver extends EmployeeUtil {
     }
 
 
-
+    @HelpIgnore
     @Command('doSomething')
     Integer doSomething(){
-        //Run Task
+        boolean modeHelp = propman.getBoolean('help')
+
+        /** Help - Command **/
+        // -Collect Command
+        PropMan propmanExternal = config.propGen.getExternalProperties()
+        List installerCommandCalledByUserList = propmanExternal.get('') ?: []
+
+        // -Print Help Command
+        if (modeHelp && installerCommandCalledByUserList){
+            installerCommandCalledByUserList.each{ commandNameCalledByUser ->
+                propman.set('help.task.name', '')
+                propman.set('help.command.name', commandNameCalledByUser)
+                runTask('help')
+            }
+            return TaskUtil.STATUS_TASK_DONE
+        }
+
+        /** Help - Task **/
+        // -Collect Task
         //- Get Task Annotated Instance List from Singleton Pool
-        List taskInstanceList = config.findAllInstances([Task])
+        List<Object> taskInstanceList = config.findAllInstances([Task])
+        List<String> taskNameCalledByUserList = []
         taskInstanceList.each{ instance ->
             String taskName = instance.getClass().getSimpleName().toLowerCase()
             if (propman.get(taskName))
-                runTask(taskName)
+                taskNameCalledByUserList << taskName
+        }
+        
+        // -Collect Task Alias
+        if (!(taskNameCalledByUserList - ['help'])){
+            Map<Class, ReflectInfomation> aliasTaskReflectionMap = config.reflectionMap.findAll{ clazz, info ->
+                info.alias && propman.get(info.alias)
+            }
+            aliasTaskReflectionMap.each{ clazz, info ->
+                taskNameCalledByUserList << info.instance.getClass().getSimpleName().toLowerCase()
+            }
         }
 
-        //Run Task with Alias
-        Map<Class, ReflectInfomation> aliasTaskReflectionMap = config.reflectionMap.findAll{ clazz, info ->
-            info.alias && propman.get(info.alias)
-        }
-        aliasTaskReflectionMap.each{ clazz, info ->
-            String taskName = info.instance.getClass().getSimpleName().toLowerCase()
-            runTask(taskName)
+        /** Run Task **/
+        for (String taskNameCalledByUser : taskNameCalledByUserList){
+            if (taskNameCalledByUserList.size() > 1 && taskNameCalledByUserList.contains('help')){
+                if (modeHelp && taskNameCalledByUser != 'help'){
+                    propman.set('help.command.name', '')
+                    propman.set('help.task.name', taskNameCalledByUser)
+                    runTask('help')
+                }
+            }else{
+                propman.set('help.command.name', '')
+                propman.set('help.task.name', '')
+                runTask(taskNameCalledByUser)
+                break
+            }
         }
 
         return TaskUtil.STATUS_TASK_DONE

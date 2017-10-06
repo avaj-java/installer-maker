@@ -10,8 +10,12 @@ class MethodInfomation {
 
     Object instance
     Class clazz
-    Annotation annotation
+    List<Annotation> annotationList
     Method method
     String methodName
+
+    Annotation findAnnotation(Class annotationClass){
+        return annotationList.find{ it.annotationType() == annotationClass }
+    }
 
 }
