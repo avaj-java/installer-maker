@@ -1,5 +1,6 @@
 package install.job
 
+import install.configuration.annotation.HelpIgnore
 import install.configuration.annotation.method.Command
 import install.configuration.annotation.method.Init
 import install.configuration.annotation.type.Job
@@ -78,7 +79,7 @@ class Receptionist extends JobUtil{
         return propmanForReceptionist
     }
 
-
+    @HelpIgnore
     @Command('ask')
     void ask(){
         //0. Check Response File

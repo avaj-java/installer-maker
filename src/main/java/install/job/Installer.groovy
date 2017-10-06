@@ -1,5 +1,6 @@
 package install.job
 
+import install.configuration.annotation.HelpIgnore
 import install.configuration.annotation.method.Command
 import install.configuration.annotation.method.Init
 import install.configuration.annotation.type.Job
@@ -67,6 +68,7 @@ class Installer extends JobUtil{
     /*************************
      * INSTALL
      *************************/
+    @HelpIgnore
     @Command('install')
     void install(){
         ReportSetup reportSetup = gOpt.reportSetup

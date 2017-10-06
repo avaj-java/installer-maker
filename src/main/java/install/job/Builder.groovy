@@ -1,7 +1,9 @@
 package install.job
 
+import install.configuration.annotation.HelpIgnore
 import install.configuration.annotation.method.Command
 import install.configuration.annotation.method.Init
+import install.configuration.annotation.type.Document
 import install.configuration.annotation.type.Job
 import install.configuration.annotation.type.Task
 import install.bean.ReportSetup
@@ -60,13 +62,13 @@ class Builder extends JobUtil{
 
 
 
-    /*************************
-     * INIT
-     * Generate Sample Properties Files
-     * 1. builder.properties
-     * 2. receptionist.properties
-     * 3. installer.properties
-     *************************/
+    @Document("""
+      INIT
+      Generate Sample Properties Files
+      1. builder.properties
+      2. receptionist.properties
+      3. installer.properties        
+    """)
     @Command('init')
     void initCommand(){
         //Ready
@@ -105,10 +107,10 @@ class Builder extends JobUtil{
         }
     }
 
-    /*************************
-     * CLEAN
-     * Clean Build Directory
-     *************************/
+    @Document("""
+    CLEAN
+    Clean Build Directory        
+    """)
     @Command('clean')
     void clean(){
         try{
@@ -119,9 +121,9 @@ class Builder extends JobUtil{
         }
     }
 
-    /*************************
-     * BUILD
-     *************************/
+    @Document("""
+    BUILD        
+    """)
     @Command('build')
     void build(){
         try{
@@ -162,6 +164,7 @@ class Builder extends JobUtil{
         }
     }
 
+    @HelpIgnore
     @Command('run')
     void runCommand(){
         String binPath = provider.get('build.installer.bin.path') ?: FileMan.getFullPath(gOpt.buildInstallerHome, gOpt.installerHomeToBinRelPath)
