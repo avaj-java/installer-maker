@@ -8,7 +8,7 @@ import java.lang.annotation.Target
 /**
  * Created by sujkim on 2017-06-09.
  */
-@Target(ElementType.TYPE)
+@Target([ElementType.TYPE, ElementType.METHOD])
 @Retention(RetentionPolicy.RUNTIME)
 @interface Document {
 

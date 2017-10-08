@@ -8,10 +8,20 @@ import java.lang.reflect.Method
  */
 class MethodInfomation {
 
+    //Parent(Class)
     Object instance
     Class clazz
-    Annotation annotation
+
+    //Method
+    List<Annotation> annotationList
     Method method
     String methodName
+
+    //Parameter
+    List<Class> parameterTypes
+
+    Annotation findAnnotation(Class annotationClass){
+        return annotationList.find{ it.annotationType() == annotationClass }
+    }
 
 }

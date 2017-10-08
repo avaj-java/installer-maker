@@ -2,8 +2,10 @@ package install.employee
 
 import install.bean.ReportSetup
 import install.configuration.annotation.Alias
+import install.configuration.annotation.HelpIgnore
 import install.configuration.annotation.method.Command
 import install.configuration.annotation.method.Init
+import install.configuration.annotation.type.Document
 import install.configuration.annotation.type.Employee
 import install.configuration.annotation.type.Task
 import install.configuration.reflection.ReflectInfomation
@@ -59,23 +61,63 @@ class MacGyver extends EmployeeUtil {
 
 
     @Command('doSomething')
+    @HelpIgnore
+    @Document("""
+    No User's Command       
+    """)
     Integer doSomething(){
-        //Run Task
+        boolean modeHelp = propman.getBoolean('help')
+
+        /** Help - Command **/
+        // -Collect Command
+        PropMan propmanExternal = config.propGen.getExternalProperties()
+        List installerCommandCalledByUserList = propmanExternal.get('') ?: []
+
+        // -Print Help Command
+        if (modeHelp && installerCommandCalledByUserList){
+            installerCommandCalledByUserList.each{ commandNameCalledByUser ->
+                propman.set('help.task.name', '')
+                propman.set('help.command.name', commandNameCalledByUser)
+                runTask('help')
+            }
+            return TaskUtil.STATUS_TASK_DONE
+        }
+
+        /** Help - Task **/
+        // -Collect Task
         //- Get Task Annotated Instance List from Singleton Pool
-        List taskInstanceList = config.findAllInstances([Task])
+        List<Object> taskInstanceList = config.findAllInstances([Task])
+        List<String> taskNameCalledByUserList = []
         taskInstanceList.each{ instance ->
             String taskName = instance.getClass().getSimpleName().toLowerCase()
             if (propman.get(taskName))
-                runTask(taskName)
+                taskNameCalledByUserList << taskName
+        }
+        
+        // -Collect Task Alias
+        if (!(taskNameCalledByUserList - ['help'])){
+            Map<Class, ReflectInfomation> aliasTaskReflectionMap = config.reflectionMap.findAll{ clazz, info ->
+                info.alias && propman.get(info.alias)
+            }
+            aliasTaskReflectionMap.each{ clazz, info ->
+                taskNameCalledByUserList << info.instance.getClass().getSimpleName().toLowerCase()
+            }
         }
 
-        //Run Task with Alias
-        Map<Class, ReflectInfomation> aliasTaskReflectionMap = config.reflectionMap.findAll{ clazz, info ->
-            info.alias && propman.get(info.alias)
-        }
-        aliasTaskReflectionMap.each{ clazz, info ->
-            String taskName = info.instance.getClass().getSimpleName().toLowerCase()
-            runTask(taskName)
+        /** Run Task **/
+        for (String taskNameCalledByUser : taskNameCalledByUserList){
+            if (taskNameCalledByUserList.size() > 1 && taskNameCalledByUserList.contains('help')){
+                if (modeHelp && taskNameCalledByUser != 'help'){
+                    propman.set('help.command.name', '')
+                    propman.set('help.task.name', taskNameCalledByUser)
+                    runTask('help')
+                }
+            }else{
+                propman.set('help.command.name', '')
+                propman.set('help.task.name', '')
+                runTask(taskNameCalledByUser)
+                break
+            }
         }
 
         return TaskUtil.STATUS_TASK_DONE
@@ -85,9 +127,12 @@ class MacGyver extends EmployeeUtil {
 
     @Alias('m')
     @Command('macgyver')
+    @Document("""
+    You can use 'macgyver' to use a task on Terminal       
+    """)
     void macgyver(){
 
-        ReportSetup reportSetup = provider.genGlobalReportSetup()
+        ReportSetup reportSetup = config.injectValue(new ReportSetup())
 
         //Each level by level
         eachLevelForTask{ String propertyPrefix ->
@@ -104,17 +149,25 @@ class MacGyver extends EmployeeUtil {
         writeReport(reportMapList, reportSetup)
     }
 
-
-
     @Alias('h')
     @Command('help')
+    @Document("""
+    You can know How to use Command or Task on Terminal      
+    """)
     void help(){
         runTask('help')
     }
 
-
-
     @Command('test')
+    @Document("""
+    - Test Command do 'clean' 'build' 'run'.
+
+    - You can use 'test' command to test or build CI Environment.
+    
+    - Response File(.rsp) can help your test.
+         
+      installer-maker test -response.file.path=<File>  
+    """)
     void test(){
         config.command('clean')
         config.command('build')
@@ -122,7 +175,7 @@ class MacGyver extends EmployeeUtil {
     }
 
 
-    
+
     /**
      * WRITE Report
      */

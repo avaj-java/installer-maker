@@ -1,5 +1,7 @@
 package install.job
 
+import install.bean.GlobalOptionForReceptionist
+import install.configuration.annotation.HelpIgnore
 import install.configuration.annotation.method.Command
 import install.configuration.annotation.method.Init
 import install.configuration.annotation.type.Job
@@ -10,7 +12,7 @@ import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.VariableMan
-import jaemisseo.man.util.FileSetup
+import install.bean.FileSetup
 
 /**
  * Created by sujkim on 2017-02-17.
@@ -31,7 +33,7 @@ class Receptionist extends JobUtil{
         this.propman = setupPropMan(provider)
         this.varman = setupVariableMan(propman, executorNamePrefix)
         provider.shift(jobName)
-        this.gOpt = provider.getReceptionistGlobalOption()
+        this.gOpt = config.injectValue(new GlobalOptionForReceptionist())
     }
 
     PropMan setupPropMan(PropertyProvider provider){
@@ -78,7 +80,7 @@ class Receptionist extends JobUtil{
         return propmanForReceptionist
     }
 
-
+    @HelpIgnore
     @Command('ask')
     void ask(){
         //0. Check Response File

@@ -1,7 +1,9 @@
 package install.task
 
+import install.configuration.annotation.HelpIgnore
 import install.configuration.annotation.type.Task
 import install.configuration.annotation.Value
+import install.configuration.annotation.type.TerminalValueProtocol
 import install.util.TaskUtil
 import jaemisseo.man.util.Util
 
@@ -9,25 +11,28 @@ import jaemisseo.man.util.Util
  * Created by sujkim on 2017-04-04.
  */
 @Task
+@TerminalValueProtocol(['exec.command'])
 class Exec extends TaskUtil{
 
-    @Value(property='exec.command')
+    @Value('exec.command')
     String commandForAll
 
-    @Value(property='exec.command.lin')
+    @Value('exec.command.lin')
     String commandForLin
 
-    @Value(property='exec.command.win')
+    @Value('exec.command.win')
     String commandForWin
 
-    @Value(property='os.name', method='getString')
+    @HelpIgnore
+    @Value('os.name')
     void setIsWindows(String osName){
         this.isWindows = osName ? osName.toLowerCase().startsWith("windows") : false
     }
 
     boolean isWindows
 
-    @Value(property='user.dir', method='getString')
+    @HelpIgnore
+    @Value('user.dir')
     String userDir
 
 

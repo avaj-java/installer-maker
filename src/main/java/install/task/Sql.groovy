@@ -1,12 +1,14 @@
 package install.task
 
+import install.configuration.annotation.type.Document
 import install.configuration.annotation.type.Task
 import install.configuration.annotation.Value
+import install.configuration.annotation.type.TerminalValueProtocol
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.SqlAnalMan
 import jaemisseo.man.SqlMan
-import jaemisseo.man.util.SqlSetup
+import install.bean.SqlSetup
 import install.bean.ReportSetup
 import install.bean.ReportSql
 
@@ -15,16 +17,20 @@ import java.sql.SQLException
 /**
  * Created by sujkim on 2017-02-17.
  */
+@Document("""
+    It can run sql file with JDBC 
+""")
 @Task
+@TerminalValueProtocol(['file'])
 class Sql extends TaskUtil{
 
-    @Value(method='genMergedSqlSetup')
-    SqlSetup sqlSetup
-
-    @Value(property='file', method='getFilePathList')
+    @Value(name='file', filter='getFilePathList', required=true)
     List<String> filePathList
 
-    @Value(method='genGlobalReportSetup')
+    @Value
+    SqlSetup sqlSetup
+
+    @Value
     ReportSetup reportSetup
 
 

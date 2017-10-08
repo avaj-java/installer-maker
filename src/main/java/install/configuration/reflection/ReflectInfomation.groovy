@@ -5,19 +5,27 @@ package install.configuration.reflection
  */
 class ReflectInfomation {
 
+    //Own
     Class clazz
     Object instance
     String alias
 
+    //Init
     MethodInfomation initMethod
     boolean checkInitMethod
     boolean isLatelyInitMethod
+
+    //Before
     MethodInfomation beforeMethod
+
+    //After
     MethodInfomation afterMethod
 
+    //Value
     Map<String, FieldInfomation> valueFieldNameMap = [:]
     Map<String, MethodInfomation> valueMethodNameMap = [:]
 
+    //Inject
     Map<String, FieldInfomation> injectFieldNameMap = [:]
     Map<String, MethodInfomation> injectMethodNameMap = [:]
 

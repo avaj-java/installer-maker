@@ -10,7 +10,7 @@ import java.lang.annotation.Target
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@interface Method {
+@interface Filter {
 
     String value() default ''
 

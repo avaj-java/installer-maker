@@ -1,6 +1,7 @@
 package install.task
 
 import install.configuration.annotation.type.Task
+import install.configuration.annotation.type.TerminalIgnore
 import install.configuration.annotation.type.Undoable
 import install.util.TaskUtil
 
@@ -9,6 +10,7 @@ import install.util.TaskUtil
  */
 @Undoable(modeMore=true)
 @Task
+@TerminalIgnore
 class Set extends TaskUtil{
 
     @Override

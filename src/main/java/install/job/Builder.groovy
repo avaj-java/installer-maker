@@ -1,16 +1,19 @@
 package install.job
 
+import install.bean.GlobalOptionForBuilder
+import install.bean.ReportSetup
+import install.configuration.annotation.HelpIgnore
 import install.configuration.annotation.method.Command
 import install.configuration.annotation.method.Init
+import install.configuration.annotation.type.Document
 import install.configuration.annotation.type.Job
 import install.configuration.annotation.type.Task
-import install.bean.ReportSetup
 import install.data.PropertyProvider
 import install.util.JobUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.ReportMan
-import jaemisseo.man.util.FileSetup
+import install.bean.FileSetup
 import jaemisseo.man.util.Util
 
 /**
@@ -32,7 +35,7 @@ class Builder extends JobUtil{
         this.propman = setupPropMan(provider)
         this.varman = setupVariableMan(propman, executorNamePrefix)
         provider.shift(jobName)
-        this.gOpt = provider.getBuilderGlobalOption()
+        this.gOpt = config.injectValue(new GlobalOptionForBuilder())
     }
 
     PropMan setupPropMan(PropertyProvider provider){
@@ -51,23 +54,17 @@ class Builder extends JobUtil{
                         .mergeNew(propmanDefault)
                         .merge(['builder.home': FileMan.getFullPath(propmanDefault.get('lib.dir'), '../')])
 
-        println propmanForBuilder.get('startup.meta')
-        println propmanForBuilder.get('startup.meta') == true
-        println propmanForBuilder.get('startup.meta') == 'true'
-
         return propmanForBuilder
     }
 
 
-
-    /*************************
-     * INIT
-     * Generate Sample Properties Files
-     * 1. builder.properties
-     * 2. receptionist.properties
-     * 3. installer.properties
-     *************************/
     @Command('init')
+    @Document("""
+    Generate Sample Properties Files
+    1. builder.properties
+    2. receptionist.properties
+    3. installer.properties        
+    """)
     void initCommand(){
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
@@ -105,11 +102,10 @@ class Builder extends JobUtil{
         }
     }
 
-    /*************************
-     * CLEAN
-     * Clean Build Directory
-     *************************/
     @Command('clean')
+    @Document("""
+    Clean Build Directory        
+    """)
     void clean(){
         try{
             FileMan.delete(gOpt.buildInstallerHome)
@@ -119,10 +115,10 @@ class Builder extends JobUtil{
         }
     }
 
-    /*************************
-     * BUILD
-     *************************/
     @Command('build')
+    @Document("""
+    Build Your Installer        
+    """)
     void build(){
         try{
             ReportSetup reportSetup = gOpt.reportSetup
@@ -163,6 +159,10 @@ class Builder extends JobUtil{
     }
 
     @Command('run')
+    @HelpIgnore
+    @Document("""
+    No User's Command        
+    """)
     void runCommand(){
         String binPath = provider.get('build.installer.bin.path') ?: FileMan.getFullPath(gOpt.buildInstallerHome, gOpt.installerHomeToBinRelPath)
         String argsExceptCommand = provider.get('args.except.command')

@@ -2,12 +2,14 @@ package install.task
 
 import install.configuration.annotation.type.Task
 import install.configuration.annotation.Value
+import install.configuration.annotation.type.TerminalValueProtocol
 import install.util.TaskUtil
 
 /**
  * Created by sujkim on 2017-02-27.
  */
 @Task
+@TerminalValueProtocol(['port'])
 class TestPort extends TaskUtil{
 
     @Value('port')

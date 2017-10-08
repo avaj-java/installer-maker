@@ -2,6 +2,7 @@ package install.task
 
 import install.configuration.annotation.type.Task
 import install.configuration.annotation.Value
+import install.configuration.annotation.type.TerminalValueProtocol
 import install.util.TaskUtil
 import jaemisseo.man.RestMan
 
@@ -9,6 +10,7 @@ import jaemisseo.man.RestMan
  * Created by sujkim on 2017-03-10.
  */
 @Task
+@TerminalValueProtocol(['url', 'method', 'param'])
 class TestREST extends TaskUtil{
 
     @Value('url')
@@ -23,10 +25,10 @@ class TestREST extends TaskUtil{
     @Value('accept')
     String accept
 
-    @Value(property='param', method='parse')
+    @Value('param')
     Map paramMap
 
-    @Value(property='header', method='parse')
+    @Value('header')
     Map headerMap
 
 

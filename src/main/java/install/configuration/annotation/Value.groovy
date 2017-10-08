@@ -16,12 +16,37 @@ import java.lang.annotation.Target
 
     String value() default ''
 
-    String property() default ''
+    String name() default ''
 
-    String method() default 'get'
+    String filter() default ''
+
+    String prefix() default ''
+
+    boolean global() default false
+
+
 
     boolean required() default false
 
+    boolean englishOnly() default false
+
+    boolean numberOnly() default false
+
+    boolean charOnly() default false
+
+    int minLength() default 0
+
+    int maxLength() default 0
+    
     String[] validList() default []
+
+    String[] contains() default []
+
+    String[] caseIgnoreValidList() default []
+
+    String[] caseIgnoreContains() default []
+
+    String regexp() default ''
+
 
 }

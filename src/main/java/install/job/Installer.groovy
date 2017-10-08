@@ -1,5 +1,7 @@
 package install.job
 
+import install.bean.GlobalOptionForInstaller
+import install.configuration.annotation.HelpIgnore
 import install.configuration.annotation.method.Command
 import install.configuration.annotation.method.Init
 import install.configuration.annotation.type.Job
@@ -7,7 +9,6 @@ import install.configuration.annotation.type.Task
 import install.bean.ReportSetup
 import install.data.PropertyProvider
 import install.util.JobUtil
-import install.util.YamlUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.ReportMan
@@ -32,7 +33,7 @@ class Installer extends JobUtil{
         this.propman = setupPropMan(provider)
         this.varman = setupVariableMan(propman, executorNamePrefix)
         provider.shift(jobName)
-        this.gOpt = provider.getInstallerGlobalOption()
+        this.gOpt = config.injectValue(new GlobalOptionForInstaller())
     }
 
     PropMan setupPropMan(PropertyProvider provider){
@@ -67,6 +68,7 @@ class Installer extends JobUtil{
     /*************************
      * INSTALL
      *************************/
+    @HelpIgnore
     @Command('install')
     void install(){
         ReportSetup reportSetup = gOpt.reportSetup

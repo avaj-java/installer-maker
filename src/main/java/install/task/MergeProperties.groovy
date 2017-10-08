@@ -2,36 +2,38 @@ package install.task
 
 import install.configuration.annotation.type.Task
 import install.configuration.annotation.Value
+import install.configuration.annotation.type.TerminalValueProtocol
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
-import jaemisseo.man.util.FileSetup
+import install.bean.FileSetup
 
 /**
  * Created by sujkim on 2017-02-27.
  */
 @Task
+@TerminalValueProtocol(['from', 'into'])
 class MergeProperties extends TaskUtil{
 
-    @Value('from')
+    @Value(name='from', required=true)
     String specificPropertiesFilePath
 
-    @Value('into')
+    @Value(name='into', required=true)
     String sourceFilePath
 
-    @Value(method='genMergedFileSetup')
-    FileSetup opt
+    @Value
+    FileSetup fileSetup
 
 
 
     @Override
     Integer run() {
-        opt.put([modeAutoBackup:true])
+        fileSetup.put([modeAutoBackup:true])
 
         logMiddleTitle('START MERGE PROPERTIES')
 
         // - Read Properties
-        FileMan fileman = new FileMan(sourceFilePath).set(opt).read()
+        FileMan fileman = new FileMan(sourceFilePath).set(fileSetup).read()
         PropMan propmanSource = new PropMan(sourceFilePath)
         PropMan propmanSpecific = new PropMan(specificPropertiesFilePath)
 
