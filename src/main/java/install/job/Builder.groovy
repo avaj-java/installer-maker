@@ -58,15 +58,13 @@ class Builder extends JobUtil{
     }
 
 
-
-    @Document("""
-      INIT
-      Generate Sample Properties Files
-      1. builder.properties
-      2. receptionist.properties
-      3. installer.properties        
-    """)
     @Command('init')
+    @Document("""
+    Generate Sample Properties Files
+    1. builder.properties
+    2. receptionist.properties
+    3. installer.properties        
+    """)
     void initCommand(){
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
@@ -104,11 +102,10 @@ class Builder extends JobUtil{
         }
     }
 
+    @Command('clean')
     @Document("""
-    CLEAN
     Clean Build Directory        
     """)
-    @Command('clean')
     void clean(){
         try{
             FileMan.delete(gOpt.buildInstallerHome)
@@ -118,10 +115,10 @@ class Builder extends JobUtil{
         }
     }
 
-    @Document("""
-    BUILD        
-    """)
     @Command('build')
+    @Document("""
+    Build Your Installer        
+    """)
     void build(){
         try{
             ReportSetup reportSetup = gOpt.reportSetup
@@ -161,8 +158,11 @@ class Builder extends JobUtil{
         }
     }
 
-    @HelpIgnore
     @Command('run')
+    @HelpIgnore
+    @Document("""
+    No User's Command        
+    """)
     void runCommand(){
         String binPath = provider.get('build.installer.bin.path') ?: FileMan.getFullPath(gOpt.buildInstallerHome, gOpt.installerHomeToBinRelPath)
         String argsExceptCommand = provider.get('args.except.command')

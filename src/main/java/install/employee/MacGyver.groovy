@@ -59,8 +59,12 @@ class MacGyver extends EmployeeUtil {
     }
 
 
-    @HelpIgnore
+
     @Command('doSomething')
+    @HelpIgnore
+    @Document("""
+    No User's Command       
+    """)
     Integer doSomething(){
         boolean modeHelp = propman.getBoolean('help')
 
@@ -123,6 +127,9 @@ class MacGyver extends EmployeeUtil {
 
     @Alias('m')
     @Command('macgyver')
+    @Document("""
+    You can use 'macgyver' to use a task on Terminal       
+    """)
     void macgyver(){
 
         ReportSetup reportSetup = config.injectValue(new ReportSetup())
@@ -142,25 +149,25 @@ class MacGyver extends EmployeeUtil {
         writeReport(reportMapList, reportSetup)
     }
 
-
-
     @Alias('h')
     @Command('help')
+    @Document("""
+    You can know How to use Command or Task on Terminal      
+    """)
     void help(){
         runTask('help')
     }
 
-
-    @Document("""
-    1. Test Command do 'clean' 'build' 'run'.
-
-    2. You can use 'test' command to test or build CI Environment.
-    
-    3. Response File(.rsp) can help your test.
-         
-       installer-maker test -response.file.path=<File>  
-    """)
     @Command('test')
+    @Document("""
+    - Test Command do 'clean' 'build' 'run'.
+
+    - You can use 'test' command to test or build CI Environment.
+    
+    - Response File(.rsp) can help your test.
+         
+      installer-maker test -response.file.path=<File>  
+    """)
     void test(){
         config.command('clean')
         config.command('build')
@@ -168,7 +175,7 @@ class MacGyver extends EmployeeUtil {
     }
 
 
-    
+
     /**
      * WRITE Report
      */
