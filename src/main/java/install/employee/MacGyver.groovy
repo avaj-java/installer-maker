@@ -1,5 +1,6 @@
 package install.employee
 
+import install.bean.GlobalOptionForReceptionist
 import install.bean.ReportSetup
 import install.configuration.annotation.Alias
 import install.configuration.annotation.HelpIgnore
@@ -124,7 +125,7 @@ class MacGyver extends EmployeeUtil {
     @Command('macgyver')
     void macgyver(){
 
-        ReportSetup reportSetup = provider.genGlobalReportSetup()
+        ReportSetup reportSetup = config.injectValue(new GlobalOptionForReceptionist())
 
         //Each level by level
         eachLevelForTask{ String propertyPrefix ->

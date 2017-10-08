@@ -25,10 +25,10 @@ class TestREST extends TaskUtil{
     @Value('accept')
     String accept
 
-    @Value(property='param', method='parse')
+    @Value('param')
     Map paramMap
 
-    @Value(property='header', method='parse')
+    @Value('header')
     Map headerMap
 
 

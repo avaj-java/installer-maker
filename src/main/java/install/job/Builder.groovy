@@ -1,18 +1,19 @@
 package install.job
 
+import install.bean.GlobalOptionForBuilder
+import install.bean.ReportSetup
 import install.configuration.annotation.HelpIgnore
 import install.configuration.annotation.method.Command
 import install.configuration.annotation.method.Init
 import install.configuration.annotation.type.Document
 import install.configuration.annotation.type.Job
 import install.configuration.annotation.type.Task
-import install.bean.ReportSetup
 import install.data.PropertyProvider
 import install.util.JobUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.ReportMan
-import jaemisseo.man.util.FileSetup
+import install.bean.FileSetup
 import jaemisseo.man.util.Util
 
 /**
@@ -34,7 +35,7 @@ class Builder extends JobUtil{
         this.propman = setupPropMan(provider)
         this.varman = setupVariableMan(propman, executorNamePrefix)
         provider.shift(jobName)
-        this.gOpt = provider.getBuilderGlobalOption()
+        this.gOpt = config.injectValue(new GlobalOptionForBuilder())
     }
 
     PropMan setupPropMan(PropertyProvider provider){
@@ -52,10 +53,6 @@ class Builder extends JobUtil{
                         .merge(propmanExternal)
                         .mergeNew(propmanDefault)
                         .merge(['builder.home': FileMan.getFullPath(propmanDefault.get('lib.dir'), '../')])
-
-        println propmanForBuilder.get('startup.meta')
-        println propmanForBuilder.get('startup.meta') == true
-        println propmanForBuilder.get('startup.meta') == 'true'
 
         return propmanForBuilder
     }

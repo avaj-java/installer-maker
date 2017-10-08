@@ -7,12 +7,13 @@ import install.configuration.annotation.type.Document
 import install.configuration.annotation.type.Task
 import install.configuration.annotation.type.TerminalIgnore
 import install.configuration.annotation.type.TerminalValueProtocol
+import install.configuration.reflection.FieldInfomation
 import install.configuration.reflection.MethodInfomation
+import install.configuration.reflection.ReflectInfomation
 import install.util.TaskUtil
 import jaemisseo.man.util.Util
 
 import java.lang.annotation.Annotation
-import java.lang.reflect.Member
 
 /**
  * Created by sujkim on 2017-06-26.
@@ -30,7 +31,7 @@ class Help extends TaskUtil{
     String specificTaskName
 
     @HelpIgnore
-    @Value(property='force', method='getBoolean')
+    @Value('force')
     Boolean isForce
 
     String programName = 'installer-maker'
@@ -153,19 +154,8 @@ class Help extends TaskUtil{
             if (documentAnt)
                 documentString = documentAnt.value()
 
-            //-Collect Properties
-            Map<Member, List<Annotation>> allClassMemberAnnotationMap = config.findAllAnnotationFromClassMember(clazz, Value)
-            allClassMemberAnnotationMap.each { Member member, List<Annotation> annotationList ->
-                Value valueAnt = annotationList.find { it.annotationType() == Value }
-                HelpIgnore helpIgnoreAnt = annotationList.find { it.annotationType() == HelpIgnore }
-                if (valueAnt && !helpIgnoreAnt) {
-                    String propertyName = valueAnt.value() ?: valueAnt.property() ?: ''
-                    if (propertyName)
-                        propertyList << propertyName
-//                    boolean isRequired = valueAnt.required()
-//                    String[] validList = valueAnt.validList()
-                }
-            }
+            //-Collect Value Names (Properties)
+            propertyList = collectValueNames(clazz)
 
             //-Print Non Property
             List nonPropertyPrintItemList = []
@@ -192,6 +182,47 @@ class Help extends TaskUtil{
         }
     }
 
+
+
+    /*************************
+     *
+     * Collect Value Annotation's Name on Class
+     *
+     *************************/
+    List<String> collectValueNames(Class clazz){
+        List resultPropertyList = []
+        return collectValueNames(clazz, '', resultPropertyList)
+    }
+
+    List<String> collectValueNames(Class clazz, String propertyPrefixFirstName, List resultPropertyList){
+        ReflectInfomation reflectInfo = config.reflectionMap[clazz]
+        if (reflectInfo){
+            reflectInfo.valueFieldNameMap.each{ String fieldName, FieldInfomation fieldInfo ->
+                resultPropertyList = collectValueNames(propertyPrefixFirstName, fieldInfo.annotationList, fieldInfo.fieldType, resultPropertyList)
+            }
+            reflectInfo.valueMethodNameMap.each{ String methodName, MethodInfomation methodInfo ->
+                resultPropertyList = collectValueNames(propertyPrefixFirstName, methodInfo.annotationList, methodInfo.parameterTypes[0], resultPropertyList)
+            }
+        }
+        return resultPropertyList
+    }
+
+    List<String> collectValueNames(String propertyPrefixFirstName, List<Annotation> annotationList, Class valueType, List resultPropertyList){
+        Value valueAnt = annotationList.find { it.annotationType() == Value }
+        HelpIgnore helpIgnoreAnt = annotationList.find { it.annotationType() == HelpIgnore }
+        if (valueAnt && !helpIgnoreAnt) {
+            String propertyName = valueAnt.value() ?: valueAnt.name() ?: ''
+            String propertyPrefixName = valueAnt.prefix()
+            String fullPropertyPrefixName = "${propertyPrefixFirstName}${propertyPrefixName}"
+            String fullPropertyName = "${propertyPrefixFirstName}${propertyPrefixName}${propertyName}"
+            if (propertyName)
+                resultPropertyList << fullPropertyName
+            else
+                collectValueNames(valueType, fullPropertyPrefixName, resultPropertyList)
+//                    boolean isRequired = valueAnt.required()
+//                    String[] validList = valueAnt.validList()
+        }
+    }
 
 
 }

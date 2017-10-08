@@ -5,7 +5,7 @@ import install.configuration.annotation.type.Task
 import install.configuration.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
-import jaemisseo.man.util.FileSetup
+import install.bean.FileSetup
 
 /**
  * Created by sujkim on 2017-02-22.
@@ -14,13 +14,13 @@ import jaemisseo.man.util.FileSetup
 @TerminalValueProtocol(['from', 'to'])
 class Untar extends TaskUtil{
 
-    @Value(property='from', method='getFilePath')
+    @Value(name='from', filter='getFilePath')
     String filePath
 
-    @Value(property='to', method='getFilePath')
+    @Value(name='to', filter='getFilePath')
     String destPath
 
-    @Value(method='genMergedFileSetup')
+    @Value
     FileSetup fileSetup
 
 

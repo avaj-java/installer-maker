@@ -6,7 +6,7 @@ import install.configuration.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.QuestionMan
-import jaemisseo.man.util.QuestionSetup
+import install.bean.QuestionSetup
 import jaemisseo.man.util.Util
 
 /**
@@ -16,7 +16,7 @@ import jaemisseo.man.util.Util
 @Task
 class QuestionFindFile extends TaskUtil{
 
-    @Value(method='genMergedQuestionSetup')
+    @Value
     QuestionSetup opt
 
     @Value("find.root.path")
@@ -28,7 +28,7 @@ class QuestionFindFile extends TaskUtil{
     @Value("find.result.edit.relpath")
     String editResultPath
 
-    @Value(property='find.if', method='parse')
+    @Value(name='find.if', filter='parse')
     def searchIf
 
 

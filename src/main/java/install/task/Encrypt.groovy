@@ -14,11 +14,20 @@ import temp.util.SEEDUtil
 @TerminalValueProtocol(['value', 'method'])
 class Encrypt extends TaskUtil{
 
-    @Value(property='value', method='getString')
+    @Value('method')
+    String method
+
+    @Value('value')
     String value
 
-    @Value(property='method', method='getString')
-    String method
+    @Value('key')
+    String key
+
+    @Value('salt')
+    String salt
+
+    @Value('charset')
+    String charset
 
 
 

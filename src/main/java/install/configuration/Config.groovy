@@ -4,6 +4,7 @@ import install.configuration.annotation.*
 import install.configuration.annotation.method.After
 import install.configuration.annotation.method.Before
 import install.configuration.annotation.method.Command
+import install.configuration.annotation.method.Filter
 import install.configuration.annotation.method.Init
 import install.configuration.annotation.type.Bean
 import install.configuration.annotation.type.Data
@@ -34,7 +35,7 @@ class Config {
     Map<String, MethodInfomation> methodCommandAliasNameMap = [:]
 
     //Data
-    Map<String, MethodInfomation> methodMethodNameMap = [:]
+    Map<String, MethodInfomation> methodFilterNameMap = [:]
 
     //Task's Value Protocol
     Map<String, List<String>> lowerTaskNameAndValueProtocolListMap = [:]
@@ -137,9 +138,9 @@ class Config {
                 }else if (annotation instanceof After) {
                     reflect.afterMethod = new MethodInfomation(instance: instance, clazz: clazz, annotationList: method.getAnnotations().toList(), method: method, methodName: method.name)
                 }else if (annotation instanceof Value){
-                    reflect.valueMethodNameMap[method.name] = new MethodInfomation(instance: instance, clazz: clazz, annotationList: method.getAnnotations().toList(), method:method, methodName: method.name)
+                    reflect.valueMethodNameMap[method.name] = new MethodInfomation(instance: instance, clazz: clazz, annotationList: method.getAnnotations().toList(), method:method, methodName: method.name, parameterTypes:method.parameterTypes.toList())
                 }else if (annotation instanceof Inject){
-                    reflect.injectMethodNameMap[method.name] = new MethodInfomation(instance: instance, clazz: clazz, annotationList: method.getAnnotations().toList(), method:method, methodName: method.name)
+                    reflect.injectMethodNameMap[method.name] = new MethodInfomation(instance: instance, clazz: clazz, annotationList: method.getAnnotations().toList(), method:method, methodName: method.name, parameterTypes:method.parameterTypes.toList())
                 }
             }
         }
@@ -147,9 +148,9 @@ class Config {
         clazz.getDeclaredFields().each { Field field ->
             field.getAnnotations().each{ annotation ->
                 if (annotation instanceof Value){
-                    reflect.valueFieldNameMap[field.name] = new FieldInfomation(instance: instance, clazz: clazz, annotationList: field.getAnnotations().toList(), field:field, fieldName: field.name)
+                    reflect.valueFieldNameMap[field.name] = new FieldInfomation(instance: instance, clazz: clazz, annotationList: field.getAnnotations().toList(), field:field, fieldName: field.name, fieldType: field.getType())
                 }else if (annotation instanceof Inject){
-                    reflect.injectFieldNameMap[field.name] = new FieldInfomation(instance: instance, clazz: clazz, annotationList: field.getAnnotations().toList(), field:field, fieldName: field.name)
+                    reflect.injectFieldNameMap[field.name] = new FieldInfomation(instance: instance, clazz: clazz, annotationList: field.getAnnotations().toList(), field:field, fieldName: field.name, fieldType: field.getType())
                 }
             }
         }
@@ -179,8 +180,8 @@ class Config {
         Object instance = reflect.instance
         clazz.getDeclaredMethods().each { Method method ->
             method.getAnnotations().each { annotation ->
-                if (annotation instanceof install.configuration.annotation.method.Method) {
-                    methodMethodNameMap[method.name] = new MethodInfomation(instance: instance, clazz: clazz, annotationList: method.getAnnotations().toList(), method:method, methodName: method.name)
+                if (annotation instanceof Filter) {
+                    methodFilterNameMap[method.name] = new MethodInfomation(instance: instance, clazz: clazz, annotationList: method.getAnnotations().toList(), method:method, methodName: method.name)
                 }
             }
         }
@@ -210,7 +211,7 @@ class Config {
         //2. INJECT to METHOD
         List<MethodInfomation> injectMethodList = []
         reflectionMap.each{ clazz, reflect ->
-            reflect.injectMethodNameMap.each{ methodName, methodInfo -> methodInfo
+            reflect.injectMethodNameMap.each{ methodName, methodInfo ->
                 injectMethodList << methodInfo
             }
         }
@@ -225,29 +226,50 @@ class Config {
      * INJECT Value
      *************************/
     Object injectValue(Object instance){
+        return injectValue(instance, '')
+    }
+
+    Object injectValue(Object instance, String prefixParam){
         Class clazz = instance.getClass()
         //1. INJECT VALUE to FIELD
         Map<String, FieldInfomation> valueFieldNameMap = reflectionMap[clazz].valueFieldNameMap
         valueFieldNameMap.each{ fieldName, info ->
             //Get Value
-            Value ant = info.findAnnotation(Value)
-            String property = ant.value() ?: ant.property()
-            String method = ant.method()
-            def value = getFromProvider(property, method)
-            //Inject
-            instance[fieldName] = value
+            Value valueAnt = info.findAnnotation(Value)
+            String propertyName = valueAnt.value() ?: valueAnt.name() ?: ''
+            String filterName = valueAnt.filter() ?: getFilterName(info.fieldType)
+            String prefix = valueAnt.prefix() ?: ''
+            //Inject Value
+            if (propertyName){
+                def value = getFromProvider("${prefixParam}${prefix}${propertyName}", filterName)
+                validate(value, valueAnt)
+                if (value != null)
+                    instance[fieldName] = value
+            //Inject New Object with Values
+            }else{
+                def newFieldObject = info.fieldType.newInstance()
+                instance[fieldName] = newFieldObject
+                injectValue(newFieldObject, "${prefixParam}${prefix}")
+            }
         }
+
         //2. INJECT VALUE to METHOD
         Map<String, MethodInfomation> valueMethodNameMap = reflectionMap[clazz].valueMethodNameMap
         valueMethodNameMap.each{ String methodName, MethodInfomation info ->
             //Get Value
-            Value ant = info.findAnnotation(Value)
-            String property = ant.value() ?: ant.property()
-            String method = ant.method()
-            def value = getFromProvider(property, method)
-            Object[] parameters = [value] as Object[]
-            //Inject
-            runMethod(instance, info.method, parameters)
+            Value valueAnt = info.findAnnotation(Value)
+            String propertyName = valueAnt.value() ?: valueAnt.name() ?:''
+            String filterName = valueAnt.filter() ?: getFilterName(info.parameterTypes[0])
+            String prefix = valueAnt.prefix() ?: ''
+            //Inject Value
+            if (propertyName){
+                def value = getFromProvider("${prefixParam}${prefix}${propertyName}", filterName)
+                validate(value, valueAnt)
+                Object[] parameters = [value] as Object[]
+                runMethod(instance, info.method, parameters)
+            //Inject Object
+            }else{
+            }
         }
         return instance
     }
@@ -256,13 +278,85 @@ class Config {
         return getFromProvider(property, '')
     }
 
-    def getFromProvider(String property, String methodName){
-        MethodInfomation info = methodMethodNameMap[methodName]
+    def getFromProvider(String property, String filterName){
+        MethodInfomation info = methodFilterNameMap[filterName]
         if (!info)
-            throw new Exception ("Doesn't Exist Value Data's Method")
+            throw new Exception ("Doesn't Exist Data Filter [${filterName}]")
         return (property) ? runMethod(info, [property].toArray()) : runMethod(info)
     }
 
+    String getFilterName(Class type){
+        switch (type){
+            case String:
+                return 'getString'
+                break
+            case {it == Integer || it == int}:
+                return 'getInteger'
+                break
+            case {it == Short || it == short}:
+                return 'getShort'
+                break
+            case {it == Double || it == double}:
+                return 'getDouble'
+                break
+            case {it == Long || it == long}:
+                return 'getLong'
+                break
+            case {it == Boolean || it == boolean}:
+                return 'getBoolean'
+                break
+            case List:
+                return 'getList'
+                break
+            case Map:
+                return 'getMap'
+                break
+            default:
+                return 'get'
+                break
+        }
+        return 'get'
+    }
+
+    boolean validate(def value, Value valueAnt){
+        boolean isOk = false
+        String propertyName = valueAnt.value() ?: valueAnt.name() ?:''
+
+        boolean required = valueAnt.required()
+        boolean englishOnly = valueAnt.englishOnly()
+        boolean numberOnly = valueAnt.numberOnly()
+        boolean charOnly = valueAnt.charOnly()
+        int minLength = valueAnt.minLength()
+        int maxLength = valueAnt.maxLength()
+        List<String> validList = valueAnt.validList().toList()
+        List<String> contains = valueAnt.contains().toList()
+        List<String> caseIgnoreValidList = valueAnt.caseIgnoreValidList().toList()
+        List<String> caseIgnoreContains = valueAnt.caseIgnoreContains().toList()
+        String regexp = valueAnt.regexp()
+
+        if (required && !value)
+            throw Exception()
+
+        if (englishOnly && !value)
+            throw Exception()
+
+        if (numberOnly && !value)
+            throw Exception()
+
+        if (charOnly && !value)
+            throw Exception()
+
+        if (minLength > 0 && !value)
+            throw Exception()
+
+        if (maxLength > 0 && !value)
+            throw Exception()
+
+        if (maxLength > 0 && !value)
+            throw Exception()
+
+        return isOk
+    }
 
 
     /*************************

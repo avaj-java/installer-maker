@@ -5,7 +5,7 @@ import install.configuration.annotation.type.Task
 import install.configuration.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
-import jaemisseo.man.util.FileSetup
+import install.bean.FileSetup
 
 /**
  * Created by sujkim on 2017-02-22.
@@ -14,13 +14,13 @@ import jaemisseo.man.util.FileSetup
 @TerminalValueProtocol(['from', 'to'])
 class Copy extends TaskUtil{
 
-    @Value(property='from', method='getFilePath')
+    @Value(name='from', filter='getFilePath', required=true)
     String filePath
 
-    @Value(property='to', method='getFilePath')
+    @Value(name='to', filter='getFilePath', required=true)
     String destPath
 
-    @Value(method='genMergedFileSetup')
+    @Value
     FileSetup fileSetup
 
 

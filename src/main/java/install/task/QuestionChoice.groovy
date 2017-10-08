@@ -6,7 +6,7 @@ import install.configuration.annotation.type.Undoable
 import install.configuration.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.QuestionMan
-import jaemisseo.man.util.QuestionSetup
+import install.bean.QuestionSetup
 
 /**
  * Created by sujkim on 2017-03-18.
@@ -16,7 +16,7 @@ import jaemisseo.man.util.QuestionSetup
 @TerminalIgnore
 class QuestionChoice extends TaskUtil{
 
-    @Value(method='genMergedQuestionSetup')
+    @Value
     QuestionSetup opt
 
 

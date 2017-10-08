@@ -40,10 +40,10 @@ class TestEMail extends TaskUtil{
     @Value('mail.content')
     String content
 
-    @Value(property='mail.smtp.auth', method='getBoolean')
+    @Value('mail.smtp.auth')
     Boolean auth
 
-    @Value(property='mail.smtp.starttls.enable', method='getBoolean')
+    @Value('mail.smtp.starttls.enable')
     Boolean tls
 
     int printingMaximumLength = 20

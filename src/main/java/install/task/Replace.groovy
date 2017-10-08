@@ -6,37 +6,42 @@ import install.configuration.annotation.type.Task
 import install.configuration.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
-import jaemisseo.man.util.FileSetup
+import install.bean.FileSetup
 
 /**
  * Created by sujkim on 2017-02-22.
  */
 @Task
 @Document("""
-
+    Replace some content on plain text
 """)
 @TerminalValueProtocol(['file', 'replace.all'])
 class Replace extends TaskUtil{
 
-    @Value(property='file', method='getFilePathList')
+    @Value(name='file', filter='getFilePathList')
     List<String> filePathList
 
-    @Value(method='genMergedFileSetup')
+    @Value
     FileSetup fileSetup
 
-    @Value(property='replace.all', method='getMap')
+    @Value('replace.all')
     Map replaceMap
 
-    @Value(property='replace.line', method='getMap')
+    @Value('replace.line')
     Map replaceLineMap
 
-    @Value(property='replace.property', method='getMap')
+    @Value('replace.property')
     Map replacePropertyMap
 
 
 
     @Override
     Integer run(){
+
+        println replaceMap
+        println replaceLineMap
+        println replacePropertyMap
+
         println "<REPLACE>"
         filePathList.each{ String filePath ->
             new FileMan(filePath)

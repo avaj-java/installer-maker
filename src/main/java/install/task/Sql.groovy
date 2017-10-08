@@ -8,7 +8,7 @@ import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.SqlAnalMan
 import jaemisseo.man.SqlMan
-import jaemisseo.man.util.SqlSetup
+import install.bean.SqlSetup
 import install.bean.ReportSetup
 import install.bean.ReportSql
 
@@ -24,13 +24,13 @@ import java.sql.SQLException
 @TerminalValueProtocol(['file'])
 class Sql extends TaskUtil{
 
-    @Value(method='genMergedSqlSetup')
+    @Value
     SqlSetup sqlSetup
 
-    @Value(property='file', method='getFilePathList')
+    @Value(name='file', filter='getFilePathList')
     List<String> filePathList
 
-    @Value(method='genGlobalReportSetup')
+    @Value
     ReportSetup reportSetup
 
 

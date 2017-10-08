@@ -1,5 +1,6 @@
 package install.util
 
+import install.bean.GlobalOptionForReceptionist
 import install.bean.ReportSetup
 import install.configuration.Config
 import install.configuration.annotation.Inject
@@ -394,7 +395,7 @@ class JobUtil extends TaskUtil{
      * 3. REPORT
      *************************/
     void report(TaskUtil taskInstance){
-        ReportSetup reportSetup = provider.genMergedReportSetup()
+        ReportSetup reportSetup = config.injectValue(new ReportSetup())
 
         if (reportSetup.modeReport){
             if (reportSetup.modeReportConsole)

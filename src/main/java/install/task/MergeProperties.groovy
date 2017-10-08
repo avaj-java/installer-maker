@@ -6,7 +6,7 @@ import install.configuration.annotation.type.TerminalValueProtocol
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
-import jaemisseo.man.util.FileSetup
+import install.bean.FileSetup
 
 /**
  * Created by sujkim on 2017-02-27.
@@ -21,7 +21,7 @@ class MergeProperties extends TaskUtil{
     @Value('into')
     String sourceFilePath
 
-    @Value(method='genMergedFileSetup')
+    @Value
     FileSetup opt
 
 

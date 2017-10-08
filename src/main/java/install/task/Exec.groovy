@@ -14,17 +14,17 @@ import jaemisseo.man.util.Util
 @TerminalValueProtocol(['exec.command'])
 class Exec extends TaskUtil{
 
-    @Value(property='exec.command')
+    @Value('exec.command')
     String commandForAll
 
-    @Value(property='exec.command.lin')
+    @Value('exec.command.lin')
     String commandForLin
 
-    @Value(property='exec.command.win')
+    @Value('exec.command.win')
     String commandForWin
 
     @HelpIgnore
-    @Value(property='os.name', method='getString')
+    @Value('os.name')
     void setIsWindows(String osName){
         this.isWindows = osName ? osName.toLowerCase().startsWith("windows") : false
     }
@@ -32,7 +32,7 @@ class Exec extends TaskUtil{
     boolean isWindows
 
     @HelpIgnore
-    @Value(property='user.dir', method='getString')
+    @Value('user.dir')
     String userDir
 
 

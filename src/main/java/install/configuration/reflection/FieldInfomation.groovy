@@ -8,10 +8,14 @@ import java.lang.reflect.Field
  */
 class FieldInfomation {
 
+    //Parent(Class)
     Object instance
     Class clazz
+
+    //Field
     List<Annotation> annotationList
     Field field
+    Class fieldType
     String fieldName
 
     Annotation findAnnotation(Class annotationClass){
