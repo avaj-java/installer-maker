@@ -124,7 +124,7 @@ class Help extends TaskUtil{
         if (isDetail){
             if (documentString){
                 println ''
-                println documentString
+                println multiTrim(documentString)
             }
         }
 
@@ -176,7 +176,7 @@ class Help extends TaskUtil{
 
                 if (documentString){
                     println ''
-                    println documentString
+                    println multiTrim(documentString)
                 }
             }
         }
@@ -225,4 +225,29 @@ class Help extends TaskUtil{
     }
 
 
+
+    String multiTrim(String content){
+        Integer shortestIndentIndex = null
+        List<String> stringList = content.split('\n').toList()
+        List<String> resultStringList = stringList.findAll{
+            List charList = it.toList()
+            int indentIndex = 0
+            for (int i=0; i<charList.size(); i++){
+                if (charList[i] != " "){
+                    indentIndex = i
+                    break
+                }
+            }
+            if (indentIndex > 0){
+                if (!shortestIndentIndex || shortestIndentIndex > indentIndex){
+                    shortestIndentIndex =  indentIndex
+                }
+                return true
+            }else{
+                return false
+            }
+        }
+        String resultString = resultStringList.collect{ it.substring(shortestIndentIndex) }.join('\n')
+        return resultString
+    }
 }
