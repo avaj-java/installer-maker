@@ -1,11 +1,11 @@
 package install.employee
 
-import install.bean.GlobalOptionForReceptionist
 import install.bean.ReportSetup
 import install.configuration.annotation.Alias
 import install.configuration.annotation.HelpIgnore
 import install.configuration.annotation.method.Command
 import install.configuration.annotation.method.Init
+import install.configuration.annotation.type.Document
 import install.configuration.annotation.type.Employee
 import install.configuration.annotation.type.Task
 import install.configuration.reflection.ReflectInfomation
@@ -125,7 +125,7 @@ class MacGyver extends EmployeeUtil {
     @Command('macgyver')
     void macgyver(){
 
-        ReportSetup reportSetup = config.injectValue(new GlobalOptionForReceptionist())
+        ReportSetup reportSetup = config.injectValue(new ReportSetup())
 
         //Each level by level
         eachLevelForTask{ String propertyPrefix ->
@@ -151,7 +151,15 @@ class MacGyver extends EmployeeUtil {
     }
 
 
+    @Document("""
+    1. Test Command do 'clean' 'build' 'run'.
 
+    2. You can use 'test' command to test or build CI Environment.
+    
+    3. Response File(.rsp) can help your test.
+         
+       installer-maker test -response.file.path=<File>  
+    """)
     @Command('test')
     void test(){
         config.command('clean')

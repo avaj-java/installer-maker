@@ -1,6 +1,5 @@
 package install.util
 
-import install.bean.GlobalOptionForReceptionist
 import install.bean.ReportSetup
 import install.configuration.Config
 import install.configuration.annotation.Inject
