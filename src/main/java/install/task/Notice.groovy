@@ -14,7 +14,7 @@ import install.util.TaskUtil
 @TerminalIgnore
 class Notice extends TaskUtil{
 
-    @Value('msg')
+    @Value(name='msg', required=true)
     String msg
 
 

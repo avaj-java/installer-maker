@@ -14,10 +14,10 @@ import install.bean.FileSetup
 @TerminalValueProtocol(['from', 'to'])
 class Unjar extends TaskUtil{
 
-    @Value(name='from', filter='getFilePath')
+    @Value(name='from', filter='getFilePath', required=true)
     String filePath
 
-    @Value(name='to', filter='getFilePath')
+    @Value(name='to', filter='getFilePath', required=true)
     String destPath
 
     @Value

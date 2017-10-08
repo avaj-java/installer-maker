@@ -18,7 +18,7 @@ import install.bean.FileSetup
 @TerminalValueProtocol(['file', 'replace.all'])
 class Replace extends TaskUtil{
 
-    @Value(name='file', filter='getFilePathList')
+    @Value(name='file', filter='getFilePathList', required=true)
     List<String> filePathList
 
     @Value

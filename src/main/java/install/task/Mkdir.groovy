@@ -14,7 +14,7 @@ import install.bean.FileSetup
 @TerminalValueProtocol(['to', 'structure'])
 class Mkdir extends TaskUtil{
 
-    @Value(name='to', filter='getFilePath')
+    @Value(name='to', filter='getFilePath', required=true)
     String destPath
 
     @Value('structure')

@@ -15,25 +15,25 @@ import install.bean.FileSetup
 @TerminalValueProtocol(['from', 'into'])
 class MergeProperties extends TaskUtil{
 
-    @Value('from')
+    @Value(name='from', required=true)
     String specificPropertiesFilePath
 
-    @Value('into')
+    @Value(name='into', required=true)
     String sourceFilePath
 
     @Value
-    FileSetup opt
+    FileSetup fileSetup
 
 
 
     @Override
     Integer run() {
-        opt.put([modeAutoBackup:true])
+        fileSetup.put([modeAutoBackup:true])
 
         logMiddleTitle('START MERGE PROPERTIES')
 
         // - Read Properties
-        FileMan fileman = new FileMan(sourceFilePath).set(opt).read()
+        FileMan fileman = new FileMan(sourceFilePath).set(fileSetup).read()
         PropMan propmanSource = new PropMan(sourceFilePath)
         PropMan propmanSpecific = new PropMan(specificPropertiesFilePath)
 

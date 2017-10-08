@@ -9,7 +9,7 @@ import install.configuration.annotation.type.Bean
 @Bean
 class QuestionSetup extends jaemisseo.man.bean.QuestionSetup {
 
-    @Value('question')
+    @Value(name='question', required=true)
     String question
     @Value('answer')
     String answer

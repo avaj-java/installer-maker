@@ -24,11 +24,11 @@ import java.sql.SQLException
 @TerminalValueProtocol(['file'])
 class Sql extends TaskUtil{
 
+    @Value(name='file', filter='getFilePathList', required=true)
+    List<String> filePathList
+
     @Value
     SqlSetup sqlSetup
-
-    @Value(name='file', filter='getFilePathList')
-    List<String> filePathList
 
     @Value
     ReportSetup reportSetup

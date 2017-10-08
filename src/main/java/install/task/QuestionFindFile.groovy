@@ -22,7 +22,7 @@ class QuestionFindFile extends TaskUtil{
     @Value("find.root.path")
     String searchRootPath
 
-    @Value("find.file.name")
+    @Value(name="find.file.name", required=true)
     String searchFileName
 
     @Value("find.result.edit.relpath")
