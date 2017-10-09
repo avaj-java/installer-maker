@@ -1,4 +1,9 @@
 ##################################################
+##
+##    Receptionist
+##
+##################################################
+##################################################
 ##### SETUP - CUSTOM PROPERTIES
 ##################################################
 
@@ -11,11 +16,11 @@
 ##################################################
 receptionist:
   greeting:
-    task: NOTICE
+    task: Notice
     msg: '"Hi, ${user.name}. If you want to install Watataturugen?? then, I Have some question."'
 
   howsql:
-    task: Q-CHOICE
+    task: QuestionChoice
     question: INSTALL SQL DATA
     answer:
       default: 1
@@ -28,7 +33,7 @@ receptionist:
       }'
 
   program:
-    task: Q-CHOICE
+    task: QuestionChoice
     question: INSTALL PROGRAM
     answer:
       default: 1
@@ -41,7 +46,7 @@ receptionist:
 
   set1:
     if: '{"receptionist.howsql.answer":["1"]}'
-    task: SET
+    task: Set
     property: '{
       "mode.sql.file.generate":false,
       "mode.sql.execute":true,
@@ -49,10 +54,9 @@ receptionist:
       "mode.report":false
     }'
 
-
   sqllevel:
     if: '{"receptionist.howsql.answer":["1","2","3","4"]}'
-    task: Q-CHOICE
+    task: QuestionChoice
     question: INSTALL SQL DATA LEVEL
     answer:
       default: 1

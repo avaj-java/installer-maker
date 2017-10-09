@@ -4,6 +4,7 @@ import install.bean.GlobalOptionForReceptionist
 import install.configuration.annotation.HelpIgnore
 import install.configuration.annotation.method.Command
 import install.configuration.annotation.method.Init
+import install.configuration.annotation.type.Document
 import install.configuration.annotation.type.Job
 import install.data.PropertyProvider
 import install.task.*
@@ -51,10 +52,12 @@ class Receptionist extends JobUtil{
                 propertiesFile = FileMan.find(propertiesDir, propertiesFileName, ["yml", "yaml", "properties"])
             }
             propertiesFileExtension = FileMan.getExtension(propertiesFile)
-            Map propertiesMap = generatePropertiesMap(propertiesFile)
-
-            propmanForReceptionist.merge(propertiesMap)
+            if (propertiesFile && propertiesFile.exists()){
+                Map propertiesMap = generatePropertiesMap(propertiesFile)
+                propmanForReceptionist.merge(propertiesMap)
                                     .mergeNew(propmanForBuilder)
+            }else{
+            }
 
         }else{
             //Normally
@@ -62,27 +65,35 @@ class Receptionist extends JobUtil{
             String installerHome = FileMan.getFullPath(propmanDefault.get('lib.dir'), libtohomeRelPath)
 
             //From User's FileSystem or Resource
-            String userSetPropertiesDir = propmanExternal['properties.dir']
-            if (userSetPropertiesDir){
-                propertiesFile = FileMan.find(userSetPropertiesDir, propertiesFileName, ["yml", "yaml", "properties"])
-            }else{
+//            String userSetPropertiesDir = propmanExternal['properties.dir']
+//            if (userSetPropertiesDir){
+//                propertiesFile = FileMan.find(userSetPropertiesDir, propertiesFileName, ["yml", "yaml", "properties"])
+//            }else{
                 propertiesFile = FileMan.findResource(null, propertiesFileName, ["yml", "yaml", "properties"])
-            }
+//            }
             propertiesFileExtension = FileMan.getExtension(propertiesFile)
-            Map propertiesMap = generatePropertiesMap(propertiesFile)
-
-            propmanForReceptionist.merge(propertiesMap)
+            if (propertiesFile && propertiesFile.exists()){
+                Map propertiesMap = generatePropertiesMap(propertiesFile)
+                propmanForReceptionist.merge(propertiesMap)
                                     .merge(propmanExternal)
                                     .mergeNew(propmanDefault)
                                     .merge(['installer.home': installerHome])
+            }else{
+            }
         }
 
         return propmanForReceptionist
     }
 
-    @HelpIgnore
     @Command('ask')
+    @HelpIgnore
+    @Document('''
+    No User's Command 
+    ''')
     void ask(){
+        if (!propertiesFile)
+            throw Exception('Does not exists script file [ receptionist.yml ]')
+
         //0. Check Response File
         if (checkResponseFile()){
             PropMan responsePropMan = getResponsePropMan()
@@ -99,6 +110,68 @@ class Receptionist extends JobUtil{
         }
         //3. WRITE REMEMBERED ANSWER
         writeRememberAnswer()
+    }
+
+    @Command('form')
+    @HelpIgnore
+    @Document('''
+    No User's Command
+    Generate Response File
+        1. Load receptionist.properties
+        2. Gen install.rsp 
+    ''')
+    void buildForm(){
+        if (!propertiesFile)
+            throw Exception('Does not exists script file [ receptionist.yml ]')
+
+        List<String> allLineList = []
+
+        logBigTitle('AUTO CREATE RESPONSE FILE')
+
+        //Each level by level
+        eachLevel{ String propertyPrefix ->
+            String taskName = getTaskName(propertyPrefix)
+            Class taskClazz = getTaskClass(taskName)
+
+            //Check Valid Task
+            if (!taskName || !taskClazz)
+                throw new Exception(" 'No Task Name. ${propertyPrefix}task=???. Please Check Task.' ")
+            if ( (validTaskList && !validTaskList.contains(taskClazz)) || (invalidTaskList && invalidTaskList.contains(taskClazz)) )
+                throw new Exception(" 'Sorry, This is Not my task, [${taskName}]. I Can Not do this.' ")
+
+            //(Task)
+            TaskUtil taskInstance = config.findInstance(taskClazz)
+
+            //(Task) Inject Value
+            provider.shift( jobName, propertyPrefix )
+            config.injectValue(taskInstance)
+//            taskInstance.provider = provider
+//            taskInstance.propertyPrefix = propertyPrefix
+            taskInstance.rememberAnswerLineList = rememberAnswerLineList
+            taskInstance.reportMapList = reportMapList
+
+            //(Task) Build Form
+            List<String> lineList = taskInstance.buildForm(propertyPrefix)
+
+            //Add One Question into Form
+            if (lineList){
+                List editingList = lineList.collect{ "# $it" }
+                editingList.add(0, "#########################")
+                editingList << "#########################"
+                editingList << "${propertyPrefix}answer="
+                editingList << ""
+                allLineList.addAll(editingList)
+            }
+        }
+
+        //Make a Response File
+        if (allLineList){
+            String buildInstallerHome = provider.getString('build.installer.home')
+            String homeToRspRelPath = provider.getString('installer.home.to.rsp.relpath')
+            String rspDestPath = FileMan.getFullPath(buildInstallerHome, homeToRspRelPath)
+            String rspInstallRspDestPath = "${rspDestPath}/install.rsp"
+            FileMan.write(rspInstallRspDestPath, allLineList, true)
+        }
     }
 
     boolean checkResponseFile(){
@@ -165,67 +238,6 @@ class Receptionist extends JobUtil{
             }catch(Exception e){
                 e.printStackTrace()
             }
-        }
-    }
-
-
-    /*************************
-     * BUILD FORM
-     *************************/
-    /**
-     * Generate Response File
-     * 1. Load receptionist.properties
-     * 2. Gen install.rsp
-     */
-    @Command('form')
-    void buildForm(){
-        List<String> allLineList = []
-
-        logBigTitle('AUTO CREATE RESPONSE FILE')
-
-        //Each level by level
-        eachLevel{ String propertyPrefix ->
-            String taskName = getTaskName(propertyPrefix)
-            Class taskClazz = getTaskClass(taskName)
-
-            //Check Valid Task
-            if (!taskName || !taskClazz)
-                throw new Exception(" 'No Task Name. ${propertyPrefix}task=???. Please Check Task.' ")
-            if ( (validTaskList && !validTaskList.contains(taskClazz)) || (invalidTaskList && invalidTaskList.contains(taskClazz)) )
-                throw new Exception(" 'Sorry, This is Not my task, [${taskName}]. I Can Not do this.' ")
-
-            //(Task)
-            TaskUtil taskInstance = config.findInstance(taskClazz)
-
-            //(Task) Inject Value
-            provider.shift( jobName, propertyPrefix )
-            config.injectValue(taskInstance)
-//            taskInstance.provider = provider
-//            taskInstance.propertyPrefix = propertyPrefix
-            taskInstance.rememberAnswerLineList = rememberAnswerLineList
-            taskInstance.reportMapList = reportMapList
-
-            //(Task) Build Form
-            List<String> lineList = taskInstance.buildForm(propertyPrefix)
-
-            //Add One Question into Form
-            if (lineList){
-                List editingList = lineList.collect{ "# $it" }
-                editingList.add(0, "#########################")
-                editingList << "#########################"
-                editingList << "${propertyPrefix}answer="
-                editingList << ""
-                allLineList.addAll(editingList)
-            }
-        }
-
-        //Make a Response File
-        if (allLineList){
-            String buildInstallerHome = provider.getString('build.installer.home')
-            String homeToRspRelPath = provider.getString('installer.home.to.rsp.relpath')
-            String rspDestPath = FileMan.getFullPath(buildInstallerHome, homeToRspRelPath)
-            String rspInstallRspDestPath = "${rspDestPath}/install.rsp"
-            FileMan.write(rspInstallRspDestPath, allLineList, true)
         }
     }
 

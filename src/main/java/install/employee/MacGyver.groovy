@@ -42,18 +42,19 @@ class MacGyver extends EmployeeUtil {
         PropMan propmanExternal = provider.propGen.getExternalProperties()
 
         //From User's FileSystem or Resource
-        String userSetPropertiesDir = propmanExternal['properties.dir']
-        if (userSetPropertiesDir){
-            propertiesFile = FileMan.find(userSetPropertiesDir, propertiesFileName, ["yml", "yaml", "properties"])
-        }else{
+//        String userSetPropertiesDir = propmanExternal['properties.dir']
+//        if (userSetPropertiesDir){
+//            propertiesFile = FileMan.find(userSetPropertiesDir, propertiesFileName, ["yml", "yaml", "properties"])
+//        }else{
             propertiesFile = FileMan.findResource(null, propertiesFileName, ["yml", "yaml", "properties"])
-        }
+//        }
         propertiesFileExtension = FileMan.getExtension(propertiesFile)
-        Map propertiesMap = generatePropertiesMap(propertiesFile)
-
-        propmanForMacgyver.merge(propertiesMap)
+        if (propertiesFile && propertiesFile.exists()){
+            Map propertiesMap = generatePropertiesMap(propertiesFile)
+            propmanForMacgyver.merge(propertiesMap)
                             .merge(propmanExternal)
                             .mergeNew(propmanDefault)
+        }
 
         return propmanForMacgyver
     }

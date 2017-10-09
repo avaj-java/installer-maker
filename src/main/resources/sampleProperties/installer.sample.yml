@@ -1,4 +1,9 @@
 ##################################################
+##
+##    Installer
+##
+##################################################
+##################################################
 ##### SETUP - CUSTOM PROPERTIES
 ##################################################
 var:
@@ -57,7 +62,7 @@ sql:
 installer:
   step1:
     if: '{"r.sqllevel.answer":["3"]}'
-    task: SQL
+    task: Sql
     file: ${data.dir}/sql/create_tablespace.sql
     sql:
       password: ${dba.password}
@@ -65,7 +70,7 @@ installer:
 
   step2:
     if: '{"r.sqllevel.answer":["2","3"]}'
-    task: SQL
+    task: Sql
     file: ${data.dir}/sql/create_user.sql
     sql:
       password: ${dba.password}

@@ -1,4 +1,9 @@
 ##################################################
+##
+##    Builder
+##
+##################################################
+##################################################
 ##### SETUP - CUSTOM PROPERTIES
 ##################################################
 data.home: ~/.builder/data
@@ -12,7 +17,7 @@ data.home: ~/.builder/data
 ##################################################
 builder:
   step0:
-    task: MKDIR
+    task: Mkdir
     to: ${build.installer.home}
     structure: '{
       "log":{},
@@ -24,16 +29,16 @@ builder:
     }'
 
   step1:
-    task: COPY
+    task: Copy
     from: ${data.home}/tomcat/*
     to: ${build.installer.home}/data/tomcat
 
   step2:
-    task: COPY
+    task: Copy
     from: ./Myproject/build/libs/*.war
     to: ${build.installer.home}/data/war/
 
   step3:
-    task: COPY
+    task: Copy
     from: ${data.home}/sql/*
     to: ${build.installer.home}/data/sql
