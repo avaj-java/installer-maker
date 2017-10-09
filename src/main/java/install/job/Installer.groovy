@@ -4,6 +4,7 @@ import install.bean.GlobalOptionForInstaller
 import install.configuration.annotation.HelpIgnore
 import install.configuration.annotation.method.Command
 import install.configuration.annotation.method.Init
+import install.configuration.annotation.type.Document
 import install.configuration.annotation.type.Job
 import install.configuration.annotation.type.Task
 import install.bean.ReportSetup
@@ -46,19 +47,21 @@ class Installer extends JobUtil{
         String installerHome = FileMan.getFullPath(propmanDefault.get('lib.dir'), libtohomeRelPath)
 
         //From User's FileSystem or Resource
-        String userSetPropertiesDir = propmanExternal['properties.dir']
-        if (userSetPropertiesDir){
-            propertiesFile = FileMan.find(userSetPropertiesDir, propertiesFileName, ["yml", "yaml", "properties"])
-        }else{
+//        String userSetPropertiesDir = propmanExternal['properties.dir']
+//        if (userSetPropertiesDir){
+//            propertiesFile = FileMan.find(userSetPropertiesDir, propertiesFileName, ["yml", "yaml", "properties"])
+//        }else{
             propertiesFile = FileMan.findResource(null, propertiesFileName, ["yml", "yaml", "properties"])
-        }
+//        }
         propertiesFileExtension = FileMan.getExtension(propertiesFile)
-        Map propertiesMap = generatePropertiesMap(propertiesFile)
-
-        propmanForInstaller.merge(propertiesMap)
-                            .merge(propmanForReceptionist)
-                            .mergeNew(propmanDefault)
-                            .merge(['installer.home': installerHome])
+        if (propertiesFile && propertiesFile.exists()){
+            Map propertiesMap = generatePropertiesMap(propertiesFile)
+            propmanForInstaller.merge(propertiesMap)
+                                .merge(propmanForReceptionist)
+                                .mergeNew(propmanDefault)
+                                .merge(['installer.home': installerHome])
+        }else{
+        }
 
         return propmanForInstaller
     }
@@ -68,9 +71,15 @@ class Installer extends JobUtil{
     /*************************
      * INSTALL
      *************************/
-    @HelpIgnore
     @Command('install')
+    @HelpIgnore
+    @Document('''
+    No User's Command 
+    ''')
     void install(){
+        if (!propertiesFile)
+            throw Exception('Does not exists script file [ installer.yml ]')
+
         ReportSetup reportSetup = gOpt.reportSetup
         //Each level by level
         eachLevelForTask{ String propertyPrefix ->

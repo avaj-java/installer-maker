@@ -47,12 +47,14 @@ class Builder extends JobUtil{
         String propertiesDir = propmanExternal.get('properties.dir') ?: propmanDefault.get('user.dir')
         propertiesFile = FileMan.find(propertiesDir, propertiesFileName, ["yml", "yaml", "properties"])
         propertiesFileExtension = FileMan.getExtension(propertiesFile)
-        Map propertiesMap = generatePropertiesMap(propertiesFile)
-
-        propmanForBuilder.merge(propertiesMap)
-                        .merge(propmanExternal)
-                        .mergeNew(propmanDefault)
-                        .merge(['builder.home': FileMan.getFullPath(propmanDefault.get('lib.dir'), '../')])
+        if (propertiesFile && propertiesFile.exists()){
+            Map propertiesMap = generatePropertiesMap(propertiesFile)
+            propmanForBuilder.merge(propertiesMap)
+                            .merge(propmanExternal)
+                            .mergeNew(propmanDefault)
+                            .merge(['builder.home': FileMan.getFullPath(propmanDefault.get('lib.dir'), '../')])
+        }else{
+        }
 
         return propmanForBuilder
     }
@@ -60,66 +62,117 @@ class Builder extends JobUtil{
 
     @Command('init')
     @Document("""
-    Generate Sample Properties Files
-    1. builder.properties
-    2. receptionist.properties
-    3. installer.properties        
+    Init 3 Installer-Maker script files
+
+        You can generate Sample Properties Files to build installer 
+    
+        1. builder.yml
+        2. receptionist.yml
+        3. installer.yml        
     """)
     void initCommand(){
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
         fileSetup.modeAutoOverWrite = false
         String propertiesDir = provider.getFilePath('properties.dir') ?: FileMan.getFullPath('./')
-        String filePath
-        String destPath
+        String fileFrom
+        String fileTo
 
         //DO
         println "<Init File>"
         println "- Dest Path: ${propertiesDir}"
 
         try{
-            filePath = "sampleProperties/builder.sample.properties"
-            destPath = "${propertiesDir}/builder.properties"
-            new FileMan().readResource(filePath).write(destPath, fileSetup)
+            fileFrom = "sampleProperties/builder.sample.yml"
+            fileTo = "${propertiesDir}/builder.yml"
+            new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
         }catch(e){
-            println "File Aready Exists. ${destPath}\n"
+            println "File Aready Exists. ${fileTo}\n"
         }
 
         try{
-            filePath = "sampleProperties/receptionist.sample.properties"
-            destPath = "${propertiesDir}/receptionist.properties"
-            new FileMan().readResource(filePath).write(destPath, fileSetup)
+            fileFrom = "sampleProperties/receptionist.sample.yml"
+            fileTo = "${propertiesDir}/receptionist.yml"
+            new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
         }catch(e){
-            println "File Aready Exists. ${destPath}\n"
+            println "File Aready Exists. ${fileTo}\n"
         }
 
         try{
-            filePath = "sampleProperties/installer.sample.properties"
-            destPath = "${propertiesDir}/installer.properties"
-            new FileMan().readResource(filePath).write(destPath, fileSetup)
+            fileFrom = "sampleProperties/installer.sample.yml"
+            fileTo = "${propertiesDir}/installer.yml"
+            new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
         }catch(e){
-            println "File Aready Exists. ${destPath}\n"
+            println "File Aready Exists. ${fileTo}\n"
         }
     }
 
     @Command('clean')
-    @Document("""
-    Clean Build Directory        
-    """)
+    @Document('''
+    Clean Build Directory
+    
+        You need Builder Script file(builder.yml) 
+    
+    - Options
+        1. You can change your build directory on Builder Script  
+            [default value list]
+                installer.name=installer_myproject                        
+                build.dir=./build
+                build.temp.dir=${build.dir}/installer_temp
+                build.dist.dir=${build.dir}/installer_dist
+                build.installer.home=${build.dir}/${installer.name}
+                
+        2. You can specify script files path on your workspace.
+            [default value list]
+                properties.dir=./
+            [example]
+                installer-maker clean build -properties.dir=./installer-data/                     
+    ''')
     void clean(){
+        if (!propertiesFile)
+            throw Exception('Does not exists script file [ builder.yml ]')
+
         try{
             FileMan.delete(gOpt.buildInstallerHome)
+        }catch(e){
+        }
+
+        try{
             FileMan.delete(gOpt.buildDistDir)
+        }catch(e){
+        }
+
+        try{
             FileMan.delete(gOpt.buildTempDir)
         }catch(e){
         }
     }
 
     @Command('build')
-    @Document("""
-    Build Your Installer        
-    """)
+    @Document('''
+    Build Your Installer
+                                                     
+          You need 3 Script files(builder.yml, receptionist.yml, installer.yml)
+
+    - Options
+        1. You can change your build directory on Builder Script(builder.yml)  
+            [default value list]
+                installer.name=installer_myproject                        
+                build.dir=./build
+                build.temp.dir=${build.dir}/installer_temp
+                build.dist.dir=${build.dir}/installer_dist
+                build.installer.home=${build.dir}/${installer.name}
+                
+        2. You can specify script files path on your workspace.
+            [default value list]
+                properties.dir=./
+            [example]
+                installer-maker clean build -properties.dir=./installer-data/        
+    ''')
     void build(){
+        if (!propertiesFile)
+            throw Exception('Does not exists script file [ builder.yml ]')
+
         try{
             ReportSetup reportSetup = gOpt.reportSetup
             //1. Gen Starter and Response File
@@ -164,6 +217,9 @@ class Builder extends JobUtil{
     No User's Command        
     """)
     void runCommand(){
+        if (!propertiesFile)
+            throw Exception('Does not exists script file [ builder.yml ]')
+
         String binPath = provider.get('build.installer.bin.path') ?: FileMan.getFullPath(gOpt.buildInstallerHome, gOpt.installerHomeToBinRelPath)
         String argsExceptCommand = provider.get('args.except.command')
         String argsModeExec = '-mode.exec.self=true'

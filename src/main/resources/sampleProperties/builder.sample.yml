@@ -1,0 +1,44 @@
+##################################################
+##
+##    Builder
+##
+##################################################
+##################################################
+##### SETUP - CUSTOM PROPERTIES
+##################################################
+data.home: ~/.builder/data
+
+##################################################
+##### SETUP - DEFAULT (builder)
+##################################################
+
+##################################################
+##### SETUP - BUILD LEVEL (builder)
+##################################################
+builder:
+  step0:
+    task: Mkdir
+    to: ${build.installer.home}
+    structure: '{
+      "log":{},
+      "data":{
+        "war":{},
+        "tomcat":{},
+        "sql":{}
+      }
+    }'
+
+  step1:
+    task: Copy
+    from: ${data.home}/tomcat/*
+    to: ${build.installer.home}/data/tomcat
+
+  step2:
+    task: Copy
+    from: ./Myproject/build/libs/*.war
+    to: ${build.installer.home}/data/war/
+
+  step3:
+    task: Copy
+    from: ${data.home}/sql/*
+    to: ${build.installer.home}/data/sql

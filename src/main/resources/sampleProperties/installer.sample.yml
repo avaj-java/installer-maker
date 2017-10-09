@@ -1,0 +1,78 @@
+##################################################
+##
+##    Installer
+##
+##################################################
+##################################################
+##### SETUP - CUSTOM PROPERTIES
+##################################################
+var:
+  data.dir: ${installer.home}/data
+  java.opts: -Xms512m -Xmx1524m -XX:MaxPermSize=1024m
+  program.home: ~/test_install
+  java.home: $JAVA_HOME
+  was:
+    contextpath: test
+    home: ${program.home}/apache-tomcat-7.0.47
+    encoding: UTF-8
+    port:
+      ajp: 18084
+      connect: 18081
+      reconnect: 18083
+      shutdown: 18082
+  db:
+    password: TEST_INSTALL
+    user: TEST_INSTALL
+  dba:
+    password: system
+    user: system
+  tablespace:
+    data: ''
+    idx: ''
+    file:
+      data: ''
+      idx: ''
+
+##################################################
+##### SETUP - DEFAULT (installer)
+##################################################
+sql:
+  db: orcl
+  ip: localhost
+  password: ${db.password}
+  port: 1521
+  replace:
+    all: ''
+    datafile: ''
+    function: ''
+    index: ''
+    password: ${db.password}
+    sequence: ''
+    table: ''
+    tablespace: ''
+    user: ${db.user}
+    view: ''
+  user: ${db.user}
+  vendor: oracle
+
+
+##################################################
+##### SETUP - INSTALL LEVEL (installer)
+##################################################
+installer:
+  step1:
+    if: '{"r.sqllevel.answer":["3"]}'
+    task: Sql
+    file: ${data.dir}/sql/create_tablespace.sql
+    sql:
+      password: ${dba.password}
+      user: ${dba.user}
+
+  step2:
+    if: '{"r.sqllevel.answer":["2","3"]}'
+    task: Sql
+    file: ${data.dir}/sql/create_user.sql
+    sql:
+      password: ${dba.password}
+      user: ${dba.user}
+
