@@ -20,6 +20,9 @@ import java.lang.annotation.Annotation
  */
 @Alias('h')
 @Task
+@Document("""
+You can know How to use Command or Task on Terminal      
+""")
 class Help extends TaskUtil{
 
     @HelpIgnore
@@ -48,6 +51,10 @@ class Help extends TaskUtil{
             println '-------------------------'
             println ' [ Tasks ]'
             printHelpTask()
+            //- Print Help Task Document
+            List<Annotation> allClassAnnotationList = config.findAllAnnotationFromClass(Help)
+            Document documentAnt = allClassAnnotationList.find { it.annotationType() == Document }
+            printDocument(documentAnt)
 
         }else{
             //Specific Command (Detail)
@@ -113,8 +120,6 @@ class Help extends TaskUtil{
         //-Collect
         HelpIgnore helpIgnoreAnt = info.findAnnotation(HelpIgnore)
         Document documentAnt = info.findAnnotation(Document)
-        if (documentAnt)
-            documentString = documentAnt.value()
 
         //-Print
         if (!helpIgnoreAnt)
@@ -122,10 +127,7 @@ class Help extends TaskUtil{
 
         //-Detail
         if (isDetail){
-            if (documentString){
-                println ''
-                println multiTrim(documentString)
-            }
+            printDocument(documentAnt)
         }
 
     }
@@ -144,15 +146,13 @@ class Help extends TaskUtil{
             List<String> terminalValueRule = []
             List<String> propertyList = []
 
-            //-Collect TerminalValueRule
-            List<Annotation> allClassAnnotationList = config.findAllAnnotationFromClass(clazz, TerminalValueProtocol)
+            //-Collect
+            List<Annotation> allClassAnnotationList = config.findAllAnnotationFromClass(clazz)
             Task taskAnt = allClassAnnotationList.find { it.annotationType() == Task }
             TerminalValueProtocol terminalValueRuleAnt = allClassAnnotationList.find { it.annotationType() == TerminalValueProtocol }
             Document documentAnt = allClassAnnotationList.find { it.annotationType() == Document }
             if (taskAnt && terminalValueRuleAnt)
                 terminalValueRule = terminalValueRuleAnt.value().toList()
-            if (documentAnt)
-                documentString = documentAnt.value()
 
             //-Collect Value Names (Properties)
             propertyList = collectValueNames(clazz)
@@ -174,10 +174,7 @@ class Help extends TaskUtil{
                     println "${programName} -${taskName} ${propertyPrintItemList.join(' ')}"
                 }
 
-                if (documentString){
-                    println ''
-                    println multiTrim(documentString)
-                }
+                printDocument(documentAnt)
             }
         }
     }
@@ -226,8 +223,24 @@ class Help extends TaskUtil{
 
 
 
+    /*************************
+     *
+     * Print Document Annotation Information
+     *
+     *************************/
+    void printDocument(Document documentAnt){
+        if (documentAnt){
+            String documentString = documentAnt.value()
+            if (documentString){
+                println ''
+                println multiTrim(documentString)
+            }
+        }
+    }
+
     String multiTrim(String content){
-        Integer shortestIndentIndex = null
+        //- Remove Shortest Left Indent
+        Integer shortestIndentIndex = 0
         List<String> stringList = content.split('\n').toList()
         List<String> resultStringList = stringList.findAll{
             List charList = it.toList()
@@ -239,15 +252,25 @@ class Help extends TaskUtil{
                 }
             }
             if (indentIndex > 0){
-                if (!shortestIndentIndex || shortestIndentIndex > indentIndex){
+                if (shortestIndentIndex == 0 || shortestIndentIndex > indentIndex){
                     shortestIndentIndex =  indentIndex
                 }
-                return true
-            }else{
-                return false
             }
+            return true
         }
+        //- Remove Empty Top and Bottom
+        Integer startRowIndex
+        Integer endRowIndex
+        resultStringList.eachWithIndex{ String row, int index ->
+            String line = row.trim()
+            if (line && startRowIndex == null)
+                startRowIndex = index
+            if (line)
+                endRowIndex = index
+        }
+        resultStringList = resultStringList[startRowIndex..endRowIndex]
         String resultString = resultStringList.collect{ it.substring(shortestIndentIndex) }.join('\n')
         return resultString
     }
+
 }
