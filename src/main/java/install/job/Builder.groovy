@@ -70,35 +70,35 @@ class Builder extends JobUtil{
         FileSetup fileSetup = gOpt.fileSetup
         fileSetup.modeAutoOverWrite = false
         String propertiesDir = provider.getFilePath('properties.dir') ?: FileMan.getFullPath('./')
-        String filePath
-        String destPath
+        String fileFrom
+        String fileTo
 
         //DO
         println "<Init File>"
         println "- Dest Path: ${propertiesDir}"
 
         try{
-            filePath = "sampleProperties/builder.sample.properties"
-            destPath = "${propertiesDir}/builder.properties"
-            new FileMan().readResource(filePath).write(destPath, fileSetup)
+            fileFrom = "sampleProperties/builder.sample.yml"
+            fileTo = "${propertiesDir}/builder.yml"
+            new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
         }catch(e){
-            println "File Aready Exists. ${destPath}\n"
+            println "File Aready Exists. ${fileTo}\n"
         }
 
         try{
-            filePath = "sampleProperties/receptionist.sample.properties"
-            destPath = "${propertiesDir}/receptionist.properties"
-            new FileMan().readResource(filePath).write(destPath, fileSetup)
+            fileFrom = "sampleProperties/receptionist.sample.yml"
+            fileTo = "${propertiesDir}/receptionist.yml"
+            new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
         }catch(e){
-            println "File Aready Exists. ${destPath}\n"
+            println "File Aready Exists. ${fileTo}\n"
         }
 
         try{
-            filePath = "sampleProperties/installer.sample.properties"
-            destPath = "${propertiesDir}/installer.properties"
-            new FileMan().readResource(filePath).write(destPath, fileSetup)
+            fileFrom = "sampleProperties/installer.sample.yml"
+            fileTo = "${propertiesDir}/installer.yml"
+            new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
         }catch(e){
-            println "File Aready Exists. ${destPath}\n"
+            println "File Aready Exists. ${fileTo}\n"
         }
     }
 
