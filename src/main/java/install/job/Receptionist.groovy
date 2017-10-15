@@ -12,7 +12,6 @@ import install.util.JobUtil
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
-import jaemisseo.man.VariableMan
 import install.bean.FileSetup
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -106,12 +105,11 @@ class Receptionist extends JobUtil{
             throw Exception('Does not exists script file [ receptionist.yml ]')
 
         //0. Check Response File
-        if (checkResponseFile()){
-            PropMan responsePropMan = getResponsePropMan()
-            PropMan parsedResponsePropMan = parsePropMan(responsePropMan, new VariableMan(), executorNamePrefix)
-            propman.merge(parsedResponsePropMan)
+        if (checkResponseFile(gOpt.responseFilePath)){
+            PropMan responsePropMan = generatePropMan(gOpt.responseFilePath, executorNamePrefix)
+            propman.merge(responsePropMan)
             propman.set('answer.repeat.limit', 0)
-            logTaskDescription('add Response File Answer')
+            logTaskDescription('added response file answer')
         }
         //1. READ REMEMBERED ANSWER
         readRememberAnswer()
@@ -185,10 +183,8 @@ class Receptionist extends JobUtil{
         }
     }
 
-    boolean checkResponseFile(){
-        //1. Get Response File Path
-        String responseFilePath = gOpt.responseFilePath
-        //2. Try To Load Response File
+    boolean checkResponseFile(String responseFilePath){
+        //Try To Load Response File
         if (responseFilePath){
             if (new File(responseFilePath).exists()){
                 return true
@@ -200,10 +196,6 @@ class Receptionist extends JobUtil{
         return false
     }
 
-    PropMan getResponsePropMan(){
-        String responseFilePath = gOpt.responseFilePath
-        return new PropMan(responseFilePath)
-    }
 
 
 
@@ -236,7 +228,7 @@ class Receptionist extends JobUtil{
         FileSetup fileSetup = gOpt.rememberFileSetup
 
         if (modeRemember){
-            logTaskDescription('SAVE Your Answer')
+            logTaskDescription('save your answer')
             FileMan fileman = new FileMan(rememberFilePath).set(fileSetup)
             try{
                 if (fileman.exists())

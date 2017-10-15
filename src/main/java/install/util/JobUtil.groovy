@@ -84,49 +84,6 @@ class JobUtil extends TaskUtil{
         return varman
     }
 
-    PropMan parsePropMan(PropMan propmanToDI, VariableMan varman){
-        return parsePropMan(propmanToDI, varman, null)
-    }
-
-    PropMan parsePropMan(PropMan propmanToParse, VariableMan varman, String excludeStartsWith){
-        varman.putFuncs([
-                fullpath: { VariableMan.FuncObject it ->
-                    it.substitutes = (it.substitutes) ? FileMan.getFullPath(it.substitutes) : ""
-                }
-        ])
-        /** Parse ${Variable} Exclude Levels **/
-        // -BasicVariableOnly
-        Map map = propmanToParse.properties
-        if (excludeStartsWith){
-            map.each{ String key, def value ->
-                if (value && value instanceof String && !key.startsWith(excludeStartsWith))
-                    propmanToParse.set(key, varman.parseDefaultVariableOnly(value))
-            }
-        }else{
-            map.each{ String key, def value ->
-                if (value && value instanceof String)
-                    propmanToParse.set(key, varman.parseDefaultVariableOnly(value))
-            }
-        }
-        // -All
-        (1..5).each{
-            map = propmanToParse.properties
-            varman.putVariables(map)
-            if (excludeStartsWith){
-                map.each{ String key, def value ->
-                    if (value && value instanceof String && !key.startsWith(excludeStartsWith))
-                        propmanToParse.set(key, varman.parse(value))
-                }
-            }else{
-                map.each{ String key, def value ->
-                    if (value && value instanceof String)
-                        propmanToParse.set(key, varman.parse(value))
-                }
-            }
-        }
-        return propmanToParse
-    }
-
     PropMan setBeforeGetProp(PropMan propmanToSet, VariableMan varman){
         propmanToSet.setBeforeGetProp({ String propertyName, def value ->
             if (value && value instanceof String) {
@@ -243,9 +200,9 @@ class JobUtil extends TaskUtil{
 
 
 
-    /**
+    /*****
      * UNDO
-     */
+     *****/
     int undo(List<Class> taskClassList, List<String> prefixList, int i){
         i -= 1
         if (undoableList.contains(taskClassList[i])){
@@ -278,9 +235,9 @@ class JobUtil extends TaskUtil{
         return i
     }
 
-    /**
+    /*****
      * REDO
-     */
+     *****/
     int redo(List<Class> taskClassList, List<String> prefixList, int i){
         if (propman.isNotHeadLast()){
             propman.redo()
@@ -296,9 +253,9 @@ class JobUtil extends TaskUtil{
         return i
     }
 
-    /**
+    /*****
      * COMMIT
-     */
+     *****/
     void commit(){
         propman.commit()
     }

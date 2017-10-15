@@ -17,7 +17,6 @@ class Set extends TaskUtil{
     Integer run(){
         //Set Some Property
         setPropValue()
-
         return STATUS_TASK_DONE
     }
 

@@ -142,11 +142,71 @@ class TaskUtil{
         }
 
         //- Set Some Properties from Properties File
-        def propertiesFIlePath = provider.getString("properties.file.path")
-        if (propertiesFIlePath){
-            String fullPath = FileMan.getFullPath(propertiesFIlePath)
-            provider.propman.mergeFile(fullPath)
+        def propertiesFilePath = provider.getString("properties.file.path")
+        if (propertiesFilePath){
+//            String fullPath = FileMan.getFullPath(propertiesFilePath)
+//            provider.propman.mergeFile(fullPath)
+            PropMan runtimeLoadedPropMan = generatePropMan(propertiesFilePath, ['builder', 'receptionist', 'installer'])
+            provider.propman.merge(runtimeLoadedPropMan)
         }
     }
+
+    PropMan generatePropMan(String responseFilePath, String excludeStartsWith){
+        return generatePropMan(responseFilePath, [excludeStartsWith])
+    }
+
+    PropMan generatePropMan(String responseFilePath, List<String> excludeStartsWithList){
+        PropMan responsePropMan = new PropMan(responseFilePath)
+        PropMan parsedResponsePropMan = parsePropMan(responsePropMan, new VariableMan(), excludeStartsWithList)
+        return parsedResponsePropMan
+    }
+
+    PropMan parsePropMan(PropMan propmanToDI, VariableMan varman){
+        return parsePropMan(propmanToDI, varman, [])
+    }
+
+    PropMan parsePropMan(PropMan propmanToParse, VariableMan varman, String excludeStartsWith){
+        return parsePropMan(propmanToParse, varman, [excludeStartsWith])
+    }
+
+    PropMan parsePropMan(PropMan propmanToParse, VariableMan varman, List<String> excludeStartsWithList){
+        varman.putFuncs([
+                fullpath: { VariableMan.FuncObject it ->
+                    it.substitutes = (it.substitutes) ? FileMan.getFullPath(it.substitutes) : ""
+                }
+        ])
+        /** Parse ${Variable} Exclude Levels **/
+        // -BasicVariableOnly
+        Map map = propmanToParse.properties
+        if (excludeStartsWithList){
+            map.each{ String key, def value ->
+                if ( value && value instanceof String && !excludeStartsWithList.findAll{ key.startsWith(it) } )
+                    propmanToParse.set(key, varman.parseDefaultVariableOnly(value))
+            }
+        }else{
+            map.each{ String key, def value ->
+                if (value && value instanceof String)
+                    propmanToParse.set(key, varman.parseDefaultVariableOnly(value))
+            }
+        }
+        // -All
+        (1..5).each{
+            map = propmanToParse.properties
+            varman.putVariables(map)
+            if (excludeStartsWithList){
+                map.each{ String key, def value ->
+                    if ( value && value instanceof String && !excludeStartsWithList.findAll{ key.startsWith(it) } )
+                        propmanToParse.set(key, varman.parse(value))
+                }
+            }else{
+                map.each{ String key, def value ->
+                    if (value && value instanceof String)
+                        propmanToParse.set(key, varman.parse(value))
+                }
+            }
+        }
+        return propmanToParse
+    }
+
 
 }

@@ -65,7 +65,7 @@ class QuestionFindFile extends TaskUtil{
         //Get Answer
         String yourAnswer
         try{
-            yourAnswer = qman.question(opt){ String answer, QuestionSetup option ->
+            yourAnswer = qman.question(opt){ String answer, jaemisseo.man.bean.QuestionSetup option ->
                 if (answer.isNumber()){
                     int answerNum = Integer.parseInt(answer)
                     return (itemList.size() >= answerNum && answerNum >= 1)
