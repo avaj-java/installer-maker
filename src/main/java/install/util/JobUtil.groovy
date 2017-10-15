@@ -367,7 +367,7 @@ class JobUtil extends TaskUtil{
 
         try{
             //Description
-            if ( !jobName.equalsIgnoreCase('macgyver') )
+            if ( !jobName.equalsIgnoreCase('macgyver') && !jobName.equalsIgnoreCase('receptionist'))
                 descript(jobName, taskClazz.getSimpleName(), propertyPrefix)
 
             //Start Task
