@@ -5,11 +5,15 @@ import install.configuration.Config
 import install.configuration.annotation.Inject
 import install.data.PropertyProvider
 import jaemisseo.man.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Created by sujkim on 2017-03-11.
  */
 class TaskUtil{
+
+    final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public static final Integer STATUS_NOTHING = 0
     public static final Integer STATUS_TASK_DONE = 1
@@ -41,7 +45,7 @@ class TaskUtil{
      *************************/
     Integer run(){
         //TODO: Override And Implement
-        println "It is Empty Task. Implement This method."
+        logger.error "It is Empty Task. Implement This method."
     }
 
 
@@ -74,15 +78,23 @@ class TaskUtil{
      * Print Title
      *************************/
     protected void logBigTitle(String title){
-        println "\n\n-------------------------"
-        println "----- ${title}"
-        println "-------------------------"
+        logger.info ""
+        logger.info "-------------------------"
+        logger.info "----- ${title}"
+        logger.info "-------------------------"
     }
 
     protected void logMiddleTitle(String title){
-        println '\n=================================================='
-        println " - ${title} -"
-        println '=================================================='
+        logger.info ""
+        logger.info '=================================================='
+        logger.info " - ${title} -"
+        logger.info '=================================================='
+    }
+
+    protected void logTaskDescription(String title){
+        logger.debug '=================================================='
+        logger.info ":${title}"
+        logger.debug '=================================================='
     }
 
 

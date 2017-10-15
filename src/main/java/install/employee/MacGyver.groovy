@@ -1,5 +1,7 @@
 package install.employee
 
+import install.bean.GlobalOptionForBuilder
+import install.bean.GlobalOptionForMacgyver
 import install.bean.ReportSetup
 import install.configuration.annotation.Alias
 import install.configuration.annotation.HelpIgnore
@@ -32,8 +34,11 @@ class MacGyver extends EmployeeUtil {
     @Init
     void init(){
         validTaskList = Util.findAllClasses('install', [Task])
+        
         this.propman = setupPropMan(provider)
         this.varman = setupVariableMan(propman, executorNamePrefix)
+        provider.shift(jobName)
+        this.gOpt = config.injectValue(new GlobalOptionForMacgyver())
     }
 
     PropMan setupPropMan(PropertyProvider provider){
@@ -67,6 +72,9 @@ class MacGyver extends EmployeeUtil {
     No User's Command       
     """)
     Integer doSomething(){
+        //Setup Log
+        setuptLog(gOpt.logSetup)
+        
         boolean modeHelp = propman.getBoolean('help')
 
         /** Help - Command **/
@@ -132,6 +140,8 @@ class MacGyver extends EmployeeUtil {
     You can use 'macgyver' to use a task on Terminal       
     """)
     void macgyver(){
+        //Setup Log
+        setuptLog(gOpt.logSetup)
 
         ReportSetup reportSetup = config.injectValue(new ReportSetup())
 
@@ -170,7 +180,7 @@ class MacGyver extends EmployeeUtil {
       installer-maker test -response.file.path=<File>  
     """)
     void test(){
-        config.command('clean')
+        config.command( 'clean')
         config.command('build')
         config.command('run')
     }

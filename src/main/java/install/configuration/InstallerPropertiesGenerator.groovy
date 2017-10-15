@@ -17,6 +17,8 @@ import install.task.Zip
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.util.PropertiesGenerator
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import java.security.CodeSource
 
@@ -25,6 +27,8 @@ import java.security.CodeSource
  */
 @Bean
 class InstallerPropertiesGenerator extends PropertiesGenerator{
+
+    final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     Map<String, PropMan> dataMap = [:]
 

@@ -27,9 +27,7 @@ class Mkdir extends TaskUtil{
 
     @Override
     Integer run(){
-        println "<MKDIR>"
         FileMan.mkdirs(destPath, buildStructureMap)
-
         return STATUS_TASK_DONE
     }
 

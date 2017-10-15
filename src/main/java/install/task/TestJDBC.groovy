@@ -64,12 +64,11 @@ class TestJDBC extends TaskUtil{
         previewMap.query = query ?: "select 'Try To Check Your Query' as TEST from dual"
 
         //START
-        logMiddleTitle 'START TESTJDBC'
-        println '<REQUEST> - CHECK'
+        logger.debug '<REQUEST> - CHECK'
         logInfo(previewMap)
 
         //RUN
-        println "<JDBC>"
+        logger.debug "<JDBC>"
         try{
             printStep '1. Connect to DB'
             sql = new Sql(connGen.generate())
@@ -95,8 +94,8 @@ class TestJDBC extends TaskUtil{
         }
 
         //RETURN DATA
-        println "<RETURNED DATA(Count:${list.size()})> - CHECK"
-        list.each{ println it }
+        logger.debug "<RETURNED DATA(Count:${list.size()})> - CHECK"
+        list.each{ logger.debug it }
 
         //FINISH
         logMiddleTitle 'FINISHED TESTJDBC'
@@ -110,23 +109,23 @@ class TestJDBC extends TaskUtil{
     }
 
     void printError(String errorMessage){
-        println "!! ${errorMessage} !!\n"
+        logger.error "!! ${errorMessage} !!\n"
     }
 
     void printOk(){
-        println 'OK\n'
+        logger.debug 'OK\n'
     }
 
     void printFailed(){
-        println '!!! FAILED\n'
+        logger.error '!!! FAILED\n'
     }
 
     void logInfo(Map previewMap){
-        println " - DRIVER  : ${previewMap.driver}"
-        println " - URL     : ${previewMap.url}"
-        println " - USER    : ${previewMap.user}"
-        println " - PASSWORD: ${previewMap.password}"
-        println " - QUERY   : ${previewMap.query} \n"
+        logger.debug " - DRIVER  : ${previewMap.driver}"
+        logger.debug " - URL     : ${previewMap.url}"
+        logger.debug " - USER    : ${previewMap.user}"
+        logger.debug " - PASSWORD: ${previewMap.password}"
+        logger.debug " - QUERY   : ${previewMap.query} \n"
     }
 
 }

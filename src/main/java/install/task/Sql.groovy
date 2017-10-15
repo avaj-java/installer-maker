@@ -1,5 +1,6 @@
 package install.task
 
+import ch.qos.logback.classic.Level
 import install.configuration.annotation.type.Document
 import install.configuration.annotation.type.Task
 import install.configuration.annotation.Value
@@ -41,9 +42,11 @@ class Sql extends TaskUtil{
         //1. Default Setup
         sqlman = new SqlMan()
 
-        //2. Execute All SQL
-        println "<SQL>"
+        // -Mode No Progress Bar
+        if ([Level.INFO, Level.WARN, Level.ERROR].contains(config.logGen.getConsoleLogLevel()))
+            sqlSetup.modeSqlProgressBar = false
 
+        //2. Execute All SQL
         filePathList.each{ String filePath ->
 
             String originFileName = new File(filePath).getName()

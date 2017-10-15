@@ -45,31 +45,29 @@ class MergeProperties extends TaskUtil{
 
         //Log
         if (differentValuePropMap)
-            differentValuePropMap.each{ println it }
-        println "<GET-VALUE-FROM (${propmanSource.filePath})> - CHECK"
-        println " - All Properties Size         : ${propmanSource.size()}"
-        println " - Matching Properties Size    : ${matchingPropMap.size()} <<"
-        println " - NotMatching Properties Size : ${notMatchingPropMap.size()}"
-        println ""
+            differentValuePropMap.each{ logger.debug it }
+        logger.debug "<GET-VALUE-FROM (${propmanSource.filePath})> - CHECK"
+        logger.debug " - All Properties Size         : ${propmanSource.size()}"
+        logger.debug " - Matching Properties Size    : ${matchingPropMap.size()} <<"
+        logger.debug " - NotMatching Properties Size : ${notMatchingPropMap.size()}"
+        logger.debug ""
 
-        println "<MERGE-INTO (${propmanSpecific.filePath})> - CHECK"
-        println " - All Properties Size         : ${propmanSpecific.size()}"
-        println " - Matching Properties Size    : ${matchingPropMap.size()} <<"
-        println " - NotMatching Properties Size : ${notMatchingPropMap2.size()}"
-        println ""
+        logger.debug "<MERGE-INTO (${propmanSpecific.filePath})> - CHECK"
+        logger.debug " - All Properties Size         : ${propmanSpecific.size()}"
+        logger.debug " - Matching Properties Size    : ${matchingPropMap.size()} <<"
+        logger.debug " - NotMatching Properties Size : ${notMatchingPropMap2.size()}"
+        logger.debug ""
 
-        println "<MERGE> - CHECK"
-        println " - Matching Properties Size                     : ${matchingPropMap.size()}"
-        println " - Matching Properties And Different Value Size : ${differentValuePropMap.size()}"
-        println ""
+        logger.debug "<MERGE> - CHECK"
+        logger.debug " - Matching Properties Size                     : ${matchingPropMap.size()}"
+        logger.debug " - Matching Properties And Different Value Size : ${differentValuePropMap.size()}"
+        logger.debug ""
 
         //Merge DifferentValue into SourceProperties
         if (differentValuePropMap)
             fileman.backup().replaceProperty(differentValuePropMap).write()
         else
-            println "=> NOTHING TO MERGE\n"
-
-        logMiddleTitle('FINISHED MERGE PROPERTIES')
+            logger.error "=> NOTHING TO MERGE\n"
 
         return STATUS_TASK_DONE
     }

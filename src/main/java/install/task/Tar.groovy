@@ -27,9 +27,7 @@ class Tar extends TaskUtil{
 
     @Override
     Integer run(){
-        println "<TAR>"
         FileMan.tar(filePath, destPath, fileSetup)
-
         return STATUS_TASK_DONE
     }
 

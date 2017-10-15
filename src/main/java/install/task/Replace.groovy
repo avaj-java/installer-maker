@@ -38,11 +38,10 @@ class Replace extends TaskUtil{
     @Override
     Integer run(){
 
-        println replaceMap
-        println replaceLineMap
-        println replacePropertyMap
+        logger.debug replaceMap ? replaceMap.toMapString() : ''
+        logger.debug replaceLineMap ? replaceLineMap.toMapString() : ''
+        logger.debug replacePropertyMap ? replacePropertyMap.toMapString() : ''
 
-        println "<REPLACE>"
         filePathList.each{ String filePath ->
             new FileMan(filePath)
                         .set( fileSetup )

@@ -1,5 +1,6 @@
 package install.util
 
+import install.bean.LogSetup
 import install.bean.ReportSetup
 import install.configuration.Config
 import install.configuration.annotation.Inject
@@ -10,11 +11,15 @@ import install.task.*
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.VariableMan
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Created by sujkim on 2017-04-07.
  */
 class JobUtil extends TaskUtil{
+
+    final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     String jobName = this.getClass().simpleName.toLowerCase()
     String levelNamesProperty = "${jobName}.level"
@@ -262,13 +267,13 @@ class JobUtil extends TaskUtil{
                         propman.redo()
                     }
                 }
-                println "It Can not undo"
+                logger.error "It Can not undo"
             }
         }else{
             if (i == -1)
-                println "No more undo"
+                logger.error "No more undo"
             else
-                println "It Can not undo"
+                logger.error "It Can not undo"
         }
         return i
     }
@@ -286,7 +291,7 @@ class JobUtil extends TaskUtil{
         }else{
             i -= 1
             propman.rollback()
-            println "It Can not redo more"
+            logger.error "It Can not redo more"
         }
         return i
     }
@@ -355,16 +360,15 @@ class JobUtil extends TaskUtil{
         TaskUtil taskInstance = config.findInstance(taskClazz)
         // - Inject Value
         provider.shift( jobName, propertyPrefix )
+        config.cleanValue(taskInstance)
         config.injectValue(taskInstance)
-//        taskInstance.provider = provider
-//        taskInstance.propertyPrefix = propertyPrefix
         taskInstance.rememberAnswerLineList = rememberAnswerLineList
         taskInstance.reportMapList = reportMapList
 
         try{
-
             //Description
-            descript(propertyPrefix)
+            if ( !jobName.equalsIgnoreCase('macgyver') )
+                descript(jobName, taskClazz.getSimpleName(), propertyPrefix)
 
             //Start Task
             status = taskInstance.run()
@@ -383,11 +387,13 @@ class JobUtil extends TaskUtil{
         return provider.checkCondition(propertyPrefix)
     }
 
-    protected void descript(String propertyPrefix){
+    protected void descript(String jobName, String taskType, String propertyPrefix){
         String descriptionString = provider.get("desc")
-        descriptionString = descriptionString ?: propertyPrefix
+        List<String> propertyStrctureList = propertyPrefix ? propertyPrefix.split('[.]').toList() : []
+        String taskName = (propertyStrctureList.size() >= 2) ? propertyStrctureList[1] : ''
+        descriptionString = descriptionString ? "$jobName:$descriptionString" : "$jobName:$taskName:$taskType"
         if (descriptionString)
-            logBigTitle(descriptionString)
+            logTaskDescription(descriptionString)
     }
 
     /*************************
@@ -407,6 +413,18 @@ class JobUtil extends TaskUtil{
                 taskInstance.reportWithExcel(reportSetup, reportMapList)
         }
     }
+
+
+
+    /*************************
+     * Setup Log
+     *************************/
+    protected void setuptLog(LogSetup logOpt){
+        config.logGen.setupConsoleLogger(logOpt.logLevelConsole)
+        config.logGen.setupFileLogger(jobName, logOpt.logLevelFile, logOpt.logDir, logOpt.logFileName)
+    }
+
+
 
 
 
