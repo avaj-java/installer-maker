@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+	<!--<property name="LOG_DIR" value="build/logs"/>-->
+	<!--<property name="LOG_FILE" value="builder"/>-->
+	<!--<property name="LOG_PATH" value="${LOG_DIR}/${LOG_FILE}"/>-->
+
+	<!-- It can be changed Programmatically -->
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<!-- deny all events with a level below INFO, that is TRACE and DEBUG -->
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>INFO</level>
+		</filter>
+
+		<encoder>
+			<charset>UTF-8</charset>
+			<pattern>%msg %n</pattern>
+		</encoder>
+	</appender>
+
+	<!-- It can be changed Programmatically -->
+	<!--<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
+		<!--&lt;!&ndash; deny all events with a level below INFO, that is TRACE and DEBUG &ndash;&gt;-->
+		<!--<filter class="ch.qos.logback.classic.filter.ThresholdFilter">-->
+			<!--<level>INFO</level>-->
+		<!--</filter>-->
+
+		<!--<file>${LOG_PATH}.log</file>-->
+		<!--<append>true</append>-->
+		<!--<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">-->
+			<!--&lt;!&ndash; daily rollover &ndash;&gt;-->
+			<!--<fileNamePattern>${LOG_PATH}.%d{yyyyMMdd_HHmm}.%i.log</fileNamePattern>-->
+			<!--<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">-->
+				<!--&lt;!&ndash; or whenever the file size reaches 50MB &ndash;&gt;-->
+				<!--<maxFileSize>50MB</maxFileSize>-->
+			<!--</timeBasedFileNamingAndTriggeringPolicy>-->
+			<!--&lt;!&ndash; keep 30 days' worth of history &ndash;&gt;-->
+			<!--<maxHistory>30</maxHistory>-->
+		<!--</rollingPolicy>-->
+
+		<!--<encoder>-->
+			<!--<charset>UTF-8</charset>-->
+			<!--<pattern>[%d] [%-5level] %logger[%method:%line] - %msg %n</pattern>-->
+		<!--</encoder>-->
+	<!--</appender>-->
+
+
+	<root level="DEBUG">
+		<appender-ref ref="CONSOLE" />
+	</root>
+
+	<logger name="install" level="DEBUG">
+	</logger>
+
+	<logger name="jaemisseo.man" level="DEBUG">
+	</logger>
+
+</configuration>
