@@ -43,7 +43,7 @@ class Sql extends TaskUtil{
         sqlman = new SqlMan()
 
         // -Mode No Progress Bar
-        if ([Level.INFO, Level.WARN, Level.ERROR].contains(config.logGen.getConsoleLogLevel()))
+        if ([Level.INFO, Level.WARN, Level.ERROR, Level.OFF].contains(config.logGen.getConsoleLogLevel()))
             sqlSetup.modeSqlProgressBar = false
 
         //2. Execute All SQL
