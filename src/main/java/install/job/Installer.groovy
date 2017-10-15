@@ -86,6 +86,8 @@ class Installer extends JobUtil{
 
         logBigTitle "Installer"
 
+        logTaskDescription('install')
+
         if (!propertiesFile)
             throw Exception('Does not exists script file [ installer.yml ]')
 

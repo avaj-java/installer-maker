@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory
 class Builder extends JobUtil{
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
+    int buildCallCount = 0
 
     Builder(){
         propertiesFileName = 'builder'
@@ -133,6 +134,14 @@ class Builder extends JobUtil{
                 installer-maker clean build -properties.dir=./installer-data/                     
     ''')
     void clean(){
+        //Setup Log
+        setuptLog(gOpt.logSetup)
+
+        if (!buildCallCount++)
+            logBigTitle "Builder"
+
+        logTaskDescription('clean')
+
         if (!propertiesFile)
             throw Exception('Does not exists script file [ builder.yml ]')
 
@@ -177,7 +186,10 @@ class Builder extends JobUtil{
         //Setup Log
         setuptLog(gOpt.logSetup)
 
-        logBigTitle "Builder"
+        if (!buildCallCount++)
+            logBigTitle "Builder"
+
+        logTaskDescription('build')
 
         if (!propertiesFile)
             throw Exception('Does not exists script file [ builder.yml ]')
@@ -228,11 +240,11 @@ class Builder extends JobUtil{
     No User's Command        
     """)
     void runCommand(){
+        logTaskDescription('RUN')
+
         if (!propertiesFile)
             throw Exception('Does not exists script file [ builder.yml ]')
 
-        //Log
-        logTaskDescription('RUN')
 
         String binPath = provider.get('build.installer.bin.path') ?: FileMan.getFullPath(gOpt.buildInstallerHome, gOpt.installerHomeToBinRelPath)
         String argsExceptCommand = provider.get('args.except.command')

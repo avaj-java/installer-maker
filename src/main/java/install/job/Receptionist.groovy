@@ -100,6 +100,8 @@ class Receptionist extends JobUtil{
 
         logBigTitle "Receptionist"
 
+        logTaskDescription('ask')
+
         if (!propertiesFile)
             throw Exception('Does not exists script file [ receptionist.yml ]')
 
