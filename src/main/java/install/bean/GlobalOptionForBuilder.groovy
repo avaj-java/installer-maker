@@ -40,5 +40,7 @@ class GlobalOptionForBuilder extends Option{
     FileSetup fileSetup
     @Value
     ReportSetup reportSetup
+    @Value
+    LogSetup logSetup
 
 }

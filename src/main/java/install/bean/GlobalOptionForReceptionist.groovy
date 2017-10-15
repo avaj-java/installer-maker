@@ -18,9 +18,12 @@ class GlobalOptionForReceptionist extends Option{
     @Value('mode.remember.answer')
     Boolean modeRemember
 
+
     @Value(prefix='remember.answer.')
     FileSetup rememberFileSetup
     @Value
     FileSetup fileSetup
+    @Value
+    LogSetup logSetup
 
 }
