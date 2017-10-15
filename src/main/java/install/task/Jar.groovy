@@ -27,9 +27,7 @@ class Jar extends TaskUtil{
 
     @Override
     Integer run(){
-        println "<JAR>"
         FileMan.jar(filePath, destPath, fileSetup)
-
         return STATUS_TASK_DONE
     }
 

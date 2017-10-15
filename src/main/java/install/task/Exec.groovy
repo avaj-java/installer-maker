@@ -39,8 +39,6 @@ class Exec extends TaskUtil{
 
     @Override
     Integer run(){
-        println "<Exec>"
-
         try{
             //Get Command
             String userCommand = (commandForAll) ? commandForAll : (isWindows) ? commandForWin : commandForLin
@@ -62,7 +60,7 @@ class Exec extends TaskUtil{
     void commandWIthStyleA(String userCommand){
         //Data
         String command = (isWindows) ? "cmd.exe /c ${userCommand}" : "sh -c ${userCommand}"
-        println "Command> ${command}"
+        logger.debug "Command> ${command}"
 
         //Execute Command
         Process process = Runtime.getRuntime().exec("${command} ${userDir}")
@@ -73,7 +71,7 @@ class Exec extends TaskUtil{
         //Data
         String command = (isWindows) ? "cmd.exe /c ${userCommand}" : "sh -c ${userCommand}"
         String[] commandArray = command.split(/\s+/)
-        println command
+        logger.debug "Command> ${command}"
 
         //Execute Command
         ProcessBuilder builder = new ProcessBuilder().command(commandArray).directory( new File(userDir) )

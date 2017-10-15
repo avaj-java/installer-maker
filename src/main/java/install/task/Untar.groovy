@@ -27,9 +27,7 @@ class Untar extends TaskUtil{
 
     @Override
     Integer run(){
-        println "<UNTAR>"
         FileMan.untar(filePath, destPath, fileSetup)
-
         return STATUS_TASK_DONE
     }
 

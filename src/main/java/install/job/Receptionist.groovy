@@ -14,12 +14,16 @@ import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.VariableMan
 import install.bean.FileSetup
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Created by sujkim on 2017-02-17.
  */
 @Job
 class Receptionist extends JobUtil{
+
+    final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     Receptionist() {
         propertiesFileName = 'receptionist'
@@ -91,6 +95,11 @@ class Receptionist extends JobUtil{
     No User's Command 
     ''')
     void ask(){
+        //Setup Log
+        setuptLog(gOpt.logSetup)
+
+        logBigTitle "Receptionist"
+
         if (!propertiesFile)
             throw Exception('Does not exists script file [ receptionist.yml ]')
 
@@ -100,7 +109,7 @@ class Receptionist extends JobUtil{
             PropMan parsedResponsePropMan = parsePropMan(responsePropMan, new VariableMan(), executorNamePrefix)
             propman.merge(parsedResponsePropMan)
             propman.set('answer.repeat.limit', 0)
-            logBigTitle('Add Response File Answer')
+            logTaskDescription('add Response File Answer')
         }
         //1. READ REMEMBERED ANSWER
         readRememberAnswer()
@@ -126,7 +135,7 @@ class Receptionist extends JobUtil{
 
         List<String> allLineList = []
 
-        logBigTitle('AUTO CREATE RESPONSE FILE')
+        logTaskDescription('auto create response file')
 
         //Each level by level
         eachLevel{ String propertyPrefix ->
@@ -182,7 +191,7 @@ class Receptionist extends JobUtil{
             if (new File(responseFilePath).exists()){
                 return true
             }else{
-                println " < Failed > Load Response File, Does not exists file - ${responseFilePath}"
+                logger.error " < Failed > Load Response File, Does not exists file - ${responseFilePath}"
                 System.exit(0)
             }
         }
@@ -204,12 +213,12 @@ class Receptionist extends JobUtil{
         String rememberFilePath = gOpt.rememberFilePath
 
         if (modeRemember){
-            logBigTitle('LOAD Remembered Your Answer ')
+            logTaskDescription('load remembered your answer')
             try{
                 PropMan rememberAnswerPropman = new PropMan().readFile(rememberFilePath).properties
                 propman.merge(rememberAnswerPropman)
             }catch(Exception e){
-                println "No Remember File"
+                logger.error "No Remember File!!!"
             }
         }
     }
@@ -225,7 +234,7 @@ class Receptionist extends JobUtil{
         FileSetup fileSetup = gOpt.rememberFileSetup
 
         if (modeRemember){
-            logBigTitle('SAVE Your Answer')
+            logTaskDescription('SAVE Your Answer')
             FileMan fileman = new FileMan(rememberFilePath).set(fileSetup)
             try{
                 if (fileman.exists())

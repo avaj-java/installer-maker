@@ -27,9 +27,7 @@ class Unzip extends TaskUtil{
 
     @Override
     Integer run(){
-        println "<UNZIP>"
         FileMan.unzip(filePath, destPath, fileSetup)
-
         return STATUS_TASK_DONE
     }
 

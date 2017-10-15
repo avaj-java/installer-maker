@@ -35,10 +35,9 @@ class Encrypt extends TaskUtil{
     Integer run(){
         method = method ?: "SEED"
 
-        logMiddleTitle '<ENCRYPT>'
-        println "METHOD : ${method}"
-        println "VALUE  : ${value}"
-        println ""
+        logger.debug "METHOD : ${method}"
+        logger.debug "VALUE  : ${value}"
+        logger.debug ""
 
         //Encrypt
         String encryptedText
@@ -55,10 +54,8 @@ class Encrypt extends TaskUtil{
         }
 
         //LOG
-        println "<RESULT>"
-        println encryptedText
-
-        logMiddleTitle 'FINISHED ENCRYPT'
+        logger.debug "<RESULT>"
+        logger.debug encryptedText
 
         return STATUS_TASK_DONE
     }

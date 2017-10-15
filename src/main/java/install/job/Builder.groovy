@@ -15,12 +15,16 @@ import jaemisseo.man.PropMan
 import jaemisseo.man.ReportMan
 import install.bean.FileSetup
 import jaemisseo.man.util.Util
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Created by sujkim on 2017-02-17.
  */
 @Job
 class Builder extends JobUtil{
+
+    final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     Builder(){
         propertiesFileName = 'builder'
@@ -79,15 +83,15 @@ class Builder extends JobUtil{
         String fileTo
 
         //DO
-        println "<Init File>"
-        println "- Dest Path: ${propertiesDir}"
+        logger.info "<Init File>"
+        logger.info "- Dest Path: ${propertiesDir}"
 
         try{
             fileFrom = "sampleProperties/builder.sample.yml"
             fileTo = "${propertiesDir}/builder.yml"
             new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
         }catch(e){
-            println "File Aready Exists. ${fileTo}\n"
+            logger.error "File Aready Exists. ${fileTo}\n"
         }
 
         try{
@@ -95,7 +99,7 @@ class Builder extends JobUtil{
             fileTo = "${propertiesDir}/receptionist.yml"
             new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
         }catch(e){
-            println "File Aready Exists. ${fileTo}\n"
+            logger.error "File Aready Exists. ${fileTo}\n"
         }
 
         try{
@@ -103,7 +107,7 @@ class Builder extends JobUtil{
             fileTo = "${propertiesDir}/installer.yml"
             new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
         }catch(e){
-            println "File Aready Exists. ${fileTo}\n"
+            logger.error "File Aready Exists. ${fileTo}\n"
         }
     }
 
@@ -170,13 +174,20 @@ class Builder extends JobUtil{
                 installer-maker clean build -properties.dir=./installer-data/        
     ''')
     void build(){
+        //Setup Log
+        setuptLog(gOpt.logSetup)
+
+        logBigTitle "Builder"
+
         if (!propertiesFile)
             throw Exception('Does not exists script file [ builder.yml ]')
 
         try{
             ReportSetup reportSetup = gOpt.reportSetup
+
             //1. Gen Starter and Response File
-            String binPath = genLibAndBin()
+            String binPath = genLibAndBin(gOpt)
+
             //- set bin path on builded installer
             provider.setRaw('build.installer.bin.path', binPath)
 
@@ -199,11 +210,11 @@ class Builder extends JobUtil{
 
             // - 2) Zip
             if (propman.getBoolean('mode.auto.zip'))
-                zip()
+                zip(gOpt)
 
             // - 3) Tar
             if (propman.getBoolean('mode.auto.tar'))
-                tar()
+                tar(gOpt)
 
         }catch(e){
             e.printStackTrace()
@@ -219,6 +230,9 @@ class Builder extends JobUtil{
     void runCommand(){
         if (!propertiesFile)
             throw Exception('Does not exists script file [ builder.yml ]')
+
+        //Log
+        logTaskDescription('RUN')
 
         String binPath = provider.get('build.installer.bin.path') ?: FileMan.getFullPath(gOpt.buildInstallerHome, gOpt.installerHomeToBinRelPath)
         String argsExceptCommand = provider.get('args.except.command')
@@ -275,7 +289,7 @@ class Builder extends JobUtil{
      *  2. Generate Lib
      *  3. Generate Bin
      *************************/
-    private String genLibAndBin(){
+    private String genLibAndBin(GlobalOptionForBuilder gOpt){
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
         FileSetup fileSetupForLin = fileSetup.clone([lineBreak:'\n'])
@@ -307,7 +321,7 @@ class Builder extends JobUtil{
         String binInstallerShDestPath = "${binDestPath}/installer"
         String binInstallerBatDestPath = "${binDestPath}/installer.bat"
 
-        println """<Builder> Copy And Generate Installer Library
+        logger.debug """<Builder> Copy And Generate Installer Library
          - Installer Home: ${buildInstallerHome}"
          - Copy Installer Lib: 
             FROM : ${libSourcePath}
@@ -337,7 +351,7 @@ class Builder extends JobUtil{
         FileMan.write("${tempNowDir}/.libtohome", libToHomeRelPath, opt)
         FileMan.jar("${tempNowDir}/*", "${libDestPath}/${thisFileName}", opt)
 
-        println """<Builder> Generate Bin, install:
+        logger.debug """<Builder> Generate Bin, install:
             SH  : ${binInstallShDestPath}
             BAT : ${binInstallBatDestPath}
         """
@@ -362,7 +376,7 @@ class Builder extends JobUtil{
         ])
         .write(binInstallBatDestPath)
 
-        println """<Builder> Generate Bin, installer:
+        logger.debug """<Builder> Generate Bin, installer:
             SH  : ${binInstallerShDestPath}
             BAT : ${binInstallerBatDestPath}
         """
@@ -394,7 +408,7 @@ class Builder extends JobUtil{
      * From: ${build.installer.home}
      *   To: ${build.dist.dir}
      *************************/
-    void zip(){
+    void zip(GlobalOptionForBuilder gOpt){
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
         String installerName = gOpt.installerName
@@ -403,7 +417,7 @@ class Builder extends JobUtil{
         String buildInstallerHome = gOpt.buildInstallerHome
 
         //Log
-        logBigTitle('AUTO ZIP')
+        logTaskDescription('auto zip')
 
         //Zip
         FileMan.zip(buildInstallerHome, "${buildDistDir}/${installerName}.zip", fileSetup)
@@ -414,7 +428,7 @@ class Builder extends JobUtil{
      * From: ${build.installer.home}
      *   To: ${build.dist.dir}
      *************************/
-    void tar(){
+    void tar(GlobalOptionForBuilder gOpt){
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
         String installerName = gOpt.installerName
@@ -423,7 +437,7 @@ class Builder extends JobUtil{
         String buildInstallerHome = gOpt.buildInstallerHome
 
         //Log
-        logBigTitle('AUTO TAR')
+        logTaskDescription('auto tar')
 
         //Zip
         FileMan.tar(buildInstallerHome, "${buildDistDir}/${installerName}.tar", fileSetup)

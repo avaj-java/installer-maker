@@ -27,9 +27,7 @@ class Unjar extends TaskUtil{
 
     @Override
     Integer run(){
-        println "<UNJAR>"
         FileMan.unjar(filePath, destPath, fileSetup)
-
         return STATUS_TASK_DONE
     }
 

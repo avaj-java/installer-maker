@@ -6,6 +6,8 @@ import install.configuration.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import install.bean.FileSetup
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Created by sujkim on 2017-02-22.
@@ -27,9 +29,7 @@ class Copy extends TaskUtil{
 
     @Override
     Integer run(){
-        println "<COPY>"
         FileMan.copy(filePath, destPath, fileSetup)
-
         return STATUS_TASK_DONE
     }
 

@@ -40,55 +40,53 @@ class TestSocket extends TaskUtil{
         String response
 
         //START
-        logMiddleTitle 'START SOCKET'
-        println "<REQUEST> - CHECK"
-        println " - IP      : ${ip}"
-        println " - PORT    : ${port}"
-        println " - TIMEOUT : ${timeout}"
-        println " - CHARSET : ${charset}"
-        println " - MSG     : ${msg}"
-        println ""
+        logger.debug "<REQUEST> - CHECK"
+        logger.debug " - IP      : ${ip}"
+        logger.debug " - PORT    : ${port}"
+        logger.debug " - TIMEOUT : ${timeout}"
+        logger.debug " - CHARSET : ${charset}"
+        logger.debug " - MSG     : ${msg}"
+        logger.debug ""
 
         //RUN
-        println "<Socket>"
-        println "Sending..."
+        logger.debug "<Socket>"
+        logger.debug "Sending..."
         new SocketMan()
                 .setTimeout(timeout)
                 .setCharset(charset)
                 .connect("${ip}:${port}"){ SocketMan socketMan ->
-                    println "1. Connect To Server - OK\n"
+                    logger.debug "1. Connect To Server - OK\n"
                     if (msg){
                         socketMan.send(msg)
-                        println "2. Send Message To Server - OK\n"
+                        logger.debug "2. Send Message To Server - OK\n"
                     }else{
-                        println "2. Send Message To Server - NO MESSAGE, NO SEND\n"
+                        logger.debug "2. Send Message To Server - NO MESSAGE, NO SEND\n"
                     }
 
                     socketMan.disconnect()
-                    println "3. Disconnected From Server - OK\n"
+                    logger.debug "3. Disconnected From Server - OK\n"
                 }
-        println "Done"
+        logger.debug "Done"
 
         //RESPONSE
-        println "<RESPONSE (Sorry, Not Supported)>\n${response}"
+        logger.debug "<RESPONSE (Sorry, Not Supported)>\n${response}"
 
         //FINISH
-        logMiddleTitle 'FINISHED SOCKET'
         return STATUS_TASK_DONE
     }
 
 //    boolean testSocketServer(){
 //        SocketMan socketMan = new SocketMan()
-//        println '///////////////////////////////////'
-//        println '//// socket receiver try to run ///'
-//        println '///////////////////////////////////'
+//        logger.debug '///////////////////////////////////'
+//        logger.debug '//// socket receiver try to run ///'
+//        logger.debug '///////////////////////////////////'
 //        socketMan.setModeIndependent(true)
 //                .setTimeout(3000)
 //                .setCharset('euc-kr')
 //                .echoServer(socketServerPort){
-//            println '///////////////////////////'
-//            println '///// Socket Receiver /////'
-//            println '///////////////////////////'
+//            logger.debug '///////////////////////////'
+//            logger.debug '///// Socket Receiver /////'
+//            logger.debug '///////////////////////////'
 //            String msg = it.receivedMsg
 //            String charset = it.charset
 //            lastRepoReq = "LENGTH:${msg.length()}\nLENGTH(byte):${msg.getBytes(charset).length}\n${msg}"
@@ -96,15 +94,15 @@ class TestSocket extends TaskUtil{
 //            if (repoReqList.size() >= 11) repoReqList.remove(0)
 //
 //            // LOG
-//            println '///// Socket Message'
+//            logger.debug '///// Socket Message'
 //            repoReqList.each{
-//                println JsonOutput.toJson(it)
+//                logger.debug JsonOutput.toJson(it)
 //            }
-//            println ''
+//            logger.debug ''
 //        }
-//        println '///////////////////////////////////'
-//        println '//// socket receiver is running ///'
-//        println '///////////////////////////////////'
+//        logger.debug '///////////////////////////////////'
+//        logger.debug '//// socket receiver is running ///'
+//        logger.debug '///////////////////////////////////'
 //        return true
 //    }
 

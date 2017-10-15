@@ -14,12 +14,16 @@ import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.ReportMan
 import jaemisseo.man.util.Util
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Created by sujkim on 2017-02-17.
  */
 @Job
 class Installer extends JobUtil{
+
+    final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     Installer(){
         propertiesFileName = 'installer'
@@ -77,10 +81,16 @@ class Installer extends JobUtil{
     No User's Command 
     ''')
     void install(){
+        //Setup Log
+        setuptLog(gOpt.logSetup)
+
+        logBigTitle "Installer"
+
         if (!propertiesFile)
             throw Exception('Does not exists script file [ installer.yml ]')
 
         ReportSetup reportSetup = gOpt.reportSetup
+
         //Each level by level
         eachLevelForTask{ String propertyPrefix ->
             try{
@@ -112,8 +122,8 @@ class Installer extends JobUtil{
             }
 
             if (reportSetup.modeReportExcel){
-                logBigTitle("SAVE Excel Report")
-                println "Creating Excel Report File..."
+                logTaskDescription("save excel report")
+                logger.debug "Creating Excel Report File..."
                 new ReportMan().write("${fileNamePrefix}_${date}.xlsx", reportMapList, 'sqlFileName')
             }
         }

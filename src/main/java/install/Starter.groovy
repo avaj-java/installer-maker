@@ -7,8 +7,12 @@ import install.data.PropertyProvider
 import jaemisseo.man.PropMan
 import jaemisseo.man.TimeMan
 import jaemisseo.man.util.PropertiesGenerator
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class Starter {
+
+    final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /*************************
      * START INSTALL
@@ -25,7 +29,8 @@ class Starter {
         config.scan()
 
         config.makeProperties(args)
-        config.makeLoger()
+        config.makeLogger()
+
         PropertyProvider provider = config.findInstanceByAnnotation(Data)
         provider.propGen = config.propGen
         provider.logGen = config.logGen
@@ -76,7 +81,7 @@ class Starter {
     void finishCommand(List installerCommandList, double elapseTime){
         if (installerCommandList){
             //Show ElapseTime
-            println """
+            logger.info """
                 - Command    : ${installerCommandList.join(', ')} 
                 - ElapseTime : ${elapseTime}s"""
         }

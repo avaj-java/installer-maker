@@ -53,22 +53,21 @@ class TestEMail extends TaskUtil{
     @Override
     Integer run(){
         //START
-        logMiddleTitle 'START TESTEMAIL'
-        println "<REQUEST> - CHECK"
-        println " - host        : ${host}"
-        println " - port        : ${port}"
-        println " - username    : ${username}"
-        println " - password    : ${password}"
+        logger.debug "<REQUEST> - CHECK"
+        logger.debug " - host        : ${host}"
+        logger.debug " - port        : ${port}"
+        logger.debug " - username    : ${username}"
+        logger.debug " - password    : ${password}"
         if (auth)
-            println " - auth        : ${auth}"
+            logger.debug " - auth        : ${auth}"
         if (tls)
-            println " - tls         : ${tls}"
-        println "-------------------------"
-        println " - from    : ${from}"
-        println " - to      : ${to}"
-        println " - subject : ${omit(subject, printingMaximumLength)}"
-        println " - content : ${omit(content, printingMaximumLength)}"
-        println ""
+            logger.debug " - tls         : ${tls}"
+        logger.debug "-------------------------"
+        logger.debug " - from    : ${from}"
+        logger.debug " - to      : ${to}"
+        logger.debug " - subject : ${omit(subject, printingMaximumLength)}"
+        logger.debug " - content : ${omit(content, printingMaximumLength)}"
+        logger.debug ""
 
         Properties props = new Properties()
         props.put("mail.smtp.host", host)
@@ -95,17 +94,16 @@ class TestEMail extends TaskUtil{
             message.setSubject(subject)
             message.setText(content)
 
-            println "<EMail>"
-            println "Sending ..."
+            logger.debug "<EMail>"
+            logger.debug "Sending ..."
             Transport.send(message)
-            println "Done"
+            logger.debug "Done"
 
         } catch (MessagingException e) {
+            logger.error "<ERROR>"
             throw new Exception(e)
         }
 
-        //FINISH
-        logMiddleTitle 'FINISHED TESTEMAIL'
         return STATUS_TASK_DONE
     }
 

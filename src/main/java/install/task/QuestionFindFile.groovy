@@ -42,11 +42,11 @@ class QuestionFindFile extends TaskUtil{
 
 
         //Thread-Searcher - START
-        println " <Searching>"
-        println "Root Path: $searchRootPath"
-        println "File Name: $searchFileName"
-        println "Condition: $searchIf"
-        println ""
+        logger.info " <Searching>"
+        logger.info "Root Path: $searchRootPath"
+        logger.info "File Name: $searchFileName"
+        logger.info "Condition: $searchIf"
+        logger.info ""
 
         Thread threadSearcher = Util.newThread(' <Stoped Searching>      '){
             List<File> foundFileList = FileMan.findAllWithProgressBar(searchRootPath, searchFileName, searchIf) { data ->
@@ -57,8 +57,8 @@ class QuestionFindFile extends TaskUtil{
                 itemList << new File(editedPath)
                 return true
             }
-            println "${foundFileList.size()} was founded."
-            println " <Finished Searching>"
+            logger.info "${foundFileList.size()} was founded."
+            logger.info " <Finished Searching>"
         }
 
         //Ask Question

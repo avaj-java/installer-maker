@@ -1,5 +1,7 @@
 package install.configuration
 
+import ch.qos.logback.classic.LoggerContext
+import ch.qos.logback.core.util.StatusPrinter
 import install.configuration.annotation.*
 import install.configuration.annotation.method.After
 import install.configuration.annotation.method.Before
@@ -16,6 +18,7 @@ import install.configuration.reflection.FieldInfomation
 import install.configuration.reflection.MethodInfomation
 import install.configuration.reflection.ReflectInfomation
 import jaemisseo.man.util.Util
+import org.slf4j.LoggerFactory
 
 import java.lang.annotation.Annotation
 import java.lang.reflect.Field
@@ -55,8 +58,25 @@ class Config {
         propGen.genResourceSingleton('macgyver', 'defaultProperties/macgyver.default.properties')
     }
 
-    void makeLoger(){
+    void makeLogger(String[] args){
         logGen = new InstallerLogGenerator()
+        boolean modeSystemDebugLog = false
+        boolean modeSystemDebugLogFile = false
+
+        if (modeSystemDebugLog){
+            logGen.setupConsoleLogger('trace')
+        }
+
+        if (modeSystemDebugLogFile){
+            logGen.setupFileLogger('system', 'trace', './', 'installer-maker-debug')
+        }
+
+        if (modeSystemDebugLog || modeSystemDebugLogFile){
+            // OPTIONAL: print logback internal status messages
+            LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory()
+            StatusPrinter.print(loggerContext)
+        }
+
     }
 
 
@@ -356,6 +376,26 @@ class Config {
             throw Exception()
 
         return isOk
+    }
+
+    /*************************
+     * CLEAN Value
+     *************************/
+    Object cleanValue(Object instance){
+        Class clazz = instance.getClass()
+        //1. CLEAN VALUE to FIELD
+        Map<String, FieldInfomation> valueFieldNameMap = reflectionMap[clazz].valueFieldNameMap
+        valueFieldNameMap.each{ fieldName, info ->
+            instance[fieldName] = null
+        }
+
+        //2. CLEAN VALUE to METHOD
+        Map<String, MethodInfomation> valueMethodNameMap = reflectionMap[clazz].valueMethodNameMap
+        valueMethodNameMap.each{ String methodName, MethodInfomation info ->
+            Object[] parameters = [null] as Object[]
+            runMethod(instance, info.method, parameters)
+        }
+        return instance
     }
 
 

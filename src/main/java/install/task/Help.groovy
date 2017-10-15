@@ -46,10 +46,10 @@ class Help extends TaskUtil{
 
         //All Command and Task (No Detail)
         if (!specificCommandName && !specificTaskName){
-            println ' [ Commands ]'
+            logger.info ' [ Commands ]'
             printHelpCommand()
-            println '-------------------------'
-            println ' [ Tasks ]'
+            logger.info '-------------------------'
+            logger.info ' [ Tasks ]'
             printHelpTask()
             //- Print Help Task Document
             List<Annotation> allClassAnnotationList = config.findAllAnnotationFromClass(Help)
@@ -61,7 +61,7 @@ class Help extends TaskUtil{
             if (specificCommandName){
                 config.methodCommandNameMap.each { commandName, info ->
                     if (specificCommandName == commandName){
-                        println " [ Command:${specificCommandName.toUpperCase()} ]"
+                        logger.info " [ Command:${specificCommandName.toUpperCase()} ]"
                         printHelpSpecificCommand(commandName, info, true)
                     }
                 }
@@ -71,7 +71,7 @@ class Help extends TaskUtil{
                 config.findAllInstances(Task).each { def instance ->
                     String taskName = instance.getClass().getSimpleName().toLowerCase()
                     if (specificTaskName == taskName){
-                        println " [ Task:${specificTaskName.toUpperCase()} ]"
+                        logger.info " [ Task:${specificTaskName.toUpperCase()} ]"
                         printHelpSpecificTask(instance, true)
                     }
                 }
@@ -123,7 +123,7 @@ class Help extends TaskUtil{
 
         //-Print
         if (!helpIgnoreAnt)
-            println "${programName} ${commandName}"
+            logger.info "${programName} ${commandName}"
 
         //-Detail
         if (isDetail){
@@ -162,7 +162,7 @@ class Help extends TaskUtil{
             terminalValueRule.each {
                 nonPropertyPrintItemList << "<${it}>"
             }
-            println "${programName} -${taskName} ${nonPropertyPrintItemList.join(' ')}"
+            logger.info "${programName} -${taskName} ${nonPropertyPrintItemList.join(' ')}"
 
             //-Print with Property
             if (isDetail){
@@ -171,7 +171,7 @@ class Help extends TaskUtil{
                     propertyList.each {
                         propertyPrintItemList << "-${it}=<value>"
                     }
-                    println "${programName} -${taskName} ${propertyPrintItemList.join(' ')}"
+                    logger.info "${programName} -${taskName} ${propertyPrintItemList.join(' ')}"
                 }
 
                 printDocument(documentAnt)
@@ -232,8 +232,8 @@ class Help extends TaskUtil{
         if (documentAnt){
             String documentString = documentAnt.value()
             if (documentString){
-                println ''
-                println multiTrim(documentString)
+                logger.info ''
+                logger.info multiTrim(documentString)
             }
         }
     }

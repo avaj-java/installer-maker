@@ -44,28 +44,26 @@ class TestREST extends TaskUtil{
             restman.setAccept(accept)
 
         //START
-        logMiddleTitle 'START TESTREST'
-        println "<REQUEST> - CHECK"
-        println " - URL       : ${url}"
-        println " - METHOD    : ${method}"
-        println " - TYPE      : ${restman.type}"
-        println " - ACCEPT    : ${restman.accept}"
-        println " - PARAMETER : ${paramMap}"
-        println " - HEADER    : ${headerMap}"
-        println ""
+        logger.debug "<REQUEST> - CHECK"
+        logger.debug " - URL       : ${url}"
+        logger.debug " - METHOD    : ${method}"
+        logger.debug " - TYPE      : ${restman.type}"
+        logger.debug " - ACCEPT    : ${restman.accept}"
+        logger.debug " - PARAMETER : ${paramMap}"
+        logger.debug " - HEADER    : ${headerMap}"
+        logger.debug ""
 
         //RUN
-        println "<REST>"
-        println "Requesting..."
+        logger.debug "<REST>"
+        logger.debug "Requesting..."
         String response =  restman.request(url, method, paramMap)
-        println "Done"
+        logger.debug "Done"
 
         //RESPONSE
-        println "<RESPONSE>"
-        println response
+        logger.debug "<RESPONSE>"
+        logger.debug response
 
         //FINISH
-        logMiddleTitle 'FINISHED TESTREST'
         return STATUS_TASK_DONE
     }
 

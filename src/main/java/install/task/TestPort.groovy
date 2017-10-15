@@ -36,14 +36,13 @@ class TestPort extends TaskUtil{
         }
 
         //START
-        logMiddleTitle "START TESTPORT (${rangeFrom}${(rangeFrom!=rangeTo)?' to '+rangeTo:''})"
+        logger.debug "START TESTPORT (${rangeFrom}${(rangeFrom!=rangeTo)?' to '+rangeTo:''})"
 
         //RUN
         Map portMap = getUsingPortMap(rangeFrom, rangeTo)
-        println "\n - Port Count (You Can Use): ${portMap.findAll{ !it.value }.size()}"
+        logger.debug "\n - Port Count (You Can Use): ${portMap.findAll{ !it.value }.size()}"
 
         //FINISH
-        logMiddleTitle 'FINISHED TESTPORT'
         return STATUS_TASK_DONE
     }
 
@@ -58,11 +57,11 @@ class TestPort extends TaskUtil{
         for (int port=rangeFrom; port<=rangeTo; port++){
             try{
                 Socket s = new Socket("127.0.0.1", port)
-                println(port + " is Being Used")
+                logger.debug(port + " is Being Used")
                 portMap[port] = "is Being Used"
                 s.close()
             }catch (Exception e){
-                println(port + " is No Use")
+                logger.error(port + " is No Use")
                 portMap[port] = null
             }
         }

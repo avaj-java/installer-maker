@@ -22,8 +22,8 @@ class Notice extends TaskUtil{
     @Override
     Integer run(){
         //Show You Welcome Message
-        println msg
-
+        logger.info msg
+        logger.info ''
         return STATUS_TASK_DONE
     }
 }
