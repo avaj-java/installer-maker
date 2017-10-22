@@ -22,7 +22,7 @@ import java.lang.annotation.Target
 
     String prefix() default ''
 
-    boolean global() default false
+    boolean modeRenderJansi() default false
 
 
 

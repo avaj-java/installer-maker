@@ -18,6 +18,7 @@ import install.configuration.reflection.FieldInfomation
 import install.configuration.reflection.MethodInfomation
 import install.configuration.reflection.ReflectInfomation
 import jaemisseo.man.util.Util
+import org.fusesource.jansi.Ansi
 import org.slf4j.LoggerFactory
 
 import java.lang.annotation.Annotation
@@ -259,9 +260,12 @@ class Config {
             String propertyName = valueAnt.value() ?: valueAnt.name() ?: ''
             String filterName = valueAnt.filter() ?: getFilterName(info.fieldType)
             String prefix = valueAnt.prefix() ?: ''
+            boolean modeRenderJansi = valueAnt.modeRenderJansi()
             //Inject Value
             if (propertyName){
                 def value = getFromProvider("${prefixParam}${prefix}${propertyName}", filterName)
+                if (modeRenderJansi)
+                    value = renderJansi(value)
                 validate(value, valueAnt)
                 if (value != null)
                     instance[fieldName] = value
@@ -281,9 +285,12 @@ class Config {
             String propertyName = valueAnt.value() ?: valueAnt.name() ?:''
             String filterName = valueAnt.filter() ?: getFilterName(info.parameterTypes[0])
             String prefix = valueAnt.prefix() ?: ''
+            boolean modeRenderJansi = valueAnt.modeRenderJansi()
             //Inject Value
             if (propertyName){
                 def value = getFromProvider("${prefixParam}${prefix}${propertyName}", filterName)
+                if (modeRenderJansi)
+                    value = renderJansi(value)
                 validate(value, valueAnt)
                 Object[] parameters = [value] as Object[]
                 runMethod(instance, info.method, parameters)
@@ -303,6 +310,10 @@ class Config {
         if (!info)
             throw new Exception ("Doesn't Exist Data Filter [${filterName}]")
         return (property) ? runMethod(info, [property].toArray()) : runMethod(info)
+    }
+
+    String renderJansi(String content){
+        return new Ansi().render(content).toString()
     }
 
     String getFilterName(Class type){

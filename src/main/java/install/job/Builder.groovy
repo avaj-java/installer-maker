@@ -253,7 +253,7 @@ class Builder extends JobUtil{
         String installBinPathForLin = "${binPath}/install".replaceAll(/[\/\\]+/, "/")
         provider.setRaw('exec.command.win', "${installBinPathForWIn} ${argsExceptCommand} ${argsModeExec}")
         provider.setRaw('exec.command.lin', "${installBinPathForLin} ${argsExceptCommand} ${argsModeExec}")
-        runTask('exec')
+        runTaskByName('exec')
         provider.setRaw('exec.command.win', "")
         provider.setRaw('exec.command.lin', "")
     }

@@ -14,12 +14,20 @@ import ch.qos.logback.core.rolling.RollingFileAppender
 import ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy
 import jaemisseo.man.PropMan
+import org.fusesource.jansi.Ansi
 import org.slf4j.LoggerFactory
 
 /**
  * Created by sujkim on 2017-03-29.
  */
 class InstallerLogGenerator {
+
+    InstallerLogGenerator(){
+        logLevelStackTraceList << getConsoleLogLevel()
+        logPatternStackTraceList << getConsoleLogPattern()
+    }
+
+
 
     final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -28,10 +36,17 @@ class InstallerLogGenerator {
     String choiceFileAppenderName = "FILE_CHOICE"
 
     String logFileExtension = 'log'
+    List<String> logLevelStackTraceList = []
+    List<String> logPatternStackTraceList = []
 //    List userControlLoggerList = ['install', 'jaemisseo.man']
 
 
 
+    /*************************
+     *
+     * Get
+     *
+     *************************/
     Level getConsoleLogLevel(){
         Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
         ConsoleAppender consoleAppender = rootLogger.getAppender(consoleAppenderName)
@@ -43,17 +58,104 @@ class InstallerLogGenerator {
         return Level.valueOf(nowConsoleLogLevel)
     }
 
+    String getConsoleLogPattern(){
+        Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
+        ConsoleAppender consoleAppender = rootLogger.getAppender(consoleAppenderName)
+        String nowConsoleLogPattern = ((PatternLayoutEncoder)consoleAppender.encoder).pattern
+        return nowConsoleLogPattern
+    }
 
 
+
+    /*************************
+     *
+     * INIT
+     *
+     *************************/
+    boolean initConsoleLoggerPattern(){
+        String pattern = logPatternStackTraceList[0]
+        return setupConsoleLogger(null, pattern)
+    }
+
+    boolean initConsoleLoggerLevel(){
+        String pattern = logLevelStackTraceList[0]
+        return setupConsoleLogger(null, pattern)
+    }
+
+
+
+    /*************************
+     *
+     * SETUP
+     *
+     *************************/
     boolean setupConsoleLogger(String logLevel){
-        if (!logLevel)
+        return setupConsoleLoggerLevel(logLevel)
+    }
+
+    boolean setupConsoleLoggerLevel(String logLevel){
+        return setupConsoleLogger(logLevel, null)
+    }
+
+    boolean setupConsoleLoggerPattern(String pattern){
+        return setupConsoleLogger(null, pattern)
+    }
+
+    boolean setupConsoleLogger(String logLevel, String pattern){
+        if (!logLevel && !pattern)
             return false
+
         // -Console Appender
         Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
 
+        /** Convert ConsoleAppender's ThresholdFilter **/
         ConsoleAppender consoleAppender = rootLogger.getAppender(consoleAppenderName)
-        changeAppenderThresholdFilterLevel(consoleAppender, logLevel)
+        //Set withJansi
+        consoleAppender.setWithJansi(true)
+        //Change ThresholdFilter
+        if (logLevel){
+            changeAppenderThresholdFilterLevel(consoleAppender, logLevel)
+            logLevelStackTraceList << logLevel
+        }
+        //Change Encoder
+        if (pattern){
+            changeAppenderEncoder(consoleAppender, pattern)
+            logPatternStackTraceList << pattern
+        }
+
+        /** Convert ConsoleAppender's ThresholdFilter in SiftingAppender **/
+        //Not Good
+//        SiftingAppender siftingAppender = rootLogger.getAppender(consoleAppenderName)
+//        siftingAppender.appenderTracker.allComponents().each{
+//            if (it instanceof ConsoleAppender){
+//                println it
+//                println it.withJansi
+//                //Set withJansi
+//                it.setWithJansi(true)
+//                //Change ThresholdFilter
+//                changeAppenderThresholdFilterLevel(it, logLevel)
+//            }else{
+//                println it
+//            }
+//        }
         return true
+    }
+
+    boolean setupConsoleLoggerColorPattern(String color){
+        String pattern = "%${color}(%msg) %n"
+        return setupConsoleLogger(null, pattern)
+    }
+
+    boolean setupBeforeConsoleLoggerPattern(){
+        if (logPatternStackTraceList.size() <= 1)
+            return false
+
+        int nowIndex = logPatternStackTraceList.size() - 1
+        int beforeIndex = nowIndex - 1
+        String beforePattern = logPatternStackTraceList[beforeIndex]
+        logPatternStackTraceList.remove(nowIndex)
+        logPatternStackTraceList.remove(beforeIndex)
+        return setupConsoleLogger(null, beforePattern)
     }
 
     boolean setupFileLogger(String jobName, String logLevel, String logDir, String logFileName){
@@ -87,7 +189,77 @@ class InstallerLogGenerator {
         return true
     }
 
-    ConsoleAppender generateConsoleAppender(String appenderName, String loggerLevel, String logPattern){
+
+    /*************************
+     *
+     * Log Color One Time
+     *
+     *************************/
+    void logColorOneTimeConsoleLogger(def instance, String color, String message){
+        logColorOneTimeConsoleLogger(instance.getClass(), color, message)
+    }
+
+    void logColorOneTimeConsoleLogger(Class clazz, String color, String message){
+        org.slf4j.Logger templogger = LoggerFactory.getLogger(clazz)
+        setupConsoleLoggerColorPattern(color)
+        templogger.info(message)
+        setupBeforeConsoleLoggerPattern()
+    }
+
+
+
+    /*************************
+     *
+     * Change
+     *
+     *************************/
+    void changeAppenderThresholdFilterLevel(Appender appender, String thresholdFilterLevel){
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory()
+        //Remove Filter & Stop
+        appender.stop()
+        appender.clearAllFilters()
+
+        //Add Filter
+        ThresholdFilter thresholdFilter = new ThresholdFilter()
+        thresholdFilter.context = loggerContext
+        thresholdFilter.level = thresholdFilterLevel
+        thresholdFilter.start()
+        appender.addFilter(thresholdFilter)
+
+        //Start
+        appender.start()
+    }
+
+    void changeAppenderEncoder(Appender appender, String pattern){
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory()
+        //Stop
+        appender.stop()
+
+        //Set Log Pattern
+        PatternLayoutEncoder encoder
+        if (appender instanceof ConsoleAppender){
+            encoder = ((ConsoleAppender)appender).encoder
+        }else if (appender instanceof FileAppender){
+            encoder = ((FileAppender)appender).encoder
+        }else if (appender instanceof RollingFileAppender){
+            encoder = ((RollingFileAppender)appender).encoder
+        }
+        encoder.stop()
+        encoder.pattern = pattern
+        encoder.start()
+
+        //Start
+        appender.start()
+    }
+
+
+
+    /*************************
+     *
+     * Generate
+     *
+     *************************/
+    ConsoleAppender generateConsoleAppender(String appenderName, String thresholdFilterLevel, String logPattern){
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory()
 
         //Add Filter
@@ -103,7 +275,7 @@ class InstallerLogGenerator {
         consoleAppender.encoder     = encoder
 
         thresholdFilter.context = loggerContext
-        thresholdFilter.level = loggerLevel
+        thresholdFilter.level = thresholdFilterLevel
         thresholdFilter.start()
         consoleAppender.addFilter(thresholdFilter)
         consoleAppender.start()
@@ -111,22 +283,7 @@ class InstallerLogGenerator {
         return consoleAppender
     }
 
-    void changeAppenderThresholdFilterLevel(Appender appender, String logLevel){
-        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory()
-        //Remove Filter & Stop
-        appender.stop()
-        appender.clearAllFilters()
-
-        //Add Filter
-        ThresholdFilter thresholdFilter = new ThresholdFilter()
-        thresholdFilter.context = loggerContext
-        thresholdFilter.level = logLevel
-        thresholdFilter.start()
-        appender.addFilter(thresholdFilter)
-        appender.start()
-    }
-
-    FileAppender<ILoggingEvent> generateFileAppender(String appenderName, String loggerLevel, String logPattern, String fileDir, String fileName, String fileExtension){
+    FileAppender<ILoggingEvent> generateFileAppender(String appenderName, String thresholdFilterLevel, String logPattern, String fileDir, String fileName, String fileExtension){
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory()
 
         ThresholdFilter thresholdFilter = new ThresholdFilter()
@@ -143,7 +300,7 @@ class InstallerLogGenerator {
         fileAppender.encoder     = encoder
 
         thresholdFilter.context = loggerContext
-        thresholdFilter.level = loggerLevel
+        thresholdFilter.level = thresholdFilterLevel
         thresholdFilter.start()
         fileAppender.addFilter(thresholdFilter)
         fileAppender.start()
@@ -151,7 +308,7 @@ class InstallerLogGenerator {
         return fileAppender
     }
 
-    RollingFileAppender<ILoggingEvent> generateRollingFileAppender(String appenderName, String loggerLevel, String logPattern, String fileDir, String fileName, String fileExtension){
+    RollingFileAppender<ILoggingEvent> generateRollingFileAppender(String appenderName, String thresholdFilterLevel, String logPattern, String fileDir, String fileName, String fileExtension){
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory()
         ThresholdFilter thresholdFilter = new ThresholdFilter()
         PatternLayoutEncoder encoder = new PatternLayoutEncoder()
@@ -185,7 +342,7 @@ class InstallerLogGenerator {
         rollingFileAppender.encoder     = encoder
 
         thresholdFilter.context = loggerContext
-        thresholdFilter.level = loggerLevel
+        thresholdFilter.level = thresholdFilterLevel
         thresholdFilter.start()
         rollingFileAppender.addFilter(thresholdFilter)
         rollingFileAppender.start()
@@ -195,7 +352,11 @@ class InstallerLogGenerator {
 
 
 
-
+    /*************************
+     *
+     * Print Info
+     *
+     *************************/
     void logVersion(PropMan propman){
         String thisVersion  = propman.get('lib.version')
         String thisBuildDate = propman.get('lib.build.date')

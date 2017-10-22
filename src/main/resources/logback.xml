@@ -5,20 +5,43 @@
 	<!--<property name="LOG_FILE" value="builder"/>-->
 	<!--<property name="LOG_PATH" value="${LOG_DIR}/${LOG_FILE}"/>-->
 
-	<!-- It can be changed Programmatically -->
+
+
+	<!--
+	It can be changed Programmatically
+	-->
 	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-		<!-- deny all events with a level below INFO, that is TRACE and DEBUG -->
+		<!--
+		deny all events with a level below INFO, that is TRACE and DEBUG
+		-->
 		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
 			<level>INFO</level>
 		</filter>
 
+		<!--
+		1. It works on Windows! but
+			 - OK, but print warn message on gitbash
+			 - OK on cmd
+		2. So, Programmatically I use 'setWithJansi(true)' when it need to set jansi.
+			 - OK on gitbash
+			 - OK on cmd
+		-->
+		<!--<withJansi>true</withJansi>-->
+		
+		<!--
+		ENCODER
+		-->
 		<encoder>
 			<charset>UTF-8</charset>
 			<pattern>%msg %n</pattern>
 		</encoder>
 	</appender>
 
-	<!-- It can be changed Programmatically -->
+
+
+	<!--
+	It can be changed Programmatically
+	-->
 	<!--<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
 		<!--&lt;!&ndash; deny all events with a level below INFO, that is TRACE and DEBUG &ndash;&gt;-->
 		<!--<filter class="ch.qos.logback.classic.filter.ThresholdFilter">-->
