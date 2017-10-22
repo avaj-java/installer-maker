@@ -9,8 +9,11 @@ import install.configuration.annotation.type.Bean
 @Bean
 class QuestionSetup extends jaemisseo.man.bean.QuestionSetup {
 
-    @Value(name='question', required=true)
+    @Value(name='question', required=true, modeRenderJansi=true)
     String question
+    @Value('questionColor')
+    String questionColor
+
     @Value('answer')
     String answer
     @Value('answer.default')

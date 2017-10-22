@@ -136,7 +136,7 @@ repositories {
 }
 List<String> subprojectList = [
         'com.github.avaj-java:common-util:0.3.0.1',
-        'com.github.avaj-java:common-man:0.3.0.1',
+        'com.github.avaj-java:common-man:0.3.0.2',
         'com.github.avaj-java:fileman:0.3.0.3',
         'com.github.avaj-java:reportman:0.3.0.1',
         'com.github.avaj-java:restman:0.3.0.1'
@@ -144,8 +144,9 @@ List<String> subprojectList = [
 List<String> dependencyList = [
         'org.codehaus.groovy:groovy-all:2.1.3',
         'org.slf4j:slf4j-api:1.7.7',
-        'ch.qos.logback:logback-classic:1.1.9',
-        'ch.qos.logback:logback-core:1.1.9',
+        'ch.qos.logback:logback-classic:1.2.3',
+        'ch.qos.logback:logback-core:1.2.3',
+        'org.fusesource.jansi:jansi:1.16',
         'com.sun.mail:javax.mail:1.5.5',
         "com.oracle:ojdbc6:11.2.0.3",
         'org.yaml:snakeyaml:1.18',

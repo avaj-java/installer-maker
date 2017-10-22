@@ -1,6 +1,5 @@
 package install.employee
 
-import install.bean.GlobalOptionForBuilder
 import install.bean.GlobalOptionForMacgyver
 import install.bean.ReportSetup
 import install.configuration.annotation.Alias
@@ -87,7 +86,7 @@ class MacGyver extends EmployeeUtil {
             installerCommandCalledByUserList.each{ commandNameCalledByUser ->
                 propman.set('help.task.name', '')
                 propman.set('help.command.name', commandNameCalledByUser)
-                runTask('help')
+                runTaskByName('help')
             }
             return TaskUtil.STATUS_TASK_DONE
         }
@@ -119,12 +118,12 @@ class MacGyver extends EmployeeUtil {
                 if (modeHelp && taskNameCalledByUser != 'help'){
                     propman.set('help.command.name', '')
                     propman.set('help.task.name', taskNameCalledByUser)
-                    runTask('help')
+                    runTaskByName('help')
                 }
             }else{
                 propman.set('help.command.name', '')
                 propman.set('help.task.name', '')
-                runTask(taskNameCalledByUser)
+                runTaskByName(taskNameCalledByUser)
                 break
             }
         }
@@ -166,7 +165,7 @@ class MacGyver extends EmployeeUtil {
     You can know How to use Command or Task on Terminal      
     """)
     void help(){
-        runTask('help')
+        runTaskByName('help')
     }
 
     @Command('test')

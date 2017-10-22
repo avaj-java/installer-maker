@@ -2,6 +2,7 @@ package install.util
 
 import install.bean.LogSetup
 import install.bean.ReportSetup
+import install.bean.TaskSetup
 import install.configuration.Config
 import install.configuration.annotation.Inject
 import install.configuration.annotation.method.After
@@ -266,26 +267,31 @@ class JobUtil extends TaskUtil{
      * 1. RUN TASK
      *************************/
     Integer runTaskByPrefix(String propertyPrefix) {
-        String taskName = getTaskName(propertyPrefix)
-        return runTask(taskName, propertyPrefix)
+        return runTask('', propertyPrefix)
     }
 
-    Integer runTask(String taskName){
+    Integer runTaskByName(String taskName){
         return runTask(taskName, '')
     }
 
     Integer runTask(String taskName, String propertyPrefix){
-        //Check Valid Task
-        Class taskClazz = getTaskClass(taskName)
+        provider.shift( jobName, propertyPrefix )
+        TaskSetup task = config.injectValue(new TaskSetup(
+                jobName: jobName,
+                taskName: taskName,
+                propertyPrefix: propertyPrefix
+        ))
+        task.taskClazz = getTaskClass(task.taskName)
 
         //Validation
-        if (!taskName)
-            throw new Exception(" 'No Task Name. ${propertyPrefix}task=???. Please Check Task.' ")
-        if ( (validTaskList && !validTaskList.contains(taskClazz)) || (invalidTaskList && invalidTaskList.contains(taskClazz)) )
-            throw new Exception(" 'Sorry, This is Not my task, [${taskName}]. I Can Not do this.' ")
+        //Check Valid Task
+        if (!task.taskName)
+            throw new Exception(" 'No Task Name. ${task.propertyPrefix}task=???. Please Check Task.' ")
+        if ( (validTaskList && !validTaskList.contains(task.taskClazz)) || (invalidTaskList && invalidTaskList.contains(task.taskClazz)) )
+            throw new Exception(" 'Sorry, This is Not my task, [${task.taskName}]. I Can Not do this.' ")
 
         //(Task) Start
-        return start(propertyPrefix, taskClazz)
+        return start(task)
     }
 
 
@@ -305,27 +311,30 @@ class JobUtil extends TaskUtil{
     /*************************
      * 2. START
      *************************/
-    Integer start(String propertyPrefix, Class taskClazz){
+    Integer start(TaskSetup task){
         status = STATUS_NOTHING
 
         //Check Condition
-        if ( !checkCondition(propertyPrefix) )
+        if ( !checkCondition(task.propertyPrefix) )
             return
 
         //Get Task Instance
         // - Find Task
-        TaskUtil taskInstance = config.findInstance(taskClazz)
+        TaskUtil taskInstance = config.findInstance(task.taskClazz)
         // - Inject Value
-        provider.shift( jobName, propertyPrefix )
+        provider.shift( task.jobName, task.propertyPrefix )
         config.cleanValue(taskInstance)
         config.injectValue(taskInstance)
         taskInstance.rememberAnswerLineList = rememberAnswerLineList
         taskInstance.reportMapList = reportMapList
 
         try{
+            if (task.color)
+                config.logGen.setupConsoleLoggerColorPattern(task.color)
+
             //Description
-            if ( !jobName.equalsIgnoreCase('macgyver') && !jobName.equalsIgnoreCase('receptionist'))
-                descript(jobName, taskClazz.getSimpleName(), propertyPrefix)
+            if ( !task.jobName.equalsIgnoreCase('macgyver') && !task.jobName.equalsIgnoreCase('receptionist') )
+                descript(task)
 
             //Start Task
             status = taskInstance.run()
@@ -333,6 +342,9 @@ class JobUtil extends TaskUtil{
         }catch(e){
             throw e
         }finally{
+            if (task.color)
+                config.logGen.setupBeforeConsoleLoggerPattern()
+
             if (status != STATUS_UNDO_QUESTION)
                 report(taskInstance)
         }
@@ -344,13 +356,17 @@ class JobUtil extends TaskUtil{
         return provider.checkCondition(propertyPrefix)
     }
 
-    protected void descript(String jobName, String taskType, String propertyPrefix){
-        String descriptionString = provider.get("desc")
-        List<String> propertyStrctureList = propertyPrefix ? propertyPrefix.split('[.]').toList() : []
-        String taskName = (propertyStrctureList.size() >= 2) ? propertyStrctureList[1] : ''
-        descriptionString = descriptionString ? "$jobName:$descriptionString" : "$jobName:$taskName:$taskType"
-        if (descriptionString)
-            logTaskDescription(descriptionString)
+    protected void descript(TaskSetup task){
+        List<String> propertyStructureList = task.propertyPrefix ? task.propertyPrefix.split('[.]').toList() : []
+        String taskName = (propertyStructureList.size() >= 2) ? propertyStructureList[1] : ''
+        String description = task.desc ? "$task.jobName:$task.desc" : "$task.jobName:$taskName:$task.taskClazz"
+        if (description){
+            if (task.descColor)
+                config.logGen.setupConsoleLoggerColorPattern(task.descColor)
+            logTaskDescription(description)
+            if (task.descColor)
+                config.logGen.setupBeforeConsoleLoggerPattern()
+        }
     }
 
     /*************************
