@@ -25,6 +25,14 @@ class QuestionChoice extends TaskUtil{
     Integer run(){
         //Get Properties
         qman = new QuestionMan().setValidAnswer([undoSign, redoSign])
+        if (opt.questionColor){
+            qman.setBeforeQuestionClosure{
+                config.logGen.setupConsoleLoggerColorPattern(opt.questionColor)
+            }
+            qman.setAfterQuestionClosure{
+                config.logGen.setupBeforeConsoleLoggerPattern()
+            }
+        }
 
         //Ask Question
         //Get Answer
@@ -58,7 +66,7 @@ class QuestionChoice extends TaskUtil{
     List<String> buildForm(String propertyPrefix){
         this.propertyPrefix = propertyPrefix
         qman = new QuestionMan().setValidAnswer([undoSign, redoSign])
-        return (!opt.modeOnlyInteractive) ? qman.genQuestion(opt) : []
+        return (!opt.modeOnlyInteractive) ? qman.genQuestionAndSelection(opt) : []
     }
 
 }
