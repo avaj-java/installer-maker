@@ -313,7 +313,7 @@ class Config {
     }
 
     String renderJansi(String content){
-        return new Ansi().render(content).toString()
+        return (content) ? new Ansi().render(content).toString() : null
     }
 
     String getFilterName(Class type){

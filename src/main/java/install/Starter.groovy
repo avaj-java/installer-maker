@@ -39,7 +39,7 @@ class Starter {
         PropMan propmanExternal = config.propGen.getExternalProperties()
 
         /** [Command] **/
-        if ( !propmanExternal.getBoolean('help') ){
+        if ( !propmanExternal.getBoolean(['help', 'h']) ){
             // -[Command] Start
             new Starter().startCommand(config)
 

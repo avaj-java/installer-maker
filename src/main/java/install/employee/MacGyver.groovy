@@ -74,22 +74,11 @@ class MacGyver extends EmployeeUtil {
         //Setup Log
         setuptLog(gOpt.logSetup)
         
-        boolean modeHelp = propman.getBoolean('help')
+        boolean modeHelp = propman.getBoolean('help') || propman.getBoolean('h')
 
         /** Help - Command **/
-        // -Collect Command
-        PropMan propmanExternal = config.propGen.getExternalProperties()
-        List installerCommandCalledByUserList = propmanExternal.get('') ?: []
-
-        // -Print Help Command
-        if (modeHelp && installerCommandCalledByUserList){
-            installerCommandCalledByUserList.each{ commandNameCalledByUser ->
-                propman.set('help.task.name', '')
-                propman.set('help.command.name', commandNameCalledByUser)
-                runTaskByName('help')
-            }
+        if (helpCommand(modeHelp))
             return TaskUtil.STATUS_TASK_DONE
-        }
 
         /** Help - Task **/
         // -Collect Task
@@ -101,34 +90,56 @@ class MacGyver extends EmployeeUtil {
             if (propman.get(taskName))
                 taskNameCalledByUserList << taskName
         }
-        
         // -Collect Task Alias
-        if (!(taskNameCalledByUserList - ['help'])){
-            Map<Class, ReflectInfomation> aliasTaskReflectionMap = config.reflectionMap.findAll{ clazz, info ->
-                info.alias && propman.get(info.alias)
-            }
-            aliasTaskReflectionMap.each{ clazz, info ->
-                taskNameCalledByUserList << info.instance.getClass().getSimpleName().toLowerCase()
-            }
+        Map<Class, ReflectInfomation> aliasTaskReflectionMap = config.reflectionMap.findAll{ clazz, info ->
+            info.alias && propman.get(info.alias)
+        }
+        aliasTaskReflectionMap.each{ clazz, info ->
+            taskNameCalledByUserList << info.instance.getClass().getSimpleName().toLowerCase()
         }
 
         /** Run Task **/
-        for (String taskNameCalledByUser : taskNameCalledByUserList){
-            if (taskNameCalledByUserList.size() > 1 && taskNameCalledByUserList.contains('help')){
+        if (!helpTask(modeHelp, taskNameCalledByUserList)){
+            if (taskNameCalledByUserList){
+                propman.set('help.command.name', '')
+                propman.set('help.task.name', '')
+                runTaskByName(taskNameCalledByUserList[0])
+            }
+        }
+
+        return TaskUtil.STATUS_TASK_DONE
+    }
+
+    boolean helpCommand(boolean modeHelp){
+        // -Collect Command
+        PropMan propmanExternal = config.propGen.getExternalProperties()
+        List installerCommandCalledByUserList = propmanExternal.get('') ?: []
+
+        // -Print Help Command
+        if (modeHelp && installerCommandCalledByUserList){
+            installerCommandCalledByUserList.each{ commandNameCalledByUser ->
+                propman.set('help.task.name', '')
+                propman.set('help.command.name', commandNameCalledByUser)
+                runTaskByName('help')
+            }
+            return true
+        }
+        return false
+    }
+
+    boolean helpTask(boolean modeHelp, List<String> taskNameCalledByUserList){
+        if (taskNameCalledByUserList.size() > 1 && taskNameCalledByUserList.contains('help')){
+            for (String taskNameCalledByUser : taskNameCalledByUserList) {
                 if (modeHelp && taskNameCalledByUser != 'help'){
                     propman.set('help.command.name', '')
                     propman.set('help.task.name', taskNameCalledByUser)
                     runTaskByName('help')
                 }
-            }else{
-                propman.set('help.command.name', '')
-                propman.set('help.task.name', '')
-                runTaskByName(taskNameCalledByUser)
-                break
             }
+            return true
+        }else{
+            return false
         }
-
-        return TaskUtil.STATUS_TASK_DONE
     }
 
 

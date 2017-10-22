@@ -74,7 +74,7 @@ class PropertyProvider {
 
     @Filter('getString')
     String getString(String propertyName){
-        return propman.getString("${propertyPrefix}${propertyName}") ?: propman.getString(propertyName) ?: ''
+        return propman.getString("${propertyPrefix}${propertyName}") ?: propman.getString(propertyName)
     }
 
     @Filter('getInteger')
