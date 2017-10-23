@@ -17,6 +17,7 @@ import install.configuration.annotation.type.TerminalValueProtocol
 import install.configuration.reflection.FieldInfomation
 import install.configuration.reflection.MethodInfomation
 import install.configuration.reflection.ReflectInfomation
+import install.data.Validator
 import jaemisseo.man.util.Util
 import org.fusesource.jansi.Ansi
 import org.slf4j.LoggerFactory
@@ -46,8 +47,7 @@ class Config {
 
     InstallerPropertiesGenerator propGen
     InstallerLogGenerator logGen
-
-
+    Validator validator = new Validator()
 
     void makeProperties(String[] args){
         propGen = new InstallerPropertiesGenerator()
@@ -266,7 +266,8 @@ class Config {
                 def value = getFromProvider("${prefixParam}${prefix}${propertyName}", filterName)
                 if (modeRenderJansi)
                     value = renderJansi(value)
-                validate(value, valueAnt)
+                if (!validator.validate(value, valueAnt))
+                    throw new Exception()
                 if (value != null)
                     instance[fieldName] = value
             //Inject New Object with Values
@@ -291,7 +292,8 @@ class Config {
                 def value = getFromProvider("${prefixParam}${prefix}${propertyName}", filterName)
                 if (modeRenderJansi)
                     value = renderJansi(value)
-                validate(value, valueAnt)
+                if (!validator.validate(value, valueAnt))
+                    throw new Exception()
                 Object[] parameters = [value] as Object[]
                 runMethod(instance, info.method, parameters)
             //Inject Object
@@ -349,45 +351,6 @@ class Config {
         return 'get'
     }
 
-    boolean validate(def value, Value valueAnt){
-        boolean isOk = false
-        String propertyName = valueAnt.value() ?: valueAnt.name() ?:''
-
-        boolean required = valueAnt.required()
-        boolean englishOnly = valueAnt.englishOnly()
-        boolean numberOnly = valueAnt.numberOnly()
-        boolean charOnly = valueAnt.charOnly()
-        int minLength = valueAnt.minLength()
-        int maxLength = valueAnt.maxLength()
-        List<String> validList = valueAnt.validList().toList()
-        List<String> contains = valueAnt.contains().toList()
-        List<String> caseIgnoreValidList = valueAnt.caseIgnoreValidList().toList()
-        List<String> caseIgnoreContains = valueAnt.caseIgnoreContains().toList()
-        String regexp = valueAnt.regexp()
-
-        if (required && !value)
-            throw Exception()
-
-        if (englishOnly && !value)
-            throw Exception()
-
-        if (numberOnly && !value)
-            throw Exception()
-
-        if (charOnly && !value)
-            throw Exception()
-
-        if (minLength > 0 && !value)
-            throw Exception()
-
-        if (maxLength > 0 && !value)
-            throw Exception()
-
-        if (maxLength > 0 && !value)
-            throw Exception()
-
-        return isOk
-    }
 
     /*************************
      * CLEAN Value
