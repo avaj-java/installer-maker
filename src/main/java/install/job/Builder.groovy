@@ -322,16 +322,7 @@ class Builder extends JobUtil{
         String libDestPath = FileMan.getFullPath(buildInstallerHome, homeToLibRelPath)
         String libToHomeRelPath = FileMan.getRelativePath(libDestPath, buildInstallerHome)
 
-        String binInstallShSourcePath = 'binForInstaller/install'
-        String binInstallBatSourcePath = 'binForInstaller/install.bat'
-        String binInstallShDestPath = "${binDestPath}/install"
-        String binInstallBatDestPath = "${binDestPath}/install.bat"
-
-        String binInstallerShSourcePath = 'binForInstaller/installer'
-        String binInstallerBatSourcePath = 'binForInstaller/installer.bat'
-        String binInstallerShDestPath = "${binDestPath}/installer"
-        String binInstallerBatDestPath = "${binDestPath}/installer.bat"
-
+        /** 1. Convert library for builder to installer**/
         logger.debug """<Builder> Copy And Generate Installer Library
          - Installer Home: ${buildInstallerHome}"
          - Copy Installer Lib: 
@@ -339,14 +330,14 @@ class Builder extends JobUtil{
             TO   : ${libDestPath}
         """
 
-        //1. Copy Libs
+        //- Copy Libs
         FileSetup opt = new FileSetup(modeAutoMkdir:true, modeAutoOverWrite:true)
         new FileMan(libSourcePath).set(fileSetup).copy(libDestPath, opt)
 
-        //2. Convert Init Script to Script Editd By User
+        //- Unjar libs
         FileMan.unjar(libPath, tempNowDir, opt)
 
-        //Search scriptfiles from User's FileSystem
+        //- Copy Scripts to Installer
         PropMan propmanExternal = provider.propGen.getExternalProperties()
         String userSetPropertiesDir = propmanExternal['properties.dir']
         Builder builder = config.findInstance(Builder)
@@ -355,19 +346,27 @@ class Builder extends JobUtil{
         File builderPropertiesFile = FileMan.find(userSetPropertiesDir, builder.propertiesFileName, ["yml", "yaml", "properties"])
         File receptionistPropertiesFile = FileMan.find(userSetPropertiesDir, receptionist.propertiesFileName, ["yml", "yaml", "properties"])
         File installerPropertiesFile = FileMan.find(userSetPropertiesDir, installer.propertiesFileName, ["yml", "yaml", "properties"])
-
         FileMan.copy(builderPropertiesFile.path, tempNowDir, opt)
         FileMan.copy(receptionistPropertiesFile.path, tempNowDir, opt)
         FileMan.copy(installerPropertiesFile.path, tempNowDir, opt)
+
+        //- Write Scripts to Installer
         FileMan.write("${tempNowDir}/.libtohome", libToHomeRelPath, opt)
+
+        //- Make jar
         FileMan.jar("${tempNowDir}/*", "${libDestPath}/${thisFileName}", opt)
 
+        /** 2. Gen bin/install **/
+        String binInstallShSourcePath = 'binForInstaller/install'
+        String binInstallBatSourcePath = 'binForInstaller/install.bat'
+        String binInstallShDestPath = "${binDestPath}/install"
+        String binInstallBatDestPath = "${binDestPath}/install.bat"
         logger.debug """<Builder> Generate Bin, install:
             SH  : ${binInstallShDestPath}
             BAT : ${binInstallBatDestPath}
         """
 
-        //3. Gen bin/install(sh)
+        //- Gen bin/install(sh)
         new FileMan()
         .set(fileSetupForLin)
         .readResource(binInstallShSourcePath)
@@ -377,7 +376,7 @@ class Builder extends JobUtil{
         ])
         .write(binInstallShDestPath)
 
-        //4. Gen bin/install.bat
+        //- Gen bin/install.bat
         new FileMan()
         .set(fileSetup)
         .readResource(binInstallBatSourcePath)
@@ -387,30 +386,65 @@ class Builder extends JobUtil{
         ])
         .write(binInstallBatDestPath)
 
-        logger.debug """<Builder> Generate Bin, installer:
-            SH  : ${binInstallerShDestPath}
-            BAT : ${binInstallerBatDestPath}
+        /** 3. Gen bin/installer-maker **/
+//        String binInstallerShSourcePath = 'binForInstaller/installer-maker'
+//        String binInstallerBatSourcePath = 'binForInstaller/installer-maker.bat'
+//        String binInstallerShDestPath = "${binDestPath}/installer-maker"
+//        String binInstallerBatDestPath = "${binDestPath}/installer-maker.bat"
+//        logger.debug """<Builder> Generate Bin, installer:
+//            SH  : ${binInstallerShDestPath}
+//            BAT : ${binInstallerBatDestPath}
+//        """
+//
+//        //- Gen bin/installer-maker(sh)
+//        new FileMan()
+//        .set(fileSetupForLin)
+//        .readResource(binInstallerShSourcePath)
+//        .replaceLine([
+//            'REL_PATH_BIN_TO_HOME=' : "REL_PATH_BIN_TO_HOME=${binToHomeRelPath}",
+//            'REL_PATH_HOME_TO_LIB=' : "REL_PATH_HOME_TO_LIB=${homeToLibRelPath}"
+//        ])
+//        .write(binInstallerShDestPath)
+//
+//        //- Gen bin/installer-maker.bat
+//        new FileMan()
+//        .set(fileSetup)
+//        .readResource(binInstallerBatSourcePath)
+//        .replaceLine([
+//            'set REL_PATH_BIN_TO_HOME=' : "set REL_PATH_BIN_TO_HOME=${binToHomeRelPathForWin}",
+//            'set REL_PATH_HOME_TO_LIB=' : "set REL_PATH_HOME_TO_LIB=${homeToLibRelPathForWin}"
+//        ])
+//        .write(binInstallerBatDestPath)
+
+        /** 4. Gen bin/macgyver **/
+        String binMacgyverShSourcePath = 'binForInstaller/macgyver'
+        String binMacgyverBatSourcePath = 'binForInstaller/macgyver.bat'
+        String binMacgyverShDestPath = "${binDestPath}/macgyver"
+        String binMacgyverBatDestPath = "${binDestPath}/macgyver.bat"
+        logger.debug """<Builder> Generate Bin, Macgyver:
+            SH  : ${binMacgyverShDestPath}
+            BAT : ${binMacgyverBatDestPath}
         """
 
-        //5. Gen bin/installer(sh)
+        //- Gen bin/macgyver(sh)
         new FileMan()
         .set(fileSetupForLin)
-        .readResource(binInstallerShSourcePath)
+        .readResource(binMacgyverShSourcePath)
         .replaceLine([
             'REL_PATH_BIN_TO_HOME=' : "REL_PATH_BIN_TO_HOME=${binToHomeRelPath}",
             'REL_PATH_HOME_TO_LIB=' : "REL_PATH_HOME_TO_LIB=${homeToLibRelPath}"
         ])
-        .write(binInstallerShDestPath)
+        .write(binMacgyverShDestPath)
 
-        //6. Gen bin/installer.bat
+        //- Gen bin/macgyver.bat
         new FileMan()
         .set(fileSetup)
-        .readResource(binInstallerBatSourcePath)
+        .readResource(binMacgyverBatSourcePath)
         .replaceLine([
             'set REL_PATH_BIN_TO_HOME=' : "set REL_PATH_BIN_TO_HOME=${binToHomeRelPathForWin}",
             'set REL_PATH_HOME_TO_LIB=' : "set REL_PATH_HOME_TO_LIB=${homeToLibRelPathForWin}"
         ])
-        .write(binInstallerBatDestPath)
+        .write(binMacgyverBatDestPath)
         return binDestPath
     }
 

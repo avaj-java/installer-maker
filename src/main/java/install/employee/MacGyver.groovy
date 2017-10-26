@@ -1,5 +1,6 @@
 package install.employee
 
+import install.Starter
 import install.bean.GlobalOptionForMacgyver
 import install.bean.ReportSetup
 import install.configuration.annotation.Alias
@@ -9,7 +10,6 @@ import install.configuration.annotation.method.Init
 import install.configuration.annotation.type.Document
 import install.configuration.annotation.type.Employee
 import install.configuration.annotation.type.Task
-import install.configuration.reflection.ReflectInfomation
 import install.data.PropertyProvider
 import install.util.EmployeeUtil
 import install.util.TaskUtil
@@ -30,7 +30,7 @@ class MacGyver extends EmployeeUtil {
         levelNamesProperty = 'macgyver.level'
     }
 
-    @Init
+    @Init(lately=true)
     void init(){
         validTaskList = Util.findAllClasses('install', [Task])
         
@@ -74,37 +74,26 @@ class MacGyver extends EmployeeUtil {
         //Setup Log
         setuptLog(gOpt.logSetup)
         
-        boolean modeHelp = propman.getBoolean('help') || propman.getBoolean('h')
+        boolean modeHelp = propman.getBoolean(['help', 'h'])
+        String applicationName = propman.getString('application.name')
+        List<String> taskCalledByUserList = config.taskCalledByUserList
 
-        /** Help - Command **/
+        /** Run Help - Command **/
         if (helpCommand(modeHelp))
             return TaskUtil.STATUS_TASK_DONE
 
-        /** Help - Task **/
-        // -Collect Task
-        //- Get Task Annotated Instance List from Singleton Pool
-        List<Object> taskInstanceList = config.findAllInstances([Task])
-        List<String> taskNameCalledByUserList = []
-        taskInstanceList.each{ instance ->
-            String taskName = instance.getClass().getSimpleName().toLowerCase()
-            if (propman.get(taskName))
-                taskNameCalledByUserList << taskName
-        }
-        // -Collect Task Alias
-        Map<Class, ReflectInfomation> aliasTaskReflectionMap = config.reflectionMap.findAll{ clazz, info ->
-            info.alias && propman.get(info.alias)
-        }
-        aliasTaskReflectionMap.each{ clazz, info ->
-            taskNameCalledByUserList << info.instance.getClass().getSimpleName().toLowerCase()
-        }
+        if (taskCalledByUserList){
+            String taskName = taskCalledByUserList[0]
+            /** Run Help - Task **/
+            if (helpTask(modeHelp, taskCalledByUserList))
+                return TaskUtil.STATUS_TASK_DONE
+            /** Run Task **/
+//            if (applicationName == Starter.APPLICATION_INSTALLER && taskName != 'version')
+//                return TaskUtil.STATUS_TASK_RUN_FAILED
 
-        /** Run Task **/
-        if (!helpTask(modeHelp, taskNameCalledByUserList)){
-            if (taskNameCalledByUserList){
-                propman.set('help.command.name', '')
-                propman.set('help.task.name', '')
-                runTaskByName(taskNameCalledByUserList[0])
-            }
+            propman.set('help.command.name', '')
+            propman.set('help.task.name', '')
+            runTaskByName(taskName)
         }
 
         return TaskUtil.STATUS_TASK_DONE
@@ -128,7 +117,7 @@ class MacGyver extends EmployeeUtil {
     }
 
     boolean helpTask(boolean modeHelp, List<String> taskNameCalledByUserList){
-        if (taskNameCalledByUserList.size() > 1 && taskNameCalledByUserList.contains('help')){
+        if (taskNameCalledByUserList && taskNameCalledByUserList.size() > 1 && taskNameCalledByUserList.contains('help')){
             for (String taskNameCalledByUser : taskNameCalledByUserList) {
                 if (modeHelp && taskNameCalledByUser != 'help'){
                     propman.set('help.command.name', '')

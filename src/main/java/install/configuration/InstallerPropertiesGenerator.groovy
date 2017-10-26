@@ -1,19 +1,6 @@
 package install.configuration
 
 import install.configuration.annotation.type.Bean
-import install.task.Copy
-import install.task.Jar
-import install.task.MergeProperties
-import install.task.Sql
-import install.task.Tar
-import install.task.TestJDBC
-import install.task.TestPort
-import install.task.TestREST
-import install.task.TestSocket
-import install.task.Unjar
-import install.task.Untar
-import install.task.Unzip
-import install.task.Zip
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.util.PropertiesGenerator
@@ -39,8 +26,8 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
 
 
     //Generate Properties Perspective Map
-    Map genPropertiesValueMap(String[] args){
-        Map valueListMap = super.genValueListMap(args)
+    Map genApplicationPropertiesValueMap(String[] args){
+        Map valueListMap = super.genPropertyValueMap(args)
 
         //Check
 //        println "- Check Arguments."
@@ -53,44 +40,51 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
 
 
     //Generate Properties Perspective Map
-    Map genPropertiesValueMap(Map valueListMap, Map<Class, List> lowerTaskNameAndValueProtocolListMap){
-        Map propValueMap = [:]
+    Map genApplicationPropertiesValueMap(Map terminalPropertiesValueMap, Map<Class, List> lowerTaskNameAndValueProtocolListMap){
+        Map applicationPropertyValueMap = [
+            ''      : [],
+            '--'    : []
+        ]
 
-        valueListMap.each{ String exPropName, def valueList ->
-            if (valueList instanceof List){
+        terminalPropertiesValueMap.each{ String proppertyName, def propertyValue ->
+            if (propertyValue instanceof List){
 
                 // -KEY VALUE VALUE ..
-                List valueProtocolList = lowerTaskNameAndValueProtocolListMap[exPropName.toLowerCase()]
+                List valueProtocolList = lowerTaskNameAndValueProtocolListMap[proppertyName.toLowerCase()]
                 if (valueProtocolList){
-                    if (valueProtocolList.size() >= valueList.size()){
-                        valueList.eachWithIndex{ def value, int i ->
+                    if (valueProtocolList.size() >= propertyValue.size()){
+                        propertyValue.eachWithIndex{ def value, int i ->
                             String propName = valueProtocolList[i]
-                            propValueMap[propName] = parseValue(value)
+                            applicationPropertyValueMap[propName] = parseValue(value)
                         }
                     }else{
-                        throw new Exception("So Many arguments!. Check ${exPropName}'s Arguments")
+                        throw new Exception("So Many arguments!. Check ${proppertyName}'s Arguments")
                     }
                 }
 
-                // -KEY
-                if (exPropName){
-                    String propName = exPropName
-                    propValueMap[propName] = parseValue(valueList) ?: true
+
+                if (proppertyName){
+                    // --VALUE
+                    if (proppertyName == '--'){
+                        applicationPropertyValueMap['--'] = propertyValue
+
+                    // -KEY
+                    }else{
+                        applicationPropertyValueMap[proppertyName] = parseValue(propertyValue) ?: true
+                    }
 
                 // VALUE VALUE ..
                 }else{
-                    propValueMap[''] = valueList
+                    applicationPropertyValueMap[''] = propertyValue
                 }
 
             }else{
                 // -KEY=VALUE
-                String propName = exPropName
-                def value = parseValue(valueList)
-                propValueMap[propName] = value
+                applicationPropertyValueMap[proppertyName] = parseValue(propertyValue)
             }
         }
 
-        return propValueMap
+        return applicationPropertyValueMap
     }
 
     def parseValue(def value){
@@ -172,8 +166,8 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
      *
      */
     InstallerPropertiesGenerator makeExternalProperties(String[] args, Map<Class, List> valueProtocolListMap){
-        Map argsMap = genPropertiesValueMap(args)
-        Map propertiesValueMap = genPropertiesValueMap(argsMap, valueProtocolListMap)
+        Map argsMap = genApplicationPropertiesValueMap(args)
+        Map propertiesValueMap = genApplicationPropertiesValueMap(argsMap, valueProtocolListMap)
         externalProperties = new PropMan(propertiesValueMap)
         externalProperties.set('args', args.join(' '))
         externalProperties.set('args.except.command', argsMap.findAll{ it.key }.collect{ "-${it.key}=${it.value}" }.join(' '))

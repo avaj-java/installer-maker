@@ -17,7 +17,9 @@ import install.configuration.annotation.type.TerminalValueProtocol
 import install.configuration.reflection.FieldInfomation
 import install.configuration.reflection.MethodInfomation
 import install.configuration.reflection.ReflectInfomation
+import install.data.PropertyProvider
 import install.data.Validator
+import jaemisseo.man.PropMan
 import jaemisseo.man.util.Util
 import org.fusesource.jansi.Ansi
 import org.slf4j.LoggerFactory
@@ -47,9 +49,32 @@ class Config {
 
     InstallerPropertiesGenerator propGen
     InstallerLogGenerator logGen
+
+    List<String> commandCalledByUserList = []
+    List<String> taskCalledByUserList = []
+
+    //Validator
     Validator validator = new Validator()
 
-    void makeProperties(String[] args){
+    Config setup(String[] args){
+        scan()
+
+        makeProperties(args)
+        makeLogger()
+
+        commandCalledByUserList = getCommandListCalledByUser(propGen.getExternalProperties())
+        taskCalledByUserList = getTaskListCalledByUser(propGen.getExternalProperties())
+
+        PropertyProvider provider = findInstanceByAnnotation(Data)
+        provider.propGen = propGen
+        provider.logGen = logGen
+
+        inject()
+        init()
+        return this
+    }
+
+    Config makeProperties(String[] args){
         propGen = new InstallerPropertiesGenerator()
         propGen.makeExternalProperties(args, lowerTaskNameAndValueProtocolListMap)
         propGen.makeDefaultProperties()
@@ -57,9 +82,10 @@ class Config {
         propGen.genResourceSingleton('receptionist', 'defaultProperties/receptionist.default.properties')
         propGen.genResourceSingleton('installer', 'defaultProperties/installer.default.properties')
         propGen.genResourceSingleton('macgyver', 'defaultProperties/macgyver.default.properties')
+        return this
     }
 
-    void makeLogger(String[] args){
+    Config makeLogger(String[] args){
         logGen = new InstallerLogGenerator()
         boolean modeSystemDebugLog = false
         boolean modeSystemDebugLogFile = false
@@ -69,7 +95,7 @@ class Config {
         }
 
         if (modeSystemDebugLogFile){
-            logGen.setupFileLogger('system', 'trace', './', 'installer-maker-debug')
+            logGen.setupFileLogger('system', 'trace', './', 'nstaller-maker-debug')
         }
 
         if (modeSystemDebugLog || modeSystemDebugLogFile){
@@ -77,7 +103,29 @@ class Config {
             LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory()
             StatusPrinter.print(loggerContext)
         }
+        return this
+    }
 
+    List<String> getCommandListCalledByUser(PropMan propmanExternal){
+        return propmanExternal.get('') ?: []
+    }
+
+    List<String> getTaskListCalledByUser(PropMan propmanExternal){
+        List<String> taskCalledByUserList = []
+        // -Collect Task
+        findAllInstances([Task]).each{ instance ->
+            String taskName = instance.getClass().getSimpleName().toLowerCase()
+            if (propmanExternal.get(taskName))
+                taskCalledByUserList << taskName
+        }
+        // -Collect Task Alias
+        Map<Class, ReflectInfomation> aliasTaskReflectionMap = reflectionMap.findAll{ clazz, info ->
+            info.alias && propmanExternal.get(info.alias)
+        }
+        aliasTaskReflectionMap.each{ clazz, info ->
+            taskCalledByUserList << info.instance.getClass().getSimpleName().toLowerCase()
+        }
+        return taskCalledByUserList
     }
 
 
@@ -85,7 +133,7 @@ class Config {
      * 1. Scan Class
      * 2. New Instance
      *************************/
-    void scan(){
+    Config scan(){
         try {
             //1. Scan Classes
             List<Class> jobList = Util.findAllClasses('install', [Job, Employee])
@@ -134,6 +182,7 @@ class Config {
         }catch(Exception e){
             throw e
         }
+        return this
     }
 
     boolean scanDefault(ReflectInfomation reflect){
@@ -214,7 +263,7 @@ class Config {
     /*************************
      * INEJCT Bean
      *************************/
-    void inject(){
+    Config inject(){
         //1. INJECT to FIELD
         List<FieldInfomation> injectFieldList = reflectionMap.findAll{ clazz, reflect ->
             reflect.injectFieldNameMap
@@ -240,6 +289,7 @@ class Config {
             //inject
             runMethod(info.instance, info.method, parameters)
         }
+        return this
     }
 
     /*************************

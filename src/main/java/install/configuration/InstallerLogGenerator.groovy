@@ -358,10 +358,11 @@ class InstallerLogGenerator {
      *
      *************************/
     void logVersion(PropMan propman){
+        String thisApplicationName  = propman.get('application.name')
         String thisVersion  = propman.get('lib.version')
         String thisBuildDate = propman.get('lib.build.date')
         logger.info ""
-        logger.info "Installer Version ${thisVersion}"
+        logger.info "${thisApplicationName} Version ${thisVersion}"
         logger.info "${propman.get('lib.compiler')} compiled on ${thisBuildDate}"
         logger.info "https://github.com/avaj-java/installer-maker"
         logger.info ""
