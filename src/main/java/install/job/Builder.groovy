@@ -229,7 +229,6 @@ class Builder extends JobUtil{
                 tar(gOpt)
 
         }catch(e){
-            e.printStackTrace()
             throw e
         }
     }

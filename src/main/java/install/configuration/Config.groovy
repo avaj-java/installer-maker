@@ -132,7 +132,6 @@ class Config {
             }
 
         }catch(Exception e){
-            e.printStackTrace()
             throw e
         }
     }
@@ -395,7 +394,6 @@ class Config {
         try {
             method.invoke(instance, null)
         }catch(e){
-            e.printStackTrace()
             throw e
         }
         reflectionMap[clazz].checkInitMethod = true
@@ -460,7 +458,6 @@ class Config {
             Method method = instance.getClass().getMethod(methodName, parameterTypes)
             return runMethod(instance, method, parameters)
         }catch(e){
-            e.printStackTrace()
             throw e
         }
     }
@@ -474,7 +471,7 @@ class Config {
         try {
             result = method.invoke(instance, parameters)
         }catch(e){
-            e.printStackTrace()
+//            throw new Exception(e.getCause())
             throw e
         }
         return result

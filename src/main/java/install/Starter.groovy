@@ -38,24 +38,45 @@ class Starter {
         config.init()
         PropMan propmanExternal = config.propGen.getExternalProperties()
 
-        /** [Command] **/
-        if ( !propmanExternal.getBoolean(['help', 'h']) ){
-            // -[Command] Start
-            new Starter().startCommand(config)
-
-            // -[Command] Finish
-            if ( !propmanExternal.getBoolean('mode.exec.self') ){
-                List installerCommandList = propmanExternal.get('') ?: []
-                new Starter().finishCommand(installerCommandList, timeman.stop().getTime())
+        try {
+            /** [Command] **/
+            if (!propmanExternal.getBoolean(['help', 'h'])) {
+                // -[Command] Start
+                new Starter().startCommand(config)
+                // -[Command] Finish
+                if (!propmanExternal.getBoolean('mode.exec.self')) {
+                    List installerCommandList = propmanExternal.get('') ?: []
+                    new Starter().finishCommand(installerCommandList, timeman.stop().getTime())
+                }
             }
+
+            /** [Task] **/
+            // -Run Task Directly (Doing Other Task with Command Line Options) **/
+            config.command('doSomething')
+
+            /** [Finish] INSTALLER-MAKER **/
+            config.logGen.logFinished()
+
+        }catch(Exception e){
+            /** [Error] **/
+            Throwable cause = e.getCause()
+            ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME)
+            String errorClass = e.toString()?.replaceAll('\\s+', '') ?: ''
+            String errorMessage = e.getMessage()?.replaceAll('\\s+', '') ?: ''
+            String errorCauseMessage = cause.getMessage()
+
+            rootLogger.error("<< Error >>")
+            if (errorMessage)
+                rootLogger.error errorMessage
+            if (errorCauseMessage)
+                rootLogger.error '\t' + errorCauseMessage
+            while((cause = cause.getCause()) != null){
+                errorCauseMessage = cause.getMessage()
+                if (errorCauseMessage)
+                    rootLogger.error '\t' + errorCauseMessage
+            }
+//            e.printStackTrace()
         }
-
-        /** [Task] **/
-        // -Run Task Directly (Doing Other Task with Command Line Options) **/
-        config.command('doSomething')
-
-        /** [Finish] INSTALLER-MAKER **/
-        config.logGen.logFinished()
     }
 
 
