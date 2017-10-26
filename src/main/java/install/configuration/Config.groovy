@@ -17,6 +17,9 @@ import install.configuration.annotation.type.TerminalValueProtocol
 import install.configuration.reflection.FieldInfomation
 import install.configuration.reflection.MethodInfomation
 import install.configuration.reflection.ReflectInfomation
+import install.data.PropertyProvider
+import install.data.Validator
+import jaemisseo.man.PropMan
 import jaemisseo.man.util.Util
 import org.fusesource.jansi.Ansi
 import org.slf4j.LoggerFactory
@@ -47,9 +50,31 @@ class Config {
     InstallerPropertiesGenerator propGen
     InstallerLogGenerator logGen
 
+    List<String> commandCalledByUserList = []
+    List<String> taskCalledByUserList = []
 
+    //Validator
+    Validator validator = new Validator()
 
-    void makeProperties(String[] args){
+    Config setup(String[] args){
+        scan()
+
+        makeProperties(args)
+        makeLogger()
+
+        commandCalledByUserList = getCommandListCalledByUser(propGen.getExternalProperties())
+        taskCalledByUserList = getTaskListCalledByUser(propGen.getExternalProperties())
+
+        PropertyProvider provider = findInstanceByAnnotation(Data)
+        provider.propGen = propGen
+        provider.logGen = logGen
+
+        inject()
+        init()
+        return this
+    }
+
+    Config makeProperties(String[] args){
         propGen = new InstallerPropertiesGenerator()
         propGen.makeExternalProperties(args, lowerTaskNameAndValueProtocolListMap)
         propGen.makeDefaultProperties()
@@ -57,9 +82,10 @@ class Config {
         propGen.genResourceSingleton('receptionist', 'defaultProperties/receptionist.default.properties')
         propGen.genResourceSingleton('installer', 'defaultProperties/installer.default.properties')
         propGen.genResourceSingleton('macgyver', 'defaultProperties/macgyver.default.properties')
+        return this
     }
 
-    void makeLogger(String[] args){
+    Config makeLogger(String[] args){
         logGen = new InstallerLogGenerator()
         boolean modeSystemDebugLog = false
         boolean modeSystemDebugLogFile = false
@@ -69,7 +95,7 @@ class Config {
         }
 
         if (modeSystemDebugLogFile){
-            logGen.setupFileLogger('system', 'trace', './', 'installer-maker-debug')
+            logGen.setupFileLogger('system', 'trace', './', 'nstaller-maker-debug')
         }
 
         if (modeSystemDebugLog || modeSystemDebugLogFile){
@@ -77,7 +103,29 @@ class Config {
             LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory()
             StatusPrinter.print(loggerContext)
         }
+        return this
+    }
 
+    List<String> getCommandListCalledByUser(PropMan propmanExternal){
+        return propmanExternal.get('') ?: []
+    }
+
+    List<String> getTaskListCalledByUser(PropMan propmanExternal){
+        List<String> taskCalledByUserList = []
+        // -Collect Task
+        findAllInstances([Task]).each{ instance ->
+            String taskName = instance.getClass().getSimpleName().toLowerCase()
+            if (propmanExternal.get(taskName))
+                taskCalledByUserList << taskName
+        }
+        // -Collect Task Alias
+        Map<Class, ReflectInfomation> aliasTaskReflectionMap = reflectionMap.findAll{ clazz, info ->
+            info.alias && propmanExternal.get(info.alias)
+        }
+        aliasTaskReflectionMap.each{ clazz, info ->
+            taskCalledByUserList << info.instance.getClass().getSimpleName().toLowerCase()
+        }
+        return taskCalledByUserList
     }
 
 
@@ -85,7 +133,7 @@ class Config {
      * 1. Scan Class
      * 2. New Instance
      *************************/
-    void scan(){
+    Config scan(){
         try {
             //1. Scan Classes
             List<Class> jobList = Util.findAllClasses('install', [Job, Employee])
@@ -132,9 +180,9 @@ class Config {
             }
 
         }catch(Exception e){
-            e.printStackTrace()
             throw e
         }
+        return this
     }
 
     boolean scanDefault(ReflectInfomation reflect){
@@ -215,7 +263,7 @@ class Config {
     /*************************
      * INEJCT Bean
      *************************/
-    void inject(){
+    Config inject(){
         //1. INJECT to FIELD
         List<FieldInfomation> injectFieldList = reflectionMap.findAll{ clazz, reflect ->
             reflect.injectFieldNameMap
@@ -241,6 +289,7 @@ class Config {
             //inject
             runMethod(info.instance, info.method, parameters)
         }
+        return this
     }
 
     /*************************
@@ -266,7 +315,8 @@ class Config {
                 def value = getFromProvider("${prefixParam}${prefix}${propertyName}", filterName)
                 if (modeRenderJansi)
                     value = renderJansi(value)
-                validate(value, valueAnt)
+                if (!validator.validate(value, valueAnt))
+                    throw new Exception()
                 if (value != null)
                     instance[fieldName] = value
             //Inject New Object with Values
@@ -291,7 +341,8 @@ class Config {
                 def value = getFromProvider("${prefixParam}${prefix}${propertyName}", filterName)
                 if (modeRenderJansi)
                     value = renderJansi(value)
-                validate(value, valueAnt)
+                if (!validator.validate(value, valueAnt))
+                    throw new Exception()
                 Object[] parameters = [value] as Object[]
                 runMethod(instance, info.method, parameters)
             //Inject Object
@@ -349,45 +400,6 @@ class Config {
         return 'get'
     }
 
-    boolean validate(def value, Value valueAnt){
-        boolean isOk = false
-        String propertyName = valueAnt.value() ?: valueAnt.name() ?:''
-
-        boolean required = valueAnt.required()
-        boolean englishOnly = valueAnt.englishOnly()
-        boolean numberOnly = valueAnt.numberOnly()
-        boolean charOnly = valueAnt.charOnly()
-        int minLength = valueAnt.minLength()
-        int maxLength = valueAnt.maxLength()
-        List<String> validList = valueAnt.validList().toList()
-        List<String> contains = valueAnt.contains().toList()
-        List<String> caseIgnoreValidList = valueAnt.caseIgnoreValidList().toList()
-        List<String> caseIgnoreContains = valueAnt.caseIgnoreContains().toList()
-        String regexp = valueAnt.regexp()
-
-        if (required && !value)
-            throw Exception()
-
-        if (englishOnly && !value)
-            throw Exception()
-
-        if (numberOnly && !value)
-            throw Exception()
-
-        if (charOnly && !value)
-            throw Exception()
-
-        if (minLength > 0 && !value)
-            throw Exception()
-
-        if (maxLength > 0 && !value)
-            throw Exception()
-
-        if (maxLength > 0 && !value)
-            throw Exception()
-
-        return isOk
-    }
 
     /*************************
      * CLEAN Value
@@ -432,7 +444,6 @@ class Config {
         try {
             method.invoke(instance, null)
         }catch(e){
-            e.printStackTrace()
             throw e
         }
         reflectionMap[clazz].checkInitMethod = true
@@ -497,7 +508,6 @@ class Config {
             Method method = instance.getClass().getMethod(methodName, parameterTypes)
             return runMethod(instance, method, parameters)
         }catch(e){
-            e.printStackTrace()
             throw e
         }
     }
@@ -511,7 +521,7 @@ class Config {
         try {
             result = method.invoke(instance, parameters)
         }catch(e){
-            e.printStackTrace()
+//            throw new Exception(e.getCause())
             throw e
         }
         return result

@@ -112,9 +112,11 @@ case "$CHECK_OS" in
     MINGW64*)   THIS_OS="WIN";;
     CYGWIN*)  THIS_OS="WIN";;
 esac
-echo "OS CHECK = ${CHECK_OS}"
-echo "OS is ${THIS_OS}"
-echo "This Dir is ${THIS_DIR}"
+
+#echo "OS CHECK = ${CHECK_OS}"
+#echo "OS is ${THIS_OS}"
+#echo "This Dir is ${THIS_DIR}"
+
 
 
 
@@ -144,4 +146,4 @@ if [ "$THIS_OS" = "WIN" ]; then
 fi
 
 ##### Run Jar
-java -cp "${PATH_TO_LIB_DIR}/*" install.Starter macgyver "$@"
+java -cp "${PATH_TO_LIB_DIR}/*" install.Starter --macgyver "$@"

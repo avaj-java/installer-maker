@@ -1,5 +1,6 @@
 package install.task
 
+import install.Starter
 import install.configuration.annotation.Alias
 import install.configuration.annotation.HelpIgnore
 import install.configuration.annotation.Value
@@ -34,31 +35,44 @@ class Help extends TaskUtil{
     String specificTaskName
 
     @HelpIgnore
+    @Value('application.name')
+    String applicationName = 'installer-maker'
+
+    @HelpIgnore
     @Value('force')
     Boolean isForce
-
-    String programName = 'installer-maker'
 
 
 
     @Override
     Integer run(){
 
+//        println "asdf $applicationName"
+//        println isCommandable(applicationName)
+//        println isTaskRunable(applicationName)
+
         //All Command and Task (No Detail)
         if (!specificCommandName && !specificTaskName){
-            logger.info ' [ Commands ]'
-            printHelpCommand()
-            logger.info '-------------------------'
-            logger.info ' [ Tasks ]'
-            printHelpTask()
-            //- Print Help Task Document
-            List<Annotation> allClassAnnotationList = config.findAllAnnotationFromClass(Help)
-            Document documentAnt = allClassAnnotationList.find { it.annotationType() == Document }
-            printDocument(documentAnt)
+
+            if (isCommandable(applicationName)){
+                logger.info ' [ Commands ]'
+                printHelpCommand()
+                logger.info '-------------------------'
+            }
+
+            if (isTaskRunable(applicationName)){
+                logger.info ' [ Tasks ]'
+                printHelpTask()
+                //- Print Help Task Document
+                List<Annotation> allClassAnnotationList = config.findAllAnnotationFromClass(Help)
+                Document documentAnt = allClassAnnotationList.find { it.annotationType() == Document }
+                printDocument(documentAnt)
+            }
 
         }else{
+
             //Specific Command (Detail)
-            if (specificCommandName){
+            if (specificCommandName && isCommandable(applicationName)){
                 config.methodCommandNameMap.each { commandName, info ->
                     if (specificCommandName == commandName){
                         logger.info " [ Command:${specificCommandName.toUpperCase()} ]"
@@ -67,7 +81,7 @@ class Help extends TaskUtil{
                 }
 
             //Specific Task (Detail)
-            }else if (specificTaskName){
+            }else if (specificTaskName && isTaskRunable(applicationName)){
                 config.findAllInstances(Task).each { def instance ->
                     String taskName = instance.getClass().getSimpleName().toLowerCase()
                     if (specificTaskName == taskName){
@@ -76,11 +90,20 @@ class Help extends TaskUtil{
                     }
                 }
             }
+
         }
 
         return STATUS_TASK_DONE
     }
 
+
+    boolean isCommandable(String applicationName){
+        return [Starter.APPLICATION_INSTALLER_MAKER].contains(applicationName)
+    }
+
+    boolean isTaskRunable(String applicationName){
+        return [Starter.APPLICATION_INSTALLER_MAKER, Starter.APPLICATION_MACGYVER].contains(applicationName)
+    }
 
 
     /*************************
@@ -123,7 +146,7 @@ class Help extends TaskUtil{
 
         //-Print
         if (!helpIgnoreAnt)
-            logger.info "${programName} ${commandName}"
+            logger.info "${this.applicationName} ${commandName}"
 
         //-Detail
         if (isDetail){
@@ -162,7 +185,7 @@ class Help extends TaskUtil{
             terminalValueRule.each {
                 nonPropertyPrintItemList << "<${it}>"
             }
-            logger.info "${programName} -${taskName} ${nonPropertyPrintItemList.join(' ')}"
+            logger.info "${this.applicationName} -${taskName} ${nonPropertyPrintItemList.join(' ')}"
 
             //-Print with Property
             if (isDetail){
@@ -171,7 +194,7 @@ class Help extends TaskUtil{
                     propertyList.each {
                         propertyPrintItemList << "-${it}=<value>"
                     }
-                    logger.info "${programName} -${taskName} ${propertyPrintItemList.join(' ')}"
+                    logger.info "${this.applicationName} -${taskName} ${propertyPrintItemList.join(' ')}"
                 }
 
                 printDocument(documentAnt)

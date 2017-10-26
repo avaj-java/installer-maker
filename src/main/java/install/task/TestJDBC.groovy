@@ -80,7 +80,6 @@ class TestJDBC extends TaskUtil{
 
         }catch(Exception e){
             printFailed()
-            e.printStackTrace()
             throw e
 
         }finally{
