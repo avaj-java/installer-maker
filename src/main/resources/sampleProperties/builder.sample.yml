@@ -11,6 +11,14 @@ data.home: ~/.builder/data
 ##################################################
 ##### SETUP - DEFAULT (builder)
 ##################################################
+product:
+  name: Program
+  version:
+
+color:
+  desc: yellow
+  question: yellow
+  task:
 
 ##################################################
 ##### SETUP - BUILD LEVEL (builder)

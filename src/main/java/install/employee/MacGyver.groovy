@@ -1,6 +1,5 @@
 package install.employee
 
-import install.Starter
 import install.bean.GlobalOptionForMacgyver
 import install.bean.ReportSetup
 import install.configuration.annotation.Alias
@@ -88,12 +87,12 @@ class MacGyver extends EmployeeUtil {
             if (helpTask(modeHelp, taskCalledByUserList))
                 return TaskUtil.STATUS_TASK_DONE
             /** Run Task **/
-//            if (applicationName == Starter.APPLICATION_INSTALLER && taskName != 'version')
+//            if (applicationName == Starter.APPLICATION_INSTALLER && taskTypeName != 'version')
 //                return TaskUtil.STATUS_TASK_RUN_FAILED
 
             propman.set('help.command.name', '')
             propman.set('help.task.name', '')
-            runTaskByName(taskName)
+            runTaskByType(taskName)
         }
 
         return TaskUtil.STATUS_TASK_DONE
@@ -109,7 +108,7 @@ class MacGyver extends EmployeeUtil {
             installerCommandCalledByUserList.each{ commandNameCalledByUser ->
                 propman.set('help.task.name', '')
                 propman.set('help.command.name', commandNameCalledByUser)
-                runTaskByName('help')
+                runTaskByType('help')
             }
             return true
         }
@@ -122,7 +121,7 @@ class MacGyver extends EmployeeUtil {
                 if (modeHelp && taskNameCalledByUser != 'help'){
                     propman.set('help.command.name', '')
                     propman.set('help.task.name', taskNameCalledByUser)
-                    runTaskByName('help')
+                    runTaskByType('help')
                 }
             }
             return true
@@ -165,7 +164,7 @@ class MacGyver extends EmployeeUtil {
     You can know How to use Command or Task on Terminal      
     """)
     void help(){
-        runTaskByName('help')
+        runTaskByType('help')
     }
 
     @Command('test')

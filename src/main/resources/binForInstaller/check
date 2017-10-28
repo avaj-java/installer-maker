@@ -113,36 +113,6 @@ case "$CHECK_OS" in
     CYGWIN*)    THIS_OS="WIN";;
 esac
 
-# echo "OS CHECK = ${CHECK_OS}"
-# echo "OS is ${THIS_OS}"
-# echo "This Dir is ${THIS_DIR}"
-
-
-
-
-
-####################################################################################################
-####################################################################################################
-####################################################################################################
-#####
-##### START
-#####
-####################################################################################################
-####################################################################################################
-####################################################################################################
-
-##### Parameter To Run Installer
-REL_PATH_BIN_TO_HOME=../
-REL_PATH_HOME_TO_LIB=./lib
-
-##### Get Path
-PATH_TO_INSTALLER_HOME=${THIS_DIR}/${REL_PATH_BIN_TO_HOME}
-PATH_TO_LIB_DIR=${PATH_TO_INSTALLER_HOME}/${REL_PATH_HOME_TO_LIB}
-
-##### CONVERT TO WIN PATH (JAVA(Win) Needs Windows Path)
-if [ "$THIS_OS" = "WIN" ]; then
-  PATH_TO_LIB_DIR="`printPathLinToWin "$PATH_TO_LIB_DIR"`"
-fi
-
-##### Run Jar
-java -cp "${PATH_TO_LIB_DIR}/*" install.Starter --installer "$@"
+echo "OS CHECK = ${CHECK_OS}"
+echo "OS is ${THIS_OS}"
+echo "This Dir is ${THIS_DIR}"

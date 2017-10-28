@@ -270,25 +270,27 @@ class JobUtil extends TaskUtil{
         return runTask('', propertyPrefix)
     }
 
-    Integer runTaskByName(String taskName){
-        return runTask(taskName, '')
+    Integer runTaskByType(String taskType){
+        return runTask(taskType, '')
     }
 
-    Integer runTask(String taskName, String propertyPrefix){
+    Integer runTask(String taskType, String propertyPrefix){
         provider.shift( jobName, propertyPrefix )
+        List<String> propertyStructureList = propertyPrefix ? propertyPrefix.split('[.]').toList() : []
         TaskSetup task = config.injectValue(new TaskSetup(
                 jobName: jobName,
-                taskName: taskName,
+                taskName: (propertyStructureList.size() >= 2) ? propertyStructureList[1] : '',
+                taskTypeName: taskType,
                 propertyPrefix: propertyPrefix
         ))
-        task.taskClazz = getTaskClass(task.taskName)
+        task.taskClazz = getTaskClass(task.taskTypeName)
 
         //Validation
         //Check Valid Task
-        if (!task.taskName)
+        if (!task.taskTypeName)
             throw new Exception(" 'No Task Name. ${task.propertyPrefix}task=???. Please Check Task.' ")
         if ( (validTaskList && !validTaskList.contains(task.taskClazz)) || (invalidTaskList && invalidTaskList.contains(task.taskClazz)) )
-            throw new Exception(" 'Sorry, This is Not my task, [${task.taskName}]. I Can Not do this.' ")
+            throw new Exception(" 'Sorry, This is Not my task, [${task.taskTypeName}]. I Can Not do this.' ")
 
         //(Task) Start
         return start(task)
@@ -357,9 +359,7 @@ class JobUtil extends TaskUtil{
     }
 
     protected void descript(TaskSetup task){
-        List<String> propertyStructureList = task.propertyPrefix ? task.propertyPrefix.split('[.]').toList() : []
-        String taskName = (propertyStructureList.size() >= 2) ? propertyStructureList[1] : ''
-        String description = task.desc ? "$task.jobName:$task.desc" : "$task.jobName:$taskName:$task.taskClazz"
+        String description = task.desc ? "$task.jobName:$task.desc" : "$task.jobName:$task.taskName:$task.taskTypeName"
         if (description){
             if (task.descColor)
                 config.logGen.setupConsoleLoggerColorPattern(task.descColor)

@@ -16,16 +16,17 @@ class TaskSetup extends Option {
     @Value(name='desc', modeRenderJansi=true)
     String desc
 
-    @Value('color')
+    @Value('color.task')
     String color
 
-    @Value('descColor')
+    @Value('color.desc')
     String descColor
 
     @Value('task')
-    String taskName
+    String taskTypeName
 
     String jobName
+    String taskName
     Class taskClazz
     String propertyPrefix
 

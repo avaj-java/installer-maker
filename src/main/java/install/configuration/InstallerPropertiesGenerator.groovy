@@ -112,6 +112,8 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
                 'lib.version': FileMan.getFileFromResource('.version').text,
                 'lib.compiler': FileMan.getFileFromResource('.compiler').text,
                 'lib.build.date': FileMan.getFileFromResource('.date').text,
+                'product.name': FileMan.getFileFromResource('.productname').text?.trim(),
+                'product.version': FileMan.getFileFromResource('.productversion').text?.trim(),
         ])
     }
 

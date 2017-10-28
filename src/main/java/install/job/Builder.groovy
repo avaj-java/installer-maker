@@ -252,7 +252,7 @@ class Builder extends JobUtil{
         String installBinPathForLin = "${binPath}/install".replaceAll(/[\/\\]+/, "/")
         provider.setRaw('exec.command.win', "${installBinPathForWIn} ${argsExceptCommand} ${argsModeExec}")
         provider.setRaw('exec.command.lin', "${installBinPathForLin} ${argsExceptCommand} ${argsModeExec}")
-        runTaskByName('exec')
+        runTaskByType('exec')
         provider.setRaw('exec.command.win', "")
         provider.setRaw('exec.command.lin', "")
     }
@@ -334,12 +334,16 @@ class Builder extends JobUtil{
         FileSetup opt = new FileSetup(modeAutoMkdir:true, modeAutoOverWrite:true)
         new FileMan(libSourcePath).set(fileSetup).copy(libDestPath, opt)
 
+        /** 2. Remake Jar(Installer Core) **/
         //- Unjar libs
         FileMan.unjar(libPath, tempNowDir, opt)
 
         //- Copy Scripts to Installer
         PropMan propmanExternal = provider.propGen.getExternalProperties()
-        String userSetPropertiesDir = propmanExternal['properties.dir']
+        String userSetPropertiesDir = propman['properties.dir']
+        String productVersion = propman['product.version']
+        String productName = propman['product.name']
+
         Builder builder = config.findInstance(Builder)
         Receptionist receptionist = config.findInstance(Receptionist)
         Installer installer = config.findInstance(Installer)
@@ -350,13 +354,17 @@ class Builder extends JobUtil{
         FileMan.copy(receptionistPropertiesFile.path, tempNowDir, opt)
         FileMan.copy(installerPropertiesFile.path, tempNowDir, opt)
 
-        //- Write Scripts to Installer
+        //- Write 'Relative Path from [lib dir] to [Installer Home dir]'
         FileMan.write("${tempNowDir}/.libtohome", libToHomeRelPath, opt)
+        //- Write 'Product Name'
+        FileMan.write("${tempNowDir}/.productname", productName, opt)
+        //- Write 'Product Version'
+        FileMan.write("${tempNowDir}/.productversion", productVersion, opt)
 
         //- Make jar
         FileMan.jar("${tempNowDir}/*", "${libDestPath}/${thisFileName}", opt)
 
-        /** 2. Gen bin/install **/
+        /** 3. Generate Runable Binary File (install) **/
         String binInstallShSourcePath = 'binForInstaller/install'
         String binInstallBatSourcePath = 'binForInstaller/install.bat'
         String binInstallShDestPath = "${binDestPath}/install"
@@ -386,37 +394,7 @@ class Builder extends JobUtil{
         ])
         .write(binInstallBatDestPath)
 
-        /** 3. Gen bin/installer-maker **/
-//        String binInstallerShSourcePath = 'binForInstaller/installer-maker'
-//        String binInstallerBatSourcePath = 'binForInstaller/installer-maker.bat'
-//        String binInstallerShDestPath = "${binDestPath}/installer-maker"
-//        String binInstallerBatDestPath = "${binDestPath}/installer-maker.bat"
-//        logger.debug """<Builder> Generate Bin, installer:
-//            SH  : ${binInstallerShDestPath}
-//            BAT : ${binInstallerBatDestPath}
-//        """
-//
-//        //- Gen bin/installer-maker(sh)
-//        new FileMan()
-//        .set(fileSetupForLin)
-//        .readResource(binInstallerShSourcePath)
-//        .replaceLine([
-//            'REL_PATH_BIN_TO_HOME=' : "REL_PATH_BIN_TO_HOME=${binToHomeRelPath}",
-//            'REL_PATH_HOME_TO_LIB=' : "REL_PATH_HOME_TO_LIB=${homeToLibRelPath}"
-//        ])
-//        .write(binInstallerShDestPath)
-//
-//        //- Gen bin/installer-maker.bat
-//        new FileMan()
-//        .set(fileSetup)
-//        .readResource(binInstallerBatSourcePath)
-//        .replaceLine([
-//            'set REL_PATH_BIN_TO_HOME=' : "set REL_PATH_BIN_TO_HOME=${binToHomeRelPathForWin}",
-//            'set REL_PATH_HOME_TO_LIB=' : "set REL_PATH_HOME_TO_LIB=${homeToLibRelPathForWin}"
-//        ])
-//        .write(binInstallerBatDestPath)
-
-        /** 4. Gen bin/macgyver **/
+        /** 4. Generate Runable Binary File (macgyver) **/
         String binMacgyverShSourcePath = 'binForInstaller/macgyver'
         String binMacgyverBatSourcePath = 'binForInstaller/macgyver.bat'
         String binMacgyverShDestPath = "${binDestPath}/macgyver"
@@ -445,6 +423,24 @@ class Builder extends JobUtil{
             'set REL_PATH_HOME_TO_LIB=' : "set REL_PATH_HOME_TO_LIB=${homeToLibRelPathForWin}"
         ])
         .write(binMacgyverBatDestPath)
+
+        /** 5. Generate Runable Binary File (check) **/
+        String binCheckShSourcePath = 'binForInstaller/check'
+        String binCheckShDestPath = "${binDestPath}/check"
+        logger.debug """<Builder> Generate Bin, check:
+            SH  : ${binCheckShDestPath}
+        """
+
+        //- Gen bin/macgyver(sh)
+        new FileMan()
+        .set(fileSetupForLin)
+        .readResource(binCheckShSourcePath)
+        .replaceLine([
+        'REL_PATH_BIN_TO_HOME=' : "REL_PATH_BIN_TO_HOME=${binToHomeRelPath}",
+        'REL_PATH_HOME_TO_LIB=' : "REL_PATH_HOME_TO_LIB=${homeToLibRelPath}"
+        ])
+        .write(binCheckShDestPath)
+
         return binDestPath
     }
 

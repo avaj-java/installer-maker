@@ -11,7 +11,7 @@ class QuestionSetup extends jaemisseo.man.bean.QuestionSetup {
 
     @Value(name='question', required=true, modeRenderJansi=true)
     String question
-    @Value('questionColor')
+    @Value('color.question')
     String questionColor
 
     @Value('answer')
