@@ -36,6 +36,11 @@ var:
 ##################################################
 ##### SETUP - DEFAULT (installer)
 ##################################################
+color:
+  desc: yellow
+  question: yellow
+  task:
+
 sql:
   db: orcl
   ip: localhost

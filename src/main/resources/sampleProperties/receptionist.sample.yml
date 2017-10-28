@@ -10,6 +10,10 @@
 ##################################################
 ##### SETUP - DEFAULT (receptionist)
 ##################################################
+color:
+  desc: yellow
+  question: yellow
+  task:
 
 ##################################################
 ##### SETUP - ASK LEVEL (receptionist)
