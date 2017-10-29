@@ -1,5 +1,6 @@
 package install.task
 
+import install.Commander
 import install.Starter
 import install.configuration.annotation.Alias
 import install.configuration.annotation.HelpIgnore
@@ -98,11 +99,11 @@ class Help extends TaskUtil{
 
 
     boolean isCommandable(String applicationName){
-        return [Starter.APPLICATION_INSTALLER_MAKER].contains(applicationName)
+        return [Commander.APPLICATION_INSTALLER_MAKER].contains(applicationName)
     }
 
     boolean isTaskRunable(String applicationName){
-        return [Starter.APPLICATION_INSTALLER_MAKER, Starter.APPLICATION_MACGYVER].contains(applicationName)
+        return [Commander.APPLICATION_INSTALLER_MAKER, Commander.APPLICATION_MACGYVER].contains(applicationName)
     }
 
 

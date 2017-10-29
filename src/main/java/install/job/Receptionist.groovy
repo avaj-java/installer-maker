@@ -26,16 +26,15 @@ class Receptionist extends JobUtil{
 
     Receptionist() {
         propertiesFileName = 'receptionist'
-        executorNamePrefix = 'receptionist'
-        levelNamesProperty = 'receptionist.level'
+        jobName = 'receptionist'
     }
 
     @Init(lately=true)
     void init(){
         validTaskList = [Notice, Question, QuestionChoice, QuestionYN, QuestionFindFile, Set]
-
+        validCommandList = ['ask']
         this.propman = setupPropMan(provider)
-        this.varman = setupVariableMan(propman, executorNamePrefix)
+        this.varman = setupVariableMan(propman, validCommandList)
         provider.shift(jobName)
         this.gOpt = config.injectValue(new GlobalOptionForReceptionist())
     }
@@ -106,7 +105,7 @@ class Receptionist extends JobUtil{
 
         //0. Check Response File
         if (checkResponseFile(gOpt.responseFilePath)){
-            PropMan responsePropMan = generatePropMan(gOpt.responseFilePath, executorNamePrefix)
+            PropMan responsePropMan = generatePropMan(gOpt.responseFilePath, 'ask')
             propman.merge(responsePropMan)
             propman.set('answer.repeat.limit', 0)
             logTaskDescription('added response file answer')
@@ -114,7 +113,7 @@ class Receptionist extends JobUtil{
         //1. READ REMEMBERED ANSWER
         readRememberAnswer()
         //2. Each level by level
-        eachLevelForTask{ String propertyPrefix ->
+        eachLevelForTask('ask'){ String propertyPrefix ->
             return runTaskByPrefix("${propertyPrefix}")
         }
         //3. WRITE REMEMBERED ANSWER
@@ -138,7 +137,7 @@ class Receptionist extends JobUtil{
         logTaskDescription('auto create response file')
 
         //Each level by level
-        eachLevel{ String propertyPrefix ->
+        eachLevel('ask'){ String propertyPrefix ->
             String taskName = getTaskName(propertyPrefix)
             Class taskClazz = getTaskClass(taskName)
 
@@ -146,7 +145,7 @@ class Receptionist extends JobUtil{
             if (!taskName || !taskClazz)
                 throw new Exception(" 'No Task Name. ${propertyPrefix}task=???. Please Check Task.' ")
             if ( (validTaskList && !validTaskList.contains(taskClazz)) || (invalidTaskList && invalidTaskList.contains(taskClazz)) )
-                throw new Exception(" 'Sorry, This is Not my task, [${taskName}]. I Can Not do this.' ")
+                throw new Exception(" 'Sorry, This is not my task, [${taskName}]. I Can Not do this.' ")
 
             //(Task)
             TaskUtil taskInstance = config.findInstance(taskClazz)

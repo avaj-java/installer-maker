@@ -26,6 +26,7 @@ class TaskSetup extends Option {
     String taskTypeName
 
     String jobName
+    String commandName
     String taskName
     Class taskClazz
     String propertyPrefix

@@ -9,6 +9,7 @@ import install.configuration.annotation.type.Document
 import install.configuration.annotation.type.Job
 import install.configuration.annotation.type.Task
 import install.data.PropertyProvider
+import install.employee.MacGyver
 import install.util.JobUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
@@ -29,16 +30,16 @@ class Builder extends JobUtil{
 
     Builder(){
         propertiesFileName = 'builder'
-        executorNamePrefix = 'builder'
-        levelNamesProperty = 'builder.level'
+        jobName = 'builder'
     }
 
     @Init(lately=true)
     void init(){
         validTaskList = Util.findAllClasses('install', [Task])
+        validCommandList = ['init', 'clean', 'build']
 
         this.propman = setupPropMan(provider)
-        this.varman = setupVariableMan(propman, executorNamePrefix)
+        this.varman = setupVariableMan(propman, validCommandList)
         provider.shift(jobName)
         this.gOpt = config.injectValue(new GlobalOptionForBuilder())
     }
@@ -65,6 +66,31 @@ class Builder extends JobUtil{
     }
 
 
+
+    @Command
+    void customCommand(){
+        //Setup Log
+        setuptLog(gOpt.logSetup)
+
+        ReportSetup reportSetup = config.injectValue(new ReportSetup())
+
+        //Each level by level
+        eachLevelForTask(commandName){ String propertyPrefix ->
+            try{
+                return runTaskByPrefix("${propertyPrefix}")
+            }catch(e){
+                //Write Report
+                writeReport(reportMapList, reportSetup)
+                throw e
+            }
+        }
+
+        //Write Report
+        writeReport(reportMapList, reportSetup)
+    }
+
+
+
     @Command('init')
     @Document("""
     Init 3 Installer-Maker script files
@@ -87,12 +113,23 @@ class Builder extends JobUtil{
         logger.info "<Init File>"
         logger.info "- Dest Path: ${propertiesDir}"
 
+        if (propman.getBoolean(['macgyver', 'm'])){
+            try{
+                fileFrom = "macgyver.yml"
+                fileTo = "${propertiesDir}/macgyver.yml"
+                new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
+            }catch(e){
+                logger.warn "File Aready Exists. ${fileTo}\n"
+            }
+            return
+        }
+
         try{
             fileFrom = "sampleProperties/builder.sample.yml"
             fileTo = "${propertiesDir}/builder.yml"
             new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
         }catch(e){
-            logger.error "File Aready Exists. ${fileTo}\n"
+            logger.warn "File Aready Exists. ${fileTo}\n"
         }
 
         try{
@@ -100,7 +137,7 @@ class Builder extends JobUtil{
             fileTo = "${propertiesDir}/receptionist.yml"
             new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
         }catch(e){
-            logger.error "File Aready Exists. ${fileTo}\n"
+            logger.warn "File Aready Exists. ${fileTo}\n"
         }
 
         try{
@@ -108,7 +145,7 @@ class Builder extends JobUtil{
             fileTo = "${propertiesDir}/installer.yml"
             new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
         }catch(e){
-            logger.error "File Aready Exists. ${fileTo}\n"
+            logger.warn "File Aready Exists. ${fileTo}\n"
         }
     }
 
@@ -204,7 +241,7 @@ class Builder extends JobUtil{
             provider.setRaw('build.installer.bin.path', binPath)
 
             //2. Each level by level
-            eachLevelForTask{ String propertyPrefix ->
+            eachLevelForTask('build'){ String propertyPrefix ->
                 try{
                     return runTaskByPrefix("${propertyPrefix}")
                 }catch(e){
@@ -347,12 +384,31 @@ class Builder extends JobUtil{
         Builder builder = config.findInstance(Builder)
         Receptionist receptionist = config.findInstance(Receptionist)
         Installer installer = config.findInstance(Installer)
+        MacGyver macgyver = config.findInstance(MacGyver)
+
         File builderPropertiesFile = FileMan.find(userSetPropertiesDir, builder.propertiesFileName, ["yml", "yaml", "properties"])
+        if (builderPropertiesFile)
+            FileMan.copy(builderPropertiesFile.path, tempNowDir, opt)
+        else
+            throw Exception("Does not exist script file(${builder.propertiesFileName})")
+
         File receptionistPropertiesFile = FileMan.find(userSetPropertiesDir, receptionist.propertiesFileName, ["yml", "yaml", "properties"])
+        if (receptionistPropertiesFile)
+            FileMan.copy(receptionistPropertiesFile.path, tempNowDir, opt)
+        else
+            throw Exception("Does not exist script file(${receptionist.propertiesFileName})")
+
         File installerPropertiesFile = FileMan.find(userSetPropertiesDir, installer.propertiesFileName, ["yml", "yaml", "properties"])
-        FileMan.copy(builderPropertiesFile.path, tempNowDir, opt)
-        FileMan.copy(receptionistPropertiesFile.path, tempNowDir, opt)
-        FileMan.copy(installerPropertiesFile.path, tempNowDir, opt)
+        if (installerPropertiesFile)
+            FileMan.copy(installerPropertiesFile.path, tempNowDir, opt)
+        else
+            throw Exception("Does not exist script file(${installer.propertiesFileName})")
+        
+        File macgyverPropertiesFile = FileMan.find(userSetPropertiesDir, macgyver.propertiesFileName, ["yml", "yaml", "properties"])
+        if (macgyverPropertiesFile)
+            FileMan.copy(macgyverPropertiesFile.path, tempNowDir, opt)
+
+
 
         //- Write 'Relative Path from [lib dir] to [Installer Home dir]'
         FileMan.write("${tempNowDir}/.libtohome", libToHomeRelPath, opt)
@@ -394,7 +450,37 @@ class Builder extends JobUtil{
         ])
         .write(binInstallBatDestPath)
 
-        /** 4. Generate Runable Binary File (macgyver) **/
+        /** 4. Generate Runable Binary File (installer) **/
+        String binInstallerShSourcePath = 'binForInstaller/installer'
+        String binInstallerBatSourcePath = 'binForInstaller/installer.bat'
+        String binInstallerShDestPath = "${binDestPath}/installer"
+        String binInstallerBatDestPath = "${binDestPath}/installer.bat"
+        logger.debug """<Builder> Generate Bin, installer:
+            SH  : ${binInstallerShDestPath}
+            BAT : ${binInstallerBatDestPath}
+        """
+
+        //- Gen bin/installer(sh)
+        new FileMan()
+        .set(fileSetupForLin)
+        .readResource(binInstallerShSourcePath)
+        .replaceLine([
+            'REL_PATH_BIN_TO_HOME=' : "REL_PATH_BIN_TO_HOME=${binToHomeRelPath}",
+            'REL_PATH_HOME_TO_LIB=' : "REL_PATH_HOME_TO_LIB=${homeToLibRelPath}"
+        ])
+        .write(binInstallerShDestPath)
+
+        //- Gen bin/installer.bat
+        new FileMan()
+        .set(fileSetup)
+        .readResource(binInstallerBatSourcePath)
+        .replaceLine([
+            'set REL_PATH_BIN_TO_HOME=' : "set REL_PATH_BIN_TO_HOME=${binToHomeRelPathForWin}",
+            'set REL_PATH_HOME_TO_LIB=' : "set REL_PATH_HOME_TO_LIB=${homeToLibRelPathForWin}"
+        ])
+        .write(binInstallerBatDestPath)
+
+        /** 5. Generate Runable Binary File (macgyver) **/
         String binMacgyverShSourcePath = 'binForInstaller/macgyver'
         String binMacgyverBatSourcePath = 'binForInstaller/macgyver.bat'
         String binMacgyverShDestPath = "${binDestPath}/macgyver"
@@ -424,7 +510,7 @@ class Builder extends JobUtil{
         ])
         .write(binMacgyverBatDestPath)
 
-        /** 5. Generate Runable Binary File (check) **/
+        /** 6. Generate Runable Binary File (check) **/
         String binCheckShSourcePath = 'binForInstaller/check'
         String binCheckShDestPath = "${binDestPath}/check"
         logger.debug """<Builder> Generate Bin, check:
@@ -436,8 +522,8 @@ class Builder extends JobUtil{
         .set(fileSetupForLin)
         .readResource(binCheckShSourcePath)
         .replaceLine([
-        'REL_PATH_BIN_TO_HOME=' : "REL_PATH_BIN_TO_HOME=${binToHomeRelPath}",
-        'REL_PATH_HOME_TO_LIB=' : "REL_PATH_HOME_TO_LIB=${homeToLibRelPath}"
+            'REL_PATH_BIN_TO_HOME=' : "REL_PATH_BIN_TO_HOME=${binToHomeRelPath}",
+            'REL_PATH_HOME_TO_LIB=' : "REL_PATH_HOME_TO_LIB=${homeToLibRelPath}"
         ])
         .write(binCheckShDestPath)
 

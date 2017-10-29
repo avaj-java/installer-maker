@@ -1,0 +1,498 @@
+##################################################
+##
+##    MacGyver
+##
+##################################################
+##################################################
+##### SETUP - CUSTOM PROPERTIES
+##################################################
+
+##################################################
+##### SETUP - DEFAULT (receptionist)
+##################################################
+color:
+  desc: yellow
+  question: yellow
+  task:
+
+
+
+##################################################
+##### SETUP - COMMANDS
+##################################################
+
+macgyver:
+  chk0:
+    task: NOTICE
+    msg: "Hey, ${user.name}. I'm MacGyver, Can I help you?"
+
+####################
+##### CHOOSE -1
+####################
+  chk1:
+    task: QuestionChoice
+    question: INSTALL PROGRAM
+    answer.default: f
+    answer.description.map: '{"f":"FILE", "t":"TEST", "s":"SQL", "c":"CRYPT"}'
+
+
+####################
+##### CHOOSE -2
+####################
+  chk2:
+    task: QuestionChoice
+    if: '{"macgyver.chk1.answer":["f"]}'
+    question: FILE MANAGER
+    answer.default: z
+    answer.description.map: '{"z":"ZIP", "j":"JAR", "t":"TAR", "xz":"UNZIP", "xj":"UNJAR", "xt":"UNTAR", "m":"MERGE PROPERTIES"}'
+
+  chk3:
+    task: QuestionChoice
+    if: '{"macgyver.chk1.answer":["t"]}'
+    question: TEST MANAGER
+    answer.default: j
+    answer.description.map: '{"j":"JDBC", "r":"REST", "s":"SOCKET", "e":"EMAIL", "p":"PORT"}'
+
+  chk4:
+    task: QuestionChoice
+    if: '{"macgyver.chk1.answer":["c"]}'
+    question: CRYPT MANAGER
+    answer.default: e
+    answer.description.map: '{"e":"ENCRYPT", "d":"DECRYPT"}'
+
+
+####################
+##### SQL
+####################
+  sql1:
+    task: Question
+    if: '[ {"macgyver.chk1.answer":["s"]}, {"macgyver.chk3.answer":["j"]} ]'
+    question: IP
+    answer.default: 127.0.0.1
+    property: ip
+
+  sql2:
+    task: Question
+    if: '[ {"macgyver.chk1.answer":["s"]}, {"macgyver.chk3.answer":["j"]} ]'
+    question: Port
+    answer.default: 1521
+    property: port
+
+  sql3:
+    task: Question
+    if: '[ {"macgyver.chk1.answer":["s"]}, {"macgyver.chk3.answer":["j"]} ]'
+    question: DB
+    answer.default: orcl
+    property: db
+
+  sql4:
+    task: QuestionChoice
+    if: '[ {"macgyver.chk1.answer":["s"]}, {"macgyver.chk3.answer":["j"]} ]'
+    question: Vendor
+    answer.default: 1
+    answer.description.map: '{"1":"Oracle", "2":"Tibero"}'
+    answer.value.map: '{"1":"oracle", "2":"tibero"}'
+    property: vendor
+
+  sql5:
+    task: Question
+    if: '[ {"macgyver.chk1.answer":["s"]}, {"macgyver.chk3.answer":["j"]} ]'
+    question: User
+    answer.default: username
+    property: id
+
+  sql6:
+    task: Question
+    if: '[ {"macgyver.chk1.answer":["s"]}, {"macgyver.chk3.answer":["j"]} ]'
+    question: Password
+    answer.default: password
+    property: pw
+
+  sql7:
+    task: Question
+    if: '{"macgyver.chk1.answer":["s"]}'
+    question: file path (.sql)
+    answer.default: ./*.sql
+    property: file.path
+
+  sql8:
+    task: SQL
+    if: '{"macgyver.chk1.answer":["s"]}'
+    file.path: ${file.path}
+
+
+
+
+
+
+
+####################
+##### ZIP
+####################
+  zip1:
+    task: Question
+    if: '{"macgyver.chk2.answer":"z"}'
+    question: file path
+    answer.default: ./*
+    property: file.path
+
+  zip2:
+    task: Question
+    if: '{"macgyver.chk2.answer":"z"}'
+    question: dest path
+    answer.default: ./
+    property: dest.path
+
+  zip3:
+    task: ZIP
+    if: '{"macgyver.chk2.answer":"z"}'
+    file.path: ${file.path}
+    dest.path: ${dest.path}
+
+####################
+##### TAR
+####################
+  tar1:
+    task: Question
+    if: '{"macgyver.chk2.answer":"t"}'
+    question: file path
+    answer.default: ./*
+    property: file.path
+
+  tar2:
+    task: Question
+    if: '{"macgyver.chk2.answer":"t"}'
+    question: dest path
+    answer.default: ./
+    property: dest.path
+
+  tar3:
+    task: TAR
+    if: '{"macgyver.chk2.answer":"t"}'
+    file.path: ${file.path}
+    dest.path: ${dest.path}
+
+####################
+##### JAR
+####################
+  jar1:
+    task: Question
+    if: '{"macgyver.chk2.answer":"j"}'
+    question: file path
+    answer.default: ./*
+    property: file.path
+
+  jar2:
+    task: Question
+    if: '{"macgyver.chk2.answer":"j"}'
+    question: dest path
+    answer.default: ./
+    property: dest.path
+
+  jar3:
+    task: jar
+    if: '{"macgyver.chk2.answer":"j"}'
+    file.path: ${file.path}
+    dest.path: ${dest.path}
+
+####################
+##### UNZIP
+####################
+  unzip1:
+    task: Question
+    if: '{"macgyver.chk2.answer":"xz"}'
+    question: file path
+    answer.default: ./*.zip
+    property: file.path
+
+  unzip2:
+    task: Question
+    if: '{"macgyver.chk2.answer":"xz"}'
+    question: dest path
+    answer.default: ./
+    property: dest.path
+
+  unzip3:
+    task: ZIP
+    if: '{"macgyver.chk2.answer":"xz"}'
+    file.path: ${file.path}
+    dest.path: ${dest.path}
+
+####################
+##### UNTAR
+####################
+  untar1:
+    task: Question
+    if: '{"macgyver.chk2.answer":"xt"}'
+    question: file path
+    answer.default: ./*.tar
+    property: file.path
+
+  untar2:
+    task: Question
+    if: '{"macgyver.chk2.answer":"xt"}'
+    question: dest path
+    answer.default: ./
+    property: dest.path
+
+  untar3:
+    task: TAR
+    if: '{"macgyver.chk2.answer":"xt"}'
+    file.path: ${file.path}
+    dest.path: ${dest.path}
+
+####################
+##### UNJAR
+####################
+  unjar1:
+    task: Question
+    if: '{"macgyver.chk2.answer":"xj"}'
+    question: file path
+    answer.default: ./*.jar
+    property: file.path
+
+  unjar2:
+    task: Question
+    if: '{"macgyver.chk2.answer":"xj"}'
+    question: dest path
+    answer.default: ./
+    property: dest.path
+
+  unjar3:
+    task: jar
+    if: '{"macgyver.chk2.answer":"xj"}'
+    file.path: ${file.path}
+    dest.path: ${dest.path}
+
+
+####################
+##### MERGE PROPERTIES
+####################
+  merge1:
+    task: Question
+    if: '{"macgyver.chk2.answer":"m"}'
+    question: from value file
+    answer.default: value.properties
+    property: from
+
+  merge2:
+    task: Question
+    if: '{"macgyver.chk2.answer":"m"}'
+    question: dest properties
+    answer.default: dest.properties
+    property: into
+
+  merge:
+    task: MergeProperties
+    if: '{"macgyver.chk2.answer":"m"}'
+
+
+####################
+##### TEST JDBC
+####################
+  jdbc:
+    task: TestJDBC
+    if: '{"macgyver.chk3.answer":"j"}'
+
+
+####################
+##### TEST REST
+####################
+  rest1:
+    task: Question
+    if: '{"macgyver.chk3.answer":"r"}'
+    question: METHOD
+    answer.default: post
+    answer.description.map: '{"get":"GET", "post":"POST", "put":"PUT", "delete":"DELETE"}'
+    answer.value.map: '{"get":"GET", "post":"POST", "put":"PUT", "delete":"DELETE"}'
+    property: method
+
+  rest2:
+    task: Question
+    if: '{"macgyver.chk3.answer":"r"}'
+    question: URL
+    answer.default: http://127.0.0.1:8080/hello
+    property: url
+
+  rest3:
+    task: Question
+    if: '{"macgyver.chk3.answer":"r"}'
+    question: REQUEST PARAMETER
+    answer.default: '{"parameterTestColumn":"hello", "parameterTest":"parameters"}'
+    property: param
+
+  rest4:
+    task: Question
+    if: '{"macgyver.chk3.answer":"r"}'
+    question: REQUEST HEADER
+    answer.default: '{"headerTestColumn":"hello", "headerTest":"headers"}'
+    property: header
+
+  rest:
+    task: TestREST
+    if: '{"macgyver.chk3.answer":"r"}'
+
+####################
+##### TEST SOCKET
+####################
+  socket1:
+    task: Question
+    if: '{"macgyver.chk3.answer":"s"}'
+    question: IP
+    answer.default: 127.0.0.1
+    property: ip
+
+  socket2:
+    task: Question
+    if: '{"macgyver.chk3.answer":"s"}'
+    question: Port
+    answer.default: 5000
+    property: port
+
+  socket3:
+    task: Question
+    if: '{"macgyver.chk3.answer":"s"}'
+    question: MESSAGE
+    answer.default: Hi, ${user.name}
+    property: msg
+
+  socket:
+    task: TestSocket
+    if: '{"macgyver.chk3.answer":"s"}'
+
+
+####################
+##### TEST EMAIL
+####################
+  email1:
+    task: Question
+    if: '{"macgyver.chk3.answer":"e"}'
+    question: host
+    answer.default: smtp.mailsite.com
+    property: mail.smtp.host
+
+  email2:
+    task: Question
+    if: '{"macgyver.chk3.answer":"e"}'
+    question: port
+    answer.default: 587
+    property: mail.smtp.port
+
+  email3:
+    task: Question
+    if: '{"macgyver.chk3.answer":"e"}'
+    question: username
+    answer.default:
+    property: mail.username
+
+  email4:
+    task: Question
+    if: '{"macgyver.chk3.answer":"e"}'
+    question: password
+    answer.default:
+    property: mail.password
+
+  email5:
+    task: QuestionYN
+    if: '{"macgyver.chk3.answer":"e"}'
+    question: auth
+    answer.default: N
+    property: '{"mail.smtp.auth":true}'
+
+  emailFromacgyver:
+    task: Question
+    if: '{"macgyver.chk3.answer":"e"}'
+    question: from
+    answer.default:
+    property: mail.from
+
+  emailTo:
+    task: Question
+    if: '{"macgyver.chk3.answer":"e"}'
+    question: to
+    answer.default:
+    property: mail.to
+
+  emailSubject:
+    task: Question
+    if: '{"macgyver.chk3.answer":"e"}'
+    question: subject
+    answer.default: No Subject
+    property: mail.subject
+
+  emailContent:
+    task: Question
+    if: '{"macgyver.chk3.answer":"e"}'
+    question: content
+    answer.default: No Content
+    property: mail.content
+
+  email:
+    task: TestEMAIL
+    if: '{"macgyver.chk3.answer":"e"}'
+
+####################
+##### TEST PORT
+####################
+  port1:
+    task: Question
+    if: '{"macgyver.chk3.answer":"p"}'
+    question: from
+    answer.default: 1000
+    property: from
+
+  port2:
+    task: Question
+    if: '{"macgyver.chk3.answer":"p"}'
+    question: to
+    answer.default: 1030
+    property: to
+
+  port:
+    task: TestPORT
+    if: '{"macgyver.chk3.answer":"p"}'
+
+
+####################
+##### CRYPT
+####################
+  crypt1:
+    task: QuestionChoice
+    if: '{"macgyver.chk1.answer":["c"]}'
+    question: crypt method?
+    answer.description.map: '{"s":"SEED", "a":"AES"}'
+    answer.value.map: '{"s":"SEED", "a":"AES"}'
+    answer.default: s
+    property: method
+
+####################
+##### TEMP ENCRYPT
+####################
+  encrypt1:
+    task: Question
+    if: '{"macgyver.chk4.answer":"e"}'
+    question: Please Input plain text.
+    answer.default:
+    property: value
+
+  encrypt:
+    task: ENCRYPT
+    if: '{"macgyver.chk4.answer":"e"}'
+
+####################
+##### TEMP DECRYPT
+####################
+  decrypt1:
+    task: Question
+    if: '{"macgyver.chk4.answer":"d"}'
+    question: Please Input encrypted text.
+    answer.default:
+    property: value
+
+  decrypt:
+    task: DECRYPT
+    if: '{"macgyver.chk4.answer":"d"}'
+
+
+
+

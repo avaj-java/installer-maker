@@ -27,16 +27,16 @@ class Installer extends JobUtil{
 
     Installer(){
         propertiesFileName = 'installer'
-        executorNamePrefix = 'installer'
-        levelNamesProperty = 'installer.level'
+        jobName = 'installer'
     }
 
     @Init(lately=true)
     void init(){
         validTaskList = Util.findAllClasses('install', [Task])
+        validCommandList = ['install']
 
         this.propman = setupPropMan(provider)
-        this.varman = setupVariableMan(propman, executorNamePrefix)
+        this.varman = setupVariableMan(propman, validCommandList)
         provider.shift(jobName)
         this.gOpt = config.injectValue(new GlobalOptionForInstaller())
     }
@@ -72,6 +72,30 @@ class Installer extends JobUtil{
 
 
 
+    @Command
+    void customCommand(){
+        //Setup Log
+        setuptLog(gOpt.logSetup)
+
+        ReportSetup reportSetup = config.injectValue(new ReportSetup())
+
+        //Each level by level
+        eachLevelForTask(commandName){ String propertyPrefix ->
+            try{
+                return runTaskByPrefix("${propertyPrefix}")
+            }catch(e){
+                //Write Report
+                writeReport(reportMapList, reportSetup)
+                throw e
+            }
+        }
+
+        //Write Report
+        writeReport(reportMapList, reportSetup)
+    }
+
+
+
     /*************************
      * INSTALL
      *************************/
@@ -94,7 +118,7 @@ class Installer extends JobUtil{
         ReportSetup reportSetup = gOpt.reportSetup
 
         //Each level by level
-        eachLevelForTask{ String propertyPrefix ->
+        eachLevelForTask('install'){ String propertyPrefix ->
             try{
                 return runTaskByPrefix("${propertyPrefix}")
             }catch(e){

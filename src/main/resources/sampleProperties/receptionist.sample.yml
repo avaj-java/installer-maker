@@ -16,9 +16,9 @@ color:
   task:
 
 ##################################################
-##### SETUP - ASK LEVEL (receptionist)
+##### SETUP - COMMANDS
 ##################################################
-receptionist:
+ask:
   greeting:
     task: Notice
     msg: '"Hi, ${user.name}. If you want to install Watataturugen?? then, I Have some question."'
