@@ -129,24 +129,27 @@ class TaskUtil{
     }
 
     protected void setPropValue(){
-        //- Set Some Property
         def property = provider.parse("property")
-        if (property instanceof String){
-            def value = provider.get("value")
-            provider.setRaw(property, value)
-            
-        }else if (property instanceof Map){
-            (property as Map).each{ String propName, def propValue ->
-                provider.setRaw(propName, propValue)
+        def value = provider.get("value")
+        if (property){
+            //- Set Some Value to Some Property
+            if (value && property instanceof String){
+                provider.setRaw(property, value)
+
+            //- Set Some Property with JSON Object
+            }else if (property instanceof Map){
+                (property as Map).each{ String propertyName, def propertyValue ->
+                    provider.setRaw(propertyName, propertyValue)
+                }
             }
         }
 
         //- Set Some Properties from Properties File
-        def propertiesFilePath = provider.getString("properties.file.path")
+        def propertiesFilePath = provider.getString("properties.file.path")                                                                   
         if (propertiesFilePath){
 //            String fullPath = FileMan.getFullPath(propertiesFilePath)
 //            provider.propman.mergeFile(fullPath)
-            PropMan runtimeLoadedPropMan = generatePropMan(propertiesFilePath, ['builder', 'receptionist', 'installer'])
+            PropMan runtimeLoadedPropMan = generatePropMan(propertiesFilePath, ['installer-maker', 'installer'])
             provider.propman.merge(runtimeLoadedPropMan)
         }
     }
@@ -179,29 +182,29 @@ class TaskUtil{
         // -BasicVariableOnly
         Map map = propmanToParse.properties
         if (excludeStartsWithList){
-            map.each{ String key, def value ->
-                if ( value && value instanceof String && !excludeStartsWithList.findAll{ key.startsWith(it) } )
-                    propmanToParse.set(key, varman.parseDefaultVariableOnly(value))
+            map.each{ String propertyName, def value ->
+                if ( value && value instanceof String && !excludeStartsWithList.findAll{ propertyName.startsWith(it) } )
+                    propmanToParse.set(propertyName, varman.parseDefaultVariableOnly(value))
             }
         }else{
-            map.each{ String key, def value ->
-                if (value && value instanceof String)
-                    propmanToParse.set(key, varman.parseDefaultVariableOnly(value))
+            map.each{ String propertyName, def value ->
+                if ( value && value instanceof String )
+                    propmanToParse.set(propertyName, varman.parseDefaultVariableOnly(value))
             }
         }
         // -All
-        (1..5).each{
+        (1..5).each{ int i ->
             map = propmanToParse.properties
             varman.putVariables(map)
             if (excludeStartsWithList){
-                map.each{ String key, def value ->
-                    if ( value && value instanceof String && !excludeStartsWithList.findAll{ key.startsWith(it) } )
-                        propmanToParse.set(key, varman.parse(value))
+                map.each{ String propertyName, def value ->
+                    if ( value && value instanceof String && !excludeStartsWithList.findAll{ propertyName.startsWith(it) } )
+                        propmanToParse.set(propertyName, varman.parse(value))
                 }
             }else{
-                map.each{ String key, def value ->
-                    if (value && value instanceof String)
-                        propmanToParse.set(key, varman.parse(value))
+                map.each{ String propertyName, def value ->
+                    if ( value && value instanceof String )
+                        propmanToParse.set(propertyName, varman.parse(value))
                 }
             }
         }

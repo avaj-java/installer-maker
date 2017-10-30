@@ -31,10 +31,9 @@ class MacGyver extends EmployeeUtil {
     @Init(lately=true)
     void init(){
         validTaskList = Util.findAllClasses('install', [Task])
-        validCommandList = ['macgyver']
 
         this.propman = setupPropMan(provider)
-        this.varman = setupVariableMan(propman, validCommandList)
+        this.varman = setupVariableMan(propman)
         provider.shift(jobName)
         this.gOpt = config.injectValue(new GlobalOptionForMacgyver())
     }

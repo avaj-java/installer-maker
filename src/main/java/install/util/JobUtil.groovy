@@ -23,7 +23,6 @@ class JobUtil extends TaskUtil{
     final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     String jobName = this.getClass().simpleName.toLowerCase()
-    String taskOrderProperty = "${jobName}.order"
     String commandName = null
     String propertiesFileName = jobName
     String propertiesFileExtension = ''
@@ -79,25 +78,19 @@ class JobUtil extends TaskUtil{
         return propman
     }
 
-    VariableMan setupVariableMan(PropMan propman, List<String> validCommandList){
+    VariableMan setupVariableMan(PropMan propman){
         VariableMan varman = new VariableMan(propman.properties)
 
-        //Parsing Exclusion List
-        provider.shift( jobName )
+        //Analisys Exclusion List (task property)
         List<String> excludeStartsWithList =[]
-        validCommandList.each{ String commandName ->
-            String taskOrderProperty = "${commandName}.order".toString()
-            List<String> taskOrderList = getSpecificLevelList(taskOrderProperty) ?: getTaskLineOrderList(propertiesFileName, propertiesFileExtension, commandName, taskOrderProperty)
-            List<String> prefixList = taskOrderList.collect{ "${commandName}.${it}.".toString() }
-            prefixList.each{
-                String taskName = getTaskName(it)
-                if ( taskName && getTaskClass(taskName) )
-                    excludeStartsWithList <<  it
+        propman.properties.keySet().each{ String propertyName ->
+            if (propertyName.endsWith('.task')){
+                List<String> propElementList = propertyName.split('[.]').toList()
+                if (propElementList.size() == 3  && getTaskClass(propman[propertyName])){
+                    excludeStartsWithList << (propElementList[0..1].join('.') + '.')
+                }
             }
         }
-
-//        println "///// Exclusion List"
-//        println excludeStartsWithList
 
         parsePropMan(propman, varman, excludeStartsWithList)
         setBeforeGetProp(propman, varman)
@@ -153,7 +146,7 @@ class JobUtil extends TaskUtil{
     }
 
     //level by level
-    protected void eachLevel(String commandName, Closure closure){
+    protected void eachTask(String commandName, Closure closure){
         //1. Try to get levels from level property
         String taskOrderProperty = "${commandName}.order".toString()
         List<String> taskOrderList = getSpecificLevelList(taskOrderProperty) ?: getTaskLineOrderList(propertiesFileName, propertiesFileExtension, commandName, taskOrderProperty)
@@ -310,6 +303,8 @@ class JobUtil extends TaskUtil{
 
         //Validation
         //Check Valid Task
+        if (!task.taskClazz)
+            throw new Exception("${task.taskTypeName} Does not exists task. or You Can't")
         if (!task.taskTypeName)
             throw new Exception(" 'No Task Name. ${task.propertyPrefix}task=???. Please Check Task.' ")
         if ( (validTaskList && !validTaskList.contains(task.taskClazz)) || (invalidTaskList && invalidTaskList.contains(task.taskClazz)) )
@@ -328,8 +323,6 @@ class JobUtil extends TaskUtil{
 
     Class getTaskClass(String taskName){
         Class taskClazz = validTaskList.find{ it.getSimpleName().equalsIgnoreCase(taskName) }
-        if (!taskClazz)
-            throw new Exception("${taskName} Does not exists task. or You Can't")
         return taskClazz
     }
 

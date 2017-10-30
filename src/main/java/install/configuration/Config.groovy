@@ -79,8 +79,7 @@ class Config {
         propGen = new InstallerPropertiesGenerator()
         propGen.makeExternalProperties(args, lowerTaskNameAndValueProtocolListMap)
         propGen.makeDefaultProperties()
-        propGen.genResourceSingleton('builder', 'defaultProperties/builder.default.properties')
-        propGen.genResourceSingleton('receptionist', 'defaultProperties/receptionist.default.properties')
+        propGen.genResourceSingleton('installer-maker', 'defaultProperties/installer-maker.default.properties')
         propGen.genResourceSingleton('installer', 'defaultProperties/installer.default.properties')
         propGen.genResourceSingleton('macgyver', 'defaultProperties/macgyver.default.properties')
         return this
@@ -96,7 +95,7 @@ class Config {
         }
 
         if (modeSystemDebugLogFile){
-            logGen.setupFileLogger('system', 'trace', './', 'nstaller-maker-debug')
+            logGen.setupFileLogger('system', 'trace', './', 'installer-maker-debug')
         }
 
         if (modeSystemDebugLog || modeSystemDebugLogFile){

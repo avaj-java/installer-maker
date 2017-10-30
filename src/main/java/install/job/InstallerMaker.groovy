@@ -1,6 +1,6 @@
 package install.job
 
-import install.bean.GlobalOptionForBuilder
+import install.bean.GlobalOptionForInstallerMaker
 import install.bean.ReportSetup
 import install.configuration.annotation.HelpIgnore
 import install.configuration.annotation.method.Command
@@ -23,29 +23,28 @@ import org.slf4j.LoggerFactory
  * Created by sujkim on 2017-02-17.
  */
 @Job
-class Builder extends JobUtil{
+class InstallerMaker extends JobUtil{
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
     int buildCallCount = 0
 
-    Builder(){
-        propertiesFileName = 'builder'
-        jobName = 'builder'
+    InstallerMaker(){
+        propertiesFileName = 'installer-maker'
+        jobName = 'installer-maker'
     }
 
     @Init(lately=true)
     void init(){
         validTaskList = Util.findAllClasses('install', [Task])
-        validCommandList = ['init', 'clean', 'build']
 
         this.propman = setupPropMan(provider)
-        this.varman = setupVariableMan(propman, validCommandList)
+        this.varman = setupVariableMan(propman)
         provider.shift(jobName)
-        this.gOpt = config.injectValue(new GlobalOptionForBuilder())
+        this.gOpt = config.injectValue(new GlobalOptionForInstallerMaker())
     }
 
     PropMan setupPropMan(PropertyProvider provider){
-        PropMan propmanForBuilder = provider.propGen.get('builder')
+        PropMan propmanForInstallerMaker = provider.propGen.get('installer-maker')
         PropMan propmanDefault = provider.propGen.getDefaultProperties()
         PropMan propmanExternal = provider.propGen.getExternalProperties()
 
@@ -55,14 +54,14 @@ class Builder extends JobUtil{
         propertiesFileExtension = FileMan.getExtension(propertiesFile)
         if (propertiesFile && propertiesFile.exists()){
             Map propertiesMap = generatePropertiesMap(propertiesFile)
-            propmanForBuilder.merge(propertiesMap)
+            propmanForInstallerMaker.merge(propertiesMap)
                             .merge(propmanExternal)
                             .mergeNew(propmanDefault)
                             .merge(['builder.home': FileMan.getFullPath(propmanDefault.get('lib.dir'), '../')])
         }else{
         }
 
-        return propmanForBuilder
+        return propmanForInstallerMaker
     }
 
 
@@ -97,8 +96,7 @@ class Builder extends JobUtil{
 
         You can generate Sample Properties Files to build installer 
     
-        1. builder.yml
-        2. receptionist.yml
+        1. installer-maker.yml        
         3. installer.yml        
     """)
     void initCommand(){
@@ -125,16 +123,8 @@ class Builder extends JobUtil{
         }
 
         try{
-            fileFrom = "sampleProperties/builder.sample.yml"
-            fileTo = "${propertiesDir}/builder.yml"
-            new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
-        }catch(e){
-            logger.warn "File Aready Exists. ${fileTo}\n"
-        }
-
-        try{
-            fileFrom = "sampleProperties/receptionist.sample.yml"
-            fileTo = "${propertiesDir}/receptionist.yml"
+            fileFrom = "sampleProperties/installer-maker.sample.yml"
+            fileTo = "${propertiesDir}/installer-maker.yml"
             new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
         }catch(e){
             logger.warn "File Aready Exists. ${fileTo}\n"
@@ -153,7 +143,7 @@ class Builder extends JobUtil{
     @Document('''
     Clean Build Directory
     
-        You need Builder Script file(builder.yml) 
+        You need installer-maker Script file(installer-maker.yml) 
     
     - Options
         1. You can change your build directory on Builder Script  
@@ -202,7 +192,7 @@ class Builder extends JobUtil{
     @Document('''
     Build Your Installer
                                                      
-          You need 3 Script files(builder.yml, receptionist.yml, installer.yml)
+          You need 2 Script files(installer-maker.yml, installer.yml)
 
     - Options
         1. You can change your build directory on Builder Script(builder.yml)  
@@ -297,10 +287,6 @@ class Builder extends JobUtil{
     void buildForm(){
         provider.propGen.getDefaultProperties().set('mode.build.form', true)
         config.command('form')
-//        Receptionist receptionist = new Receptionist()
-//        receptionist.propGen = propGen
-//        receptionist.init()
-//        receptionist.buildForm()
     }
 
     /*************************
@@ -337,7 +323,7 @@ class Builder extends JobUtil{
      *  2. Generate Lib
      *  3. Generate Bin
      *************************/
-    private String genLibAndBin(GlobalOptionForBuilder gOpt){
+    private String genLibAndBin(GlobalOptionForInstallerMaker gOpt){
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
         FileSetup fileSetupForLin = fileSetup.clone([lineBreak:'\n'])
@@ -381,8 +367,7 @@ class Builder extends JobUtil{
         String productVersion = propman['product.version']
         String productName = propman['product.name']
 
-        Builder builder = config.findInstance(Builder)
-        Receptionist receptionist = config.findInstance(Receptionist)
+        InstallerMaker builder = config.findInstance(InstallerMaker)
         Installer installer = config.findInstance(Installer)
         MacGyver macgyver = config.findInstance(MacGyver)
 
@@ -391,12 +376,6 @@ class Builder extends JobUtil{
             FileMan.copy(builderPropertiesFile.path, tempNowDir, opt)
         else
             throw Exception("Does not exist script file(${builder.propertiesFileName})")
-
-        File receptionistPropertiesFile = FileMan.find(userSetPropertiesDir, receptionist.propertiesFileName, ["yml", "yaml", "properties"])
-        if (receptionistPropertiesFile)
-            FileMan.copy(receptionistPropertiesFile.path, tempNowDir, opt)
-        else
-            throw Exception("Does not exist script file(${receptionist.propertiesFileName})")
 
         File installerPropertiesFile = FileMan.find(userSetPropertiesDir, installer.propertiesFileName, ["yml", "yaml", "properties"])
         if (installerPropertiesFile)
@@ -535,7 +514,7 @@ class Builder extends JobUtil{
      * From: ${build.installer.home}
      *   To: ${build.dist.dir}
      *************************/
-    void zip(GlobalOptionForBuilder gOpt){
+    void zip(GlobalOptionForInstallerMaker gOpt){
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
         String installerName = gOpt.installerName
@@ -555,7 +534,7 @@ class Builder extends JobUtil{
      * From: ${build.installer.home}
      *   To: ${build.dist.dir}
      *************************/
-    void tar(GlobalOptionForBuilder gOpt){
+    void tar(GlobalOptionForInstallerMaker gOpt){
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
         String installerName = gOpt.installerName

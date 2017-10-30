@@ -2,12 +2,13 @@ package install
 
 import install.configuration.Config
 import install.employee.MacGyver
-import install.job.Builder
+import install.job.InstallerMaker
 import install.job.Installer
 import jaemisseo.man.PropMan
 import jaemisseo.man.TimeMan
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.slf4j.event.Level
 
 class Commander {
 
@@ -116,9 +117,9 @@ class Commander {
             }else{
                 switch (applicationName){
                     case APPLICATION_INSTALLER_MAKER:
-                        Builder builder = config.findInstance(Builder)
+                        InstallerMaker builder = config.findInstance(InstallerMaker)
                         builder.commandName = it
-                        config.command(Builder)
+                        config.command(InstallerMaker)
                         break
                     case APPLICATION_INSTALLER:
                         Installer installer = config.findInstance(Installer)
@@ -173,7 +174,8 @@ class Commander {
             }
         }
 
-//        rootLogger.debug('Error', e)
+        if ([Level.DEBUG, Level.TRACE].contains( config.logGen.getConsoleLogLevel() ))
+            rootLogger.debug('Error', e)
     }
 
 }

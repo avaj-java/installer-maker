@@ -1,15 +1,15 @@
 package install
 
 import install.configuration.Config
-import install.employee.MacGyver
-import install.job.Builder
-import install.job.Installer
-import jaemisseo.man.PropMan
 import jaemisseo.man.TimeMan
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 class Starter {
+
+    static final Logger logger = LoggerFactory.getLogger(getClass());
+
+
 
     /*************************
      * START INSTALL
@@ -26,6 +26,12 @@ class Starter {
             /** [Config] **/
             timeman = new TimeMan().init().start()
             config = new Config().setup(args)
+        }catch(Exception e){
+            /** [Error] **/
+            logger.error('Error on Starter', e)
+        }
+
+        try{
             commander = new Commander(config, timeman)
             commander.run()
 

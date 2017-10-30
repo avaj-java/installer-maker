@@ -10,6 +10,19 @@ import jaemisseo.man.util.Option
 @Bean
 class GlobalOptionForInstaller extends Option{
 
+    @Value('remember.answer.file.path')
+    String rememberFilePath
+    @Value('response.file.path')
+    String responseFilePath
+
+    @Value('mode.remember.answer')
+    Boolean modeRemember
+
+    @Value(prefix='remember.answer.')
+    FileSetup rememberFileSetup
+
+
+
     @Value
     FileSetup fileSetup
     @Value
