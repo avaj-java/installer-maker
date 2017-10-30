@@ -1,15 +1,15 @@
 ##################################################
 ##
-##    Builder
+##    Installer-Maker
 ##
 ##################################################
 ##################################################
 ##### SETUP - CUSTOM PROPERTIES
 ##################################################
-data.home: ~/.builder/data
+data.home: ~/.installer-data/data
 
 ##################################################
-##### SETUP - DEFAULT (builder)
+##### SETUP - DEFAULT (installer-maker)
 ##################################################
 product:
   name: Program
@@ -21,9 +21,9 @@ color:
   task:
 
 ##################################################
-##### SETUP - BUILD LEVEL (builder)
+##### SETUP - COMMANDS
 ##################################################
-builder:
+build:
   step0:
     task: Mkdir
     to: ${build.installer.home}

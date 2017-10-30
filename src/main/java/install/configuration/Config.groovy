@@ -40,6 +40,7 @@ class Config {
     //Job
     Map<String, MethodInfomation> methodCommandNameMap = [:]
     Map<String, MethodInfomation> methodCommandAliasNameMap = [:]
+    Map<Class, MethodInfomation> methodMainCommandClassMap = [:]
 
     //Data
     Map<String, MethodInfomation> methodFilterNameMap = [:]
@@ -78,8 +79,7 @@ class Config {
         propGen = new InstallerPropertiesGenerator()
         propGen.makeExternalProperties(args, lowerTaskNameAndValueProtocolListMap)
         propGen.makeDefaultProperties()
-        propGen.genResourceSingleton('builder', 'defaultProperties/builder.default.properties')
-        propGen.genResourceSingleton('receptionist', 'defaultProperties/receptionist.default.properties')
+        propGen.genResourceSingleton('installer-maker', 'defaultProperties/installer-maker.default.properties')
         propGen.genResourceSingleton('installer', 'defaultProperties/installer.default.properties')
         propGen.genResourceSingleton('macgyver', 'defaultProperties/macgyver.default.properties')
         return this
@@ -95,7 +95,7 @@ class Config {
         }
 
         if (modeSystemDebugLogFile){
-            logGen.setupFileLogger('system', 'trace', './', 'nstaller-maker-debug')
+            logGen.setupFileLogger('system', 'trace', './', 'installer-maker-debug')
         }
 
         if (modeSystemDebugLog || modeSystemDebugLogFile){
@@ -235,11 +235,16 @@ class Config {
             String commandAliasName
             if (commandAnt){
                 commandName = commandAnt.value()
-                methodCommandNameMap[commandName] = new MethodInfomation(instance: instance, clazz: clazz, annotationList: method.getAnnotations().toList(), method:method, methodName: method.name)
+                MethodInfomation methodInfo = new MethodInfomation(instance: instance, clazz: clazz, annotationList: method.getAnnotations().toList(), method:method, methodName: method.name)
+                if (commandName)
+                    methodCommandNameMap[commandName] = methodInfo
+                else
+                    methodMainCommandClassMap[clazz] = methodInfo
             }
             if (aliasAnt){
                 commandAliasName = aliasAnt.value()
-                methodCommandAliasNameMap[commandAliasName] = methodCommandNameMap[commandName]
+                if (commandAliasName)
+                    methodCommandAliasNameMap[commandAliasName] = methodCommandNameMap[commandName]
             }
         }
     }
@@ -460,17 +465,25 @@ class Config {
         }
     }
 
-    void command(String commandName){
-        MethodInfomation commandMethodInfo = methodCommandNameMap[commandName] ?: methodCommandAliasNameMap[commandName]
+    void command(Class clazz){
+        MethodInfomation commandMethodInfo = getMainCommandMethodInfo(clazz)
+        doCommand(commandMethodInfo)
+    }
 
+    void command(String commandName){
+        MethodInfomation commandMethodInfo = getCommandMethodInfo(commandName)
+        doCommand(commandMethodInfo)
+    }
+
+    void doCommand(MethodInfomation commandMethodInfo){
         if (commandMethodInfo){
             Class clazz = commandMethodInfo.clazz
 
             //Lately Init
             if (reflectionMap[clazz].isLatelyInitMethod
-                && reflectionMap[clazz].initMethod
-                && !reflectionMap[clazz].checkInitMethod){
-                    initInstance(reflectionMap[clazz].initMethod)
+                    && reflectionMap[clazz].initMethod
+                    && !reflectionMap[clazz].checkInitMethod){
+                initInstance(reflectionMap[clazz].initMethod)
             }
 
             //Before
@@ -479,11 +492,27 @@ class Config {
 
             //Command
             runMethod(commandMethodInfo)
-            
+
             //After
             if (reflectionMap[clazz].afterMethod)
                 runMethod(reflectionMap[clazz].afterMethod)
         }
+    }
+
+    MethodInfomation getCommandMethodInfo(String commandName){
+        return methodCommandNameMap[commandName] ?: methodCommandAliasNameMap[commandName]
+    }
+
+    MethodInfomation getMainCommandMethodInfo(Class clazz){
+        return methodMainCommandClassMap[clazz]
+    }
+
+    boolean hasCommand(String commandName){
+        return !!getCommandMethodInfo(commandName)
+    }
+
+    boolean hasCommand(Class clazz){
+        return !!getMainCommandMethodInfo(clazz)
     }
 
 

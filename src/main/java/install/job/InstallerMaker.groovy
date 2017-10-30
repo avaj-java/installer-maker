@@ -1,6 +1,6 @@
 package install.job
 
-import install.bean.GlobalOptionForBuilder
+import install.bean.GlobalOptionForInstallerMaker
 import install.bean.ReportSetup
 import install.configuration.annotation.HelpIgnore
 import install.configuration.annotation.method.Command
@@ -9,6 +9,7 @@ import install.configuration.annotation.type.Document
 import install.configuration.annotation.type.Job
 import install.configuration.annotation.type.Task
 import install.data.PropertyProvider
+import install.employee.MacGyver
 import install.util.JobUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
@@ -22,15 +23,14 @@ import org.slf4j.LoggerFactory
  * Created by sujkim on 2017-02-17.
  */
 @Job
-class Builder extends JobUtil{
+class InstallerMaker extends JobUtil{
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
     int buildCallCount = 0
 
-    Builder(){
-        propertiesFileName = 'builder'
-        executorNamePrefix = 'builder'
-        levelNamesProperty = 'builder.level'
+    InstallerMaker(){
+        propertiesFileName = 'installer-maker'
+        jobName = 'installer-maker'
     }
 
     @Init(lately=true)
@@ -38,13 +38,13 @@ class Builder extends JobUtil{
         validTaskList = Util.findAllClasses('install', [Task])
 
         this.propman = setupPropMan(provider)
-        this.varman = setupVariableMan(propman, executorNamePrefix)
+        this.varman = setupVariableMan(propman)
         provider.shift(jobName)
-        this.gOpt = config.injectValue(new GlobalOptionForBuilder())
+        this.gOpt = config.injectValue(new GlobalOptionForInstallerMaker())
     }
 
     PropMan setupPropMan(PropertyProvider provider){
-        PropMan propmanForBuilder = provider.propGen.get('builder')
+        PropMan propmanForInstallerMaker = provider.propGen.get('installer-maker')
         PropMan propmanDefault = provider.propGen.getDefaultProperties()
         PropMan propmanExternal = provider.propGen.getExternalProperties()
 
@@ -54,15 +54,40 @@ class Builder extends JobUtil{
         propertiesFileExtension = FileMan.getExtension(propertiesFile)
         if (propertiesFile && propertiesFile.exists()){
             Map propertiesMap = generatePropertiesMap(propertiesFile)
-            propmanForBuilder.merge(propertiesMap)
+            propmanForInstallerMaker.merge(propertiesMap)
                             .merge(propmanExternal)
                             .mergeNew(propmanDefault)
                             .merge(['builder.home': FileMan.getFullPath(propmanDefault.get('lib.dir'), '../')])
         }else{
         }
 
-        return propmanForBuilder
+        return propmanForInstallerMaker
     }
+
+
+
+    @Command
+    void customCommand(){
+        //Setup Log
+        setuptLog(gOpt.logSetup)
+
+        ReportSetup reportSetup = config.injectValue(new ReportSetup())
+
+        //Each level by level
+        eachLevelForTask(commandName){ String propertyPrefix ->
+            try{
+                return runTaskByPrefix("${propertyPrefix}")
+            }catch(e){
+                //Write Report
+                writeReport(reportMapList, reportSetup)
+                throw e
+            }
+        }
+
+        //Write Report
+        writeReport(reportMapList, reportSetup)
+    }
+
 
 
     @Command('init')
@@ -71,8 +96,7 @@ class Builder extends JobUtil{
 
         You can generate Sample Properties Files to build installer 
     
-        1. builder.yml
-        2. receptionist.yml
+        1. installer-maker.yml        
         3. installer.yml        
     """)
     void initCommand(){
@@ -87,20 +111,23 @@ class Builder extends JobUtil{
         logger.info "<Init File>"
         logger.info "- Dest Path: ${propertiesDir}"
 
-        try{
-            fileFrom = "sampleProperties/builder.sample.yml"
-            fileTo = "${propertiesDir}/builder.yml"
-            new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
-        }catch(e){
-            logger.error "File Aready Exists. ${fileTo}\n"
+        if (propman.getBoolean(['macgyver', 'm'])){
+            try{
+                fileFrom = "macgyver.yml"
+                fileTo = "${propertiesDir}/macgyver.yml"
+                new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
+            }catch(e){
+                logger.warn "File Aready Exists. ${fileTo}\n"
+            }
+            return
         }
 
         try{
-            fileFrom = "sampleProperties/receptionist.sample.yml"
-            fileTo = "${propertiesDir}/receptionist.yml"
+            fileFrom = "sampleProperties/installer-maker.sample.yml"
+            fileTo = "${propertiesDir}/installer-maker.yml"
             new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
         }catch(e){
-            logger.error "File Aready Exists. ${fileTo}\n"
+            logger.warn "File Aready Exists. ${fileTo}\n"
         }
 
         try{
@@ -108,7 +135,7 @@ class Builder extends JobUtil{
             fileTo = "${propertiesDir}/installer.yml"
             new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
         }catch(e){
-            logger.error "File Aready Exists. ${fileTo}\n"
+            logger.warn "File Aready Exists. ${fileTo}\n"
         }
     }
 
@@ -116,7 +143,7 @@ class Builder extends JobUtil{
     @Document('''
     Clean Build Directory
     
-        You need Builder Script file(builder.yml) 
+        You need installer-maker Script file(installer-maker.yml) 
     
     - Options
         1. You can change your build directory on Builder Script  
@@ -165,7 +192,7 @@ class Builder extends JobUtil{
     @Document('''
     Build Your Installer
                                                      
-          You need 3 Script files(builder.yml, receptionist.yml, installer.yml)
+          You need 2 Script files(installer-maker.yml, installer.yml)
 
     - Options
         1. You can change your build directory on Builder Script(builder.yml)  
@@ -204,7 +231,7 @@ class Builder extends JobUtil{
             provider.setRaw('build.installer.bin.path', binPath)
 
             //2. Each level by level
-            eachLevelForTask{ String propertyPrefix ->
+            eachLevelForTask('build'){ String propertyPrefix ->
                 try{
                     return runTaskByPrefix("${propertyPrefix}")
                 }catch(e){
@@ -260,10 +287,6 @@ class Builder extends JobUtil{
     void buildForm(){
         provider.propGen.getDefaultProperties().set('mode.build.form', true)
         config.command('form')
-//        Receptionist receptionist = new Receptionist()
-//        receptionist.propGen = propGen
-//        receptionist.init()
-//        receptionist.buildForm()
     }
 
     /*************************
@@ -300,7 +323,7 @@ class Builder extends JobUtil{
      *  2. Generate Lib
      *  3. Generate Bin
      *************************/
-    private String genLibAndBin(GlobalOptionForBuilder gOpt){
+    private String genLibAndBin(GlobalOptionForInstallerMaker gOpt){
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
         FileSetup fileSetupForLin = fileSetup.clone([lineBreak:'\n'])
@@ -344,15 +367,27 @@ class Builder extends JobUtil{
         String productVersion = propman['product.version']
         String productName = propman['product.name']
 
-        Builder builder = config.findInstance(Builder)
-        Receptionist receptionist = config.findInstance(Receptionist)
+        InstallerMaker builder = config.findInstance(InstallerMaker)
         Installer installer = config.findInstance(Installer)
+        MacGyver macgyver = config.findInstance(MacGyver)
+
         File builderPropertiesFile = FileMan.find(userSetPropertiesDir, builder.propertiesFileName, ["yml", "yaml", "properties"])
-        File receptionistPropertiesFile = FileMan.find(userSetPropertiesDir, receptionist.propertiesFileName, ["yml", "yaml", "properties"])
+        if (builderPropertiesFile)
+            FileMan.copy(builderPropertiesFile.path, tempNowDir, opt)
+        else
+            throw Exception("Does not exist script file(${builder.propertiesFileName})")
+
         File installerPropertiesFile = FileMan.find(userSetPropertiesDir, installer.propertiesFileName, ["yml", "yaml", "properties"])
-        FileMan.copy(builderPropertiesFile.path, tempNowDir, opt)
-        FileMan.copy(receptionistPropertiesFile.path, tempNowDir, opt)
-        FileMan.copy(installerPropertiesFile.path, tempNowDir, opt)
+        if (installerPropertiesFile)
+            FileMan.copy(installerPropertiesFile.path, tempNowDir, opt)
+        else
+            throw Exception("Does not exist script file(${installer.propertiesFileName})")
+        
+        File macgyverPropertiesFile = FileMan.find(userSetPropertiesDir, macgyver.propertiesFileName, ["yml", "yaml", "properties"])
+        if (macgyverPropertiesFile)
+            FileMan.copy(macgyverPropertiesFile.path, tempNowDir, opt)
+
+
 
         //- Write 'Relative Path from [lib dir] to [Installer Home dir]'
         FileMan.write("${tempNowDir}/.libtohome", libToHomeRelPath, opt)
@@ -394,7 +429,37 @@ class Builder extends JobUtil{
         ])
         .write(binInstallBatDestPath)
 
-        /** 4. Generate Runable Binary File (macgyver) **/
+        /** 4. Generate Runable Binary File (installer) **/
+        String binInstallerShSourcePath = 'binForInstaller/installer'
+        String binInstallerBatSourcePath = 'binForInstaller/installer.bat'
+        String binInstallerShDestPath = "${binDestPath}/installer"
+        String binInstallerBatDestPath = "${binDestPath}/installer.bat"
+        logger.debug """<Builder> Generate Bin, installer:
+            SH  : ${binInstallerShDestPath}
+            BAT : ${binInstallerBatDestPath}
+        """
+
+        //- Gen bin/installer(sh)
+        new FileMan()
+        .set(fileSetupForLin)
+        .readResource(binInstallerShSourcePath)
+        .replaceLine([
+            'REL_PATH_BIN_TO_HOME=' : "REL_PATH_BIN_TO_HOME=${binToHomeRelPath}",
+            'REL_PATH_HOME_TO_LIB=' : "REL_PATH_HOME_TO_LIB=${homeToLibRelPath}"
+        ])
+        .write(binInstallerShDestPath)
+
+        //- Gen bin/installer.bat
+        new FileMan()
+        .set(fileSetup)
+        .readResource(binInstallerBatSourcePath)
+        .replaceLine([
+            'set REL_PATH_BIN_TO_HOME=' : "set REL_PATH_BIN_TO_HOME=${binToHomeRelPathForWin}",
+            'set REL_PATH_HOME_TO_LIB=' : "set REL_PATH_HOME_TO_LIB=${homeToLibRelPathForWin}"
+        ])
+        .write(binInstallerBatDestPath)
+
+        /** 5. Generate Runable Binary File (macgyver) **/
         String binMacgyverShSourcePath = 'binForInstaller/macgyver'
         String binMacgyverBatSourcePath = 'binForInstaller/macgyver.bat'
         String binMacgyverShDestPath = "${binDestPath}/macgyver"
@@ -424,7 +489,7 @@ class Builder extends JobUtil{
         ])
         .write(binMacgyverBatDestPath)
 
-        /** 5. Generate Runable Binary File (check) **/
+        /** 6. Generate Runable Binary File (check) **/
         String binCheckShSourcePath = 'binForInstaller/check'
         String binCheckShDestPath = "${binDestPath}/check"
         logger.debug """<Builder> Generate Bin, check:
@@ -436,8 +501,8 @@ class Builder extends JobUtil{
         .set(fileSetupForLin)
         .readResource(binCheckShSourcePath)
         .replaceLine([
-        'REL_PATH_BIN_TO_HOME=' : "REL_PATH_BIN_TO_HOME=${binToHomeRelPath}",
-        'REL_PATH_HOME_TO_LIB=' : "REL_PATH_HOME_TO_LIB=${homeToLibRelPath}"
+            'REL_PATH_BIN_TO_HOME=' : "REL_PATH_BIN_TO_HOME=${binToHomeRelPath}",
+            'REL_PATH_HOME_TO_LIB=' : "REL_PATH_HOME_TO_LIB=${homeToLibRelPath}"
         ])
         .write(binCheckShDestPath)
 
@@ -449,7 +514,7 @@ class Builder extends JobUtil{
      * From: ${build.installer.home}
      *   To: ${build.dist.dir}
      *************************/
-    void zip(GlobalOptionForBuilder gOpt){
+    void zip(GlobalOptionForInstallerMaker gOpt){
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
         String installerName = gOpt.installerName
@@ -469,7 +534,7 @@ class Builder extends JobUtil{
      * From: ${build.installer.home}
      *   To: ${build.dist.dir}
      *************************/
-    void tar(GlobalOptionForBuilder gOpt){
+    void tar(GlobalOptionForInstallerMaker gOpt){
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
         String installerName = gOpt.installerName

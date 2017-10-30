@@ -23,13 +23,13 @@ class JobUtil extends TaskUtil{
     final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     String jobName = this.getClass().simpleName.toLowerCase()
-    String levelNamesProperty = "${jobName}.level"
-    String executorNamePrefix = jobName
+    String commandName = null
     String propertiesFileName = jobName
     String propertiesFileExtension = ''
     File propertiesFile
     String propertyPrefix = ''
 
+    List<Class> validCommandList = []
     List<Class> validTaskList = []
     List<Class> invalidTaskList = []
     List<Class> undoableList = [Question, QuestionChoice, QuestionYN, QuestionFindFile, Set, Notice]
@@ -78,9 +78,21 @@ class JobUtil extends TaskUtil{
         return propman
     }
 
-    VariableMan setupVariableMan(PropMan propman, String executorNamePrefix){
+    VariableMan setupVariableMan(PropMan propman){
         VariableMan varman = new VariableMan(propman.properties)
-        parsePropMan(propman, varman, executorNamePrefix)
+
+        //Analisys Exclusion List (task property)
+        List<String> excludeStartsWithList =[]
+        propman.properties.keySet().each{ String propertyName ->
+            if (propertyName.endsWith('.task')){
+                List<String> propElementList = propertyName.split('[.]').toList()
+                if (propElementList.size() == 3  && getTaskClass(propman[propertyName])){
+                    excludeStartsWithList << (propElementList[0..1].join('.') + '.')
+                }
+            }
+        }
+
+        parsePropMan(propman, varman, excludeStartsWithList)
         setBeforeGetProp(propman, varman)
         return varman
     }
@@ -107,38 +119,41 @@ class JobUtil extends TaskUtil{
 
 
     //level by level For Task
-    protected void eachLevelForTask(Closure closure){
-        //1. Try to get levels from level property
-        List<String> levelList = getSpecificLevelList(levelNamesProperty) ?: getLineOrderedLevelList(propertiesFileName, propertiesFileExtension, executorNamePrefix)
-        List<String> prefixList = levelList.collect{ "${executorNamePrefix}.${it}." }
-        List<Class> taskClassList = prefixList.collect{ getTaskClass(getTaskName(it)) }
+    protected void eachLevelForTask(String commandName, Closure closure){
+        //1. Try to get task order from property
+        String taskOrderProperty = "${commandName}.order".toString()
+        List<String> taskOrderList = getSpecificLevelList(taskOrderProperty) ?: getTaskLineOrderList(propertiesFileName, propertiesFileExtension, commandName, taskOrderProperty)
+        List<String> prefixList = taskOrderList.collect{ "${commandName}.${it}.".toString() }
+        List<Class> taskTypeList = prefixList.collect{ getTaskClass(getTaskName(it)) }
 
         //2. Do Each Tasks
         commit()
-        for (int i=0; i<levelList.size(); i++){
-            String levelName = levelList[i]
-            String propertyPrefix = "${executorNamePrefix}.${levelName}."
+        for (int i=0; i<taskOrderList.size(); i++){
+            String taskName = taskOrderList[i]
+            String propertyPrefix = "${commandName}.${taskName}."
 
             //- Do Task
             taskResultStatus = closure(propertyPrefix)
+            
             //- Check Status
             if (taskResultStatus == TaskUtil.STATUS_UNDO_QUESTION)
-                i = undo(taskClassList, prefixList, i)
+                i = undo(taskTypeList, prefixList, i)
             else if (taskResultStatus == TaskUtil.STATUS_REDO_QUESTION)
-                i = redo(taskClassList, prefixList, i)
+                i = redo(taskTypeList, prefixList, i)
             else
                 commit()
         }
     }
 
     //level by level
-    protected void eachLevel(Closure closure){
+    protected void eachTask(String commandName, Closure closure){
         //1. Try to get levels from level property
-        List<String> levelList = getSpecificLevelList(levelNamesProperty) ?: getLineOrderedLevelList(propertiesFileName, propertiesFileExtension, executorNamePrefix)
+        String taskOrderProperty = "${commandName}.order".toString()
+        List<String> taskOrderList = getSpecificLevelList(taskOrderProperty) ?: getTaskLineOrderList(propertiesFileName, propertiesFileExtension, commandName, taskOrderProperty)
 
         //2. Do Each Tasks
-        levelList.eachWithIndex{ levelName, i ->
-            String propertyPrefix = "${executorNamePrefix}.${levelName}."
+        taskOrderList.eachWithIndex{ taskName, i ->
+            String propertyPrefix = "${commandName}.${taskName}.".toString()
             closure(propertyPrefix)
         }
     }
@@ -160,8 +175,8 @@ class JobUtil extends TaskUtil{
         return resultList
     }
 
-    protected List<String> getLineOrderedLevelList(String fileName, String fileExtension, String executorName){
-        Map levelNameMap = [:]
+    protected List<String> getTaskLineOrderList(String fileName, String fileExtension, String executorName, String taskOrderProperty){
+        Map taskNameMap = [:]
         String userSetPropertiesDir = propman.get('properties.dir')
         File scriptFile = (userSetPropertiesDir) ? new File("${userSetPropertiesDir}/${fileName}.${fileExtension}") : FileMan.getFileFromResource("${fileName}.${fileExtension}")
 
@@ -171,12 +186,12 @@ class JobUtil extends TaskUtil{
             scriptMap.each{ String propertyName, String value ->
                 List<String> propElementList = propertyName.split('[.]').toList()
                 if (propElementList && propElementList.size() > 2){
-                    String executorElementName = propElementList[0]
-                    String levelElementName = propElementList[1]
-                    if (executorElementName.equals(executorName)
-                            && !propertyName.equals(levelNamesProperty)
-                            && !levelNameMap[levelElementName]){
-                        levelNameMap[levelElementName] = true
+                    String commandName = propElementList[0]
+                    String taskName = propElementList[1]
+                    if (commandName.equals(executorName)
+                            && !propertyName.equals(taskOrderProperty)
+                            && !taskNameMap[taskName]){
+                        taskNameMap[taskName] = true
                     }
                 }
             }
@@ -186,17 +201,17 @@ class JobUtil extends TaskUtil{
                 String propertyName = line.split('[=]')[0]
                 List<String> propElementList = propertyName.split('[.]').toList()
                 if (propElementList && propElementList.size() > 2){
-                    String executorElementName = propElementList[0]
-                    String levelElementName = propElementList[1]
-                    if (executorElementName.equals(executorName)
-                            && !propertyName.equals(levelNamesProperty)
-                            && !levelNameMap[levelElementName]){
-                        levelNameMap[levelElementName] = true
+                    String commandName = propElementList[0]
+                    String taskName = propElementList[1]
+                    if (commandName.equals(executorName)
+                            && !propertyName.equals(taskOrderProperty)
+                            && !taskNameMap[taskName]){
+                        taskNameMap[taskName] = true
                     }
                 }
             }
         }
-        return levelNameMap.keySet().toList()
+        return taskNameMap.keySet().toList()
     }
 
 
@@ -225,13 +240,13 @@ class JobUtil extends TaskUtil{
                         propman.redo()
                     }
                 }
-                logger.error "It Can not undo"
+                logger.error "It can not undo"
             }
         }else{
             if (i == -1)
                 logger.error "No more undo"
             else
-                logger.error "It Can not undo"
+                logger.error "It can not undo"
         }
         return i
     }
@@ -274,19 +289,22 @@ class JobUtil extends TaskUtil{
         return runTask(taskType, '')
     }
 
-    Integer runTask(String taskType, String propertyPrefix){
+    Integer runTask(String taskTypeName, String propertyPrefix){
         provider.shift( jobName, propertyPrefix )
         List<String> propertyStructureList = propertyPrefix ? propertyPrefix.split('[.]').toList() : []
         TaskSetup task = config.injectValue(new TaskSetup(
                 jobName: jobName,
+                commandName: (propertyStructureList.size() >= 2) ? propertyStructureList[0] : '',
                 taskName: (propertyStructureList.size() >= 2) ? propertyStructureList[1] : '',
-                taskTypeName: taskType,
+                taskTypeName: taskTypeName,
                 propertyPrefix: propertyPrefix
         ))
         task.taskClazz = getTaskClass(task.taskTypeName)
 
         //Validation
         //Check Valid Task
+        if (!task.taskClazz)
+            throw new Exception("${task.taskTypeName} Does not exists task. or You Can't")
         if (!task.taskTypeName)
             throw new Exception(" 'No Task Name. ${task.propertyPrefix}task=???. Please Check Task.' ")
         if ( (validTaskList && !validTaskList.contains(task.taskClazz)) || (invalidTaskList && invalidTaskList.contains(task.taskClazz)) )
@@ -305,8 +323,6 @@ class JobUtil extends TaskUtil{
 
     Class getTaskClass(String taskName){
         Class taskClazz = validTaskList.find{ it.getSimpleName().equalsIgnoreCase(taskName) }
-        if (!taskClazz)
-            throw new Exception("${taskName} Does not exists task. or You Can't")
         return taskClazz
     }
 

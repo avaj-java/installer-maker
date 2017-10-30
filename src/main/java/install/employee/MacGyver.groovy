@@ -25,16 +25,15 @@ class MacGyver extends EmployeeUtil {
 
     MacGyver(){
         propertiesFileName = 'macgyver'
-        executorNamePrefix = 'macgyver'
-        levelNamesProperty = 'macgyver.level'
+        jobName = 'macgyver'
     }
 
     @Init(lately=true)
     void init(){
         validTaskList = Util.findAllClasses('install', [Task])
-        
+
         this.propman = setupPropMan(provider)
-        this.varman = setupVariableMan(propman, executorNamePrefix)
+        this.varman = setupVariableMan(propman)
         provider.shift(jobName)
         this.gOpt = config.injectValue(new GlobalOptionForMacgyver())
     }
@@ -64,6 +63,30 @@ class MacGyver extends EmployeeUtil {
 
 
 
+    @Command
+    void customCommand(){
+        //Setup Log
+        setuptLog(gOpt.logSetup)
+
+        ReportSetup reportSetup = config.injectValue(new ReportSetup())
+
+        //Each level by level
+        eachLevelForTask(commandName){ String propertyPrefix ->
+            try{
+                return runTaskByPrefix("${propertyPrefix}")
+            }catch(e){
+                //Write Report
+                writeReport(reportMapList, reportSetup)
+                throw e
+            }
+        }
+
+        //Write Report
+        writeReport(reportMapList, reportSetup)
+    }
+
+
+
     @Command('doSomething')
     @HelpIgnore
     @Document("""
@@ -87,7 +110,7 @@ class MacGyver extends EmployeeUtil {
             if (helpTask(modeHelp, taskCalledByUserList))
                 return TaskUtil.STATUS_TASK_DONE
             /** Run Task **/
-//            if (applicationName == Starter.APPLICATION_INSTALLER && taskTypeName != 'version')
+//            if (applicationName == Commander.APPLICATION_INSTALLER && taskTypeName != 'version')
 //                return TaskUtil.STATUS_TASK_RUN_FAILED
 
             propman.set('help.command.name', '')
@@ -144,7 +167,7 @@ class MacGyver extends EmployeeUtil {
         ReportSetup reportSetup = config.injectValue(new ReportSetup())
 
         //Each level by level
-        eachLevelForTask{ String propertyPrefix ->
+        eachLevelForTask('macgyver'){ String propertyPrefix ->
             try{
                 return runTaskByPrefix("${propertyPrefix}")
             }catch(e){
