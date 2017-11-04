@@ -66,6 +66,8 @@ class SqlSetup extends jaemisseo.man.bean.SqlSetup {
     Boolean modeSqlIgnoreErrorExecute
     @Value('mode.sql.ignore.error.check.before')
     Boolean modeSqlIgnoreErrorCheckBefore
+    @Value('mode.sql.ignore.error.already.exist')
+    Boolean modeSqlIgnoreErrorAlreadyExist
     @Value('mode.sql.progress.bar')
     Boolean modeSqlProgressBar = true
 

@@ -1,10 +1,10 @@
 ##################################################
 ##
-##    Installer
+##    INSTALLER
 ##
 ##################################################
 ##################################################
-##### SETUP - CUSTOM PROPERTIES
+##### INSTALLER - CUSTOM PROPERTIES
 ##################################################
 var:
   data.dir: ${installer.home}/data
@@ -34,7 +34,13 @@ var:
       idx: ''
 
 ##################################################
-##### SETUP - DEFAULT (installer)
+##### INSTALLER - DEFAULT PROPERTIES
+#####
+##### [ Main Properties ]
+##### installer.home
+##### color.desc
+##### color.question
+##### color.task
 ##################################################
 color:
   desc: yellow
@@ -62,9 +68,18 @@ sql:
 
 
 ##################################################
-##### SETUP - COMMANDS
+#####
+##### INSTALLER - COMMANDS (ask)
+#####
 ##################################################
-installer:
+
+
+##################################################
+#####
+##### INSTALLER - COMMANDS (install)
+#####
+##################################################
+install:
   step1:
     if: '{"r.sqllevel.answer":["3"]}'
     task: Sql

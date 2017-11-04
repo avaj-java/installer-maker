@@ -1,15 +1,23 @@
 ##################################################
 ##
-##    Installer-Maker
+##    INSTALLER-MAKER
 ##
 ##################################################
 ##################################################
-##### SETUP - CUSTOM PROPERTIES
+##### INSTALLER-MAKER - CUSTOM PROPERTIES
 ##################################################
-data.home: ~/.installer-data/data
+data.home: ./.installer-data/data
 
 ##################################################
-##### SETUP - DEFAULT (installer-maker)
+##### INSTALLER-MAKER - DEFAULT PROPERTIES
+#####
+##### [ Main Properties ]
+##### build.installer.home
+##### color.desc
+##### color.question
+##### color.task
+##### product.name
+##### product.version
 ##################################################
 product:
   name: Program
@@ -21,7 +29,9 @@ color:
   task:
 
 ##################################################
-##### SETUP - COMMANDS
+#####
+##### INSTALLER-MAKER - COMMANDS (build)
+#####
 ##################################################
 build:
   step0:
