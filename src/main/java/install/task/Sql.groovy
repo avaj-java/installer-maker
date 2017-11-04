@@ -34,6 +34,8 @@ class Sql extends TaskUtil{
     @Value
     ReportSetup reportSetup
 
+    List sqlObjectListList = []
+
 
 
     @Override
@@ -41,6 +43,7 @@ class Sql extends TaskUtil{
 
         //1. Default Setup
         sqlman = new SqlMan()
+        sqlObjectListList = []
 
         // -Mode No Progress Bar
         if ([Level.INFO, Level.WARN, Level.ERROR, Level.OFF].contains(config.logGen.getConsoleLogLevel()))
@@ -53,9 +56,9 @@ class Sql extends TaskUtil{
 
             //2. Generate Query Replaced With New Object Name
             sqlman.init()
-                    .queryFromFile(filePath)
-                    .command([SqlMan.ALL])
-                    .replace(sqlSetup)
+                .queryFromFile(filePath)
+                .command([SqlMan.ALL])
+                .replace(sqlSetup)
 
             //3. Report Checking Before
             if (sqlSetup.modeSqlCheckBefore){
@@ -79,6 +82,8 @@ class Sql extends TaskUtil{
                 sqlman.run(sqlSetup)
             }
 
+            sqlObjectListList << sqlman.getAnalysisResultList()
+
         }
 
         return STATUS_TASK_DONE
@@ -97,16 +102,20 @@ class Sql extends TaskUtil{
     @Override
     void reportWithExcel(ReportSetup reportSetup, List reportMapList){
 //        Map resultMap = sqlman.getResultReportMap()
-        sqlman.getAnalysisResultList().each{ SqlAnalMan.SqlObject sqlObj ->
-            reportMapList.add(new ReportSql(
-                    sqlFileName: sqlObj.sqlFileName,
-                    seq: sqlObj.seq,
-                    query: sqlObj.query,
+        sqlObjectListList.each{ List<SqlAnalMan.SqlObject> sqlObjectList ->
+
+            sqlObjectList.each{ SqlAnalMan.SqlObject sqlObj ->
+                reportMapList.add(new ReportSql(
+                        sqlFileName: sqlObj.sqlFileName,
+                        seq: sqlObj.seq,
+                        query: sqlObj.query,
 //                    isExistOnDB     : sqlObj.isExistOnDB?'Y':'N',
-                    isOk: (sqlObj.isOk == null) ? '' : (sqlObj.isOk) ? 'Complete' : 'Failed',
-                    warnningMessage: sqlObj.warnningMessage,
-                    error: sqlObj.error?.toString(),
-            ))
+                        isOk: (sqlObj.isOk == null) ? '' : (sqlObj.isOk) ? 'Complete' : 'Failed',
+                        warnningMessage: sqlObj.warnningMessage,
+                        error: sqlObj.error?.toString(),
+                ))
+            }
+
         }
     }
 
