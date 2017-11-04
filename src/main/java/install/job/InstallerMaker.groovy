@@ -35,8 +35,6 @@ class InstallerMaker extends JobUtil{
 
     @Init(lately=true)
     void init(){
-        validTaskList = Util.findAllClasses('install', [Task])
-
         this.propman = setupPropMan(provider)
         this.varman = setupVariableMan(propman)
         provider.shift(jobName)
@@ -74,7 +72,8 @@ class InstallerMaker extends JobUtil{
         ReportSetup reportSetup = config.injectValue(new ReportSetup())
 
         //Each level by level
-        eachLevelForTask(commandName){ String propertyPrefix ->
+        validTaskList = Util.findAllClasses('install', [Task])
+        eachTaskWithCommit(commandName){ String propertyPrefix ->
             try{
                 return runTaskByPrefix("${propertyPrefix}")
             }catch(e){
@@ -231,7 +230,8 @@ class InstallerMaker extends JobUtil{
             provider.setRaw('build.installer.bin.path', binPath)
 
             //2. Each level by level
-            eachLevelForTask('build'){ String propertyPrefix ->
+            validTaskList = Util.findAllClasses('install', [Task])
+            eachTaskWithCommit('build'){ String propertyPrefix ->
                 try{
                     return runTaskByPrefix("${propertyPrefix}")
                 }catch(e){

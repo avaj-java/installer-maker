@@ -30,8 +30,6 @@ class MacGyver extends EmployeeUtil {
 
     @Init(lately=true)
     void init(){
-        validTaskList = Util.findAllClasses('install', [Task])
-
         this.propman = setupPropMan(provider)
         this.varman = setupVariableMan(propman)
         provider.shift(jobName)
@@ -71,7 +69,8 @@ class MacGyver extends EmployeeUtil {
         ReportSetup reportSetup = config.injectValue(new ReportSetup())
 
         //Each level by level
-        eachLevelForTask(commandName){ String propertyPrefix ->
+        List<Class> validTaskList = Util.findAllClasses('install', [Task])
+        eachTaskWithCommit(commandName, validTaskList){ String propertyPrefix ->
             try{
                 return runTaskByPrefix("${propertyPrefix}")
             }catch(e){
@@ -95,7 +94,8 @@ class MacGyver extends EmployeeUtil {
     Integer doSomething(){
         //Setup Log
         setuptLog(gOpt.logSetup)
-        
+
+        validTaskList = Util.findAllClasses('install', [Task])
         boolean modeHelp = propman.getBoolean(['help', 'h'])
         String applicationName = propman.getString('application.name')
         List<String> taskCalledByUserList = config.taskCalledByUserList
@@ -112,7 +112,6 @@ class MacGyver extends EmployeeUtil {
             /** Run Task **/
 //            if (applicationName == Commander.APPLICATION_INSTALLER && taskTypeName != 'version')
 //                return TaskUtil.STATUS_TASK_RUN_FAILED
-
             propman.set('help.command.name', '')
             propman.set('help.task.name', '')
             runTaskByType(taskName)
@@ -167,7 +166,8 @@ class MacGyver extends EmployeeUtil {
         ReportSetup reportSetup = config.injectValue(new ReportSetup())
 
         //Each level by level
-        eachLevelForTask('macgyver'){ String propertyPrefix ->
+        validTaskList = Util.findAllClasses('install', [Task])
+        eachTaskWithCommit('macgyver'){ String propertyPrefix ->
             try{
                 return runTaskByPrefix("${propertyPrefix}")
             }catch(e){

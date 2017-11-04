@@ -35,8 +35,6 @@ class Installer extends JobUtil{
 
     @Init(lately=true)
     void init(){
-        validTaskList = Util.findAllClasses('install', [Task])
-
         this.propman = setupPropMan(provider)
         this.varman = setupVariableMan(propman)
         provider.shift(jobName)
@@ -101,7 +99,8 @@ class Installer extends JobUtil{
         ReportSetup reportSetup = config.injectValue(new ReportSetup())
 
         //Each level by level
-        eachLevelForTask(commandName){ String propertyPrefix ->
+        validTaskList = Util.findAllClasses('install', [Task])
+        eachTaskWithCommit(commandName){ String propertyPrefix ->
             try{
                 return runTaskByPrefix("${propertyPrefix}")
             }catch(e){
@@ -143,7 +142,8 @@ class Installer extends JobUtil{
         //1. READ REMEMBERED ANSWER
         readRememberAnswer()
         //2. Each level by level
-        eachLevelForTask('ask'){ String propertyPrefix ->
+        validTaskList = Util.findAllClasses('install', [Task])
+        eachTaskWithCommit('ask'){ String propertyPrefix ->
             return runTaskByPrefix("${propertyPrefix}")
         }
         //3. WRITE REMEMBERED ANSWER
@@ -172,7 +172,8 @@ class Installer extends JobUtil{
         ReportSetup reportSetup = gOpt.reportSetup
 
         //Each level by level
-        eachLevelForTask('install'){ String propertyPrefix ->
+        validTaskList = Util.findAllClasses('install', [Task])
+        eachTaskWithCommit('install'){ String propertyPrefix ->
             try{
                 return runTaskByPrefix("${propertyPrefix}")
             }catch(e){
@@ -203,6 +204,7 @@ class Installer extends JobUtil{
         logTaskDescription('auto create response file')
 
         //Each level by level
+        validTaskList = undoableList
         eachTask('ask'){ String propertyPrefix ->
             String taskName = getTaskName(propertyPrefix)
             Class taskClazz = getTaskClass(taskName)

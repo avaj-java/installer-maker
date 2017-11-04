@@ -95,26 +95,30 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
         return value
     }
 
+    static String replacePathWinToLin(String path){
+        return path?.replace("\\", "/")
+    }
 
 
     static PropMan genDefaultProperties(){
-        return new PropMan([
+        PropMan propman = new PropMan([
                 'os.name': System.getProperty('os.name'),
                 'os.version': System.getProperty('os.version'),
                 'user.name': System.getProperty('user.name'),
                 'java.version': System.getProperty('java.version'),
-                'java.home': System.getProperty('java.home'),
-                'user.dir': System.getProperty('user.dir'),
-                'user.home': System.getProperty('user.home'),
+                'java.home': replacePathWinToLin( System.getProperty('java.home') ),
+                'user.dir': replacePathWinToLin( System.getProperty('user.dir') ),
+                'user.home': replacePathWinToLin( System.getProperty('user.home') ),
                 // installer.jar path
-                'lib.dir': new InstallerPropertiesGenerator().getThisAppFile()?.getParentFile()?.getPath() ?: '',
-                'lib.path': new InstallerPropertiesGenerator().getThisAppFile()?.getPath() ?: '' ,
+                'lib.dir': replacePathWinToLin( new InstallerPropertiesGenerator().getThisAppFile()?.getParentFile()?.getPath() ) ?: '',
+                'lib.path': replacePathWinToLin( new InstallerPropertiesGenerator().getThisAppFile()?.getPath() ) ?: '',
                 'lib.version': FileMan.getFileFromResource('.version').text,
                 'lib.compiler': FileMan.getFileFromResource('.compiler').text,
                 'lib.build.date': FileMan.getFileFromResource('.date').text,
                 'product.name': FileMan.getFileFromResource('.productname').text?.trim(),
                 'product.version': FileMan.getFileFromResource('.productversion').text?.trim(),
         ])
+        return propman
     }
 
     static PropMan gen(String filePath){
