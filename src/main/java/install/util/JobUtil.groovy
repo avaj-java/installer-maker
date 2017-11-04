@@ -7,11 +7,13 @@ import install.configuration.Config
 import install.configuration.annotation.Inject
 import install.configuration.annotation.method.After
 import install.configuration.annotation.method.Before
+import install.configuration.annotation.type.Task
 import install.data.PropertyProvider
 import install.task.*
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.VariableMan
+import jaemisseo.man.util.Util
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -32,6 +34,7 @@ class JobUtil extends TaskUtil{
     List<Class> validCommandList = []
     List<Class> validTaskList = []
     List<Class> invalidTaskList = []
+    List<Class> allTaskList = Util.findAllClasses('install', [Task])
     List<Class> undoableList = [Question, QuestionChoice, QuestionYN, QuestionFindFile, Set, Notice]
     List<Class> undoMoreList = [Set, Notice]
 
@@ -82,7 +85,7 @@ class JobUtil extends TaskUtil{
         VariableMan varman = new VariableMan(propman.properties)
 
         //Analisys Exclusion List (task property)
-        List<String> excludeStartsWithList =[]
+        List<String> excludeStartsWithList = []
         propman.properties.keySet().each{ String propertyName ->
             if (propertyName.endsWith('.task')){
                 List<String> propElementList = propertyName.split('[.]').toList()
@@ -91,6 +94,9 @@ class JobUtil extends TaskUtil{
                 }
             }
         }
+
+        logger.trace( 'PROPERTIES SIZE: ' +propman.properties.size() )
+        logger.trace( 'FIRST PARSING EXCLUSION LIST: ' +excludeStartsWithList )
 
         parsePropMan(propman, varman, excludeStartsWithList)
         setBeforeGetProp(propman, varman)
@@ -119,7 +125,7 @@ class JobUtil extends TaskUtil{
 
 
     //level by level For Task
-    protected void eachLevelForTask(String commandName, Closure closure){
+    protected void eachTaskWithCommit(String commandName, Closure closure){
         //1. Try to get task order from property
         String taskOrderProperty = "${commandName}.order".toString()
         List<String> taskOrderList = getSpecificLevelList(taskOrderProperty) ?: getTaskLineOrderList(propertiesFileName, propertiesFileExtension, commandName, taskOrderProperty)
@@ -289,6 +295,10 @@ class JobUtil extends TaskUtil{
         return runTask(taskType, '')
     }
 
+    Integer runTaskByType(Class clazz){
+        return runTask(clazz.getSimpleName(), '')
+    }
+
     Integer runTask(String taskTypeName, String propertyPrefix){
         provider.shift( jobName, propertyPrefix )
         List<String> propertyStructureList = propertyPrefix ? propertyPrefix.split('[.]').toList() : []
@@ -322,7 +332,7 @@ class JobUtil extends TaskUtil{
     }
 
     Class getTaskClass(String taskName){
-        Class taskClazz = validTaskList.find{ it.getSimpleName().equalsIgnoreCase(taskName) }
+        Class taskClazz = allTaskList.find{ it.getSimpleName().equalsIgnoreCase(taskName) }
         return taskClazz
     }
 
