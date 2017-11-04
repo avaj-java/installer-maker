@@ -6,8 +6,6 @@ import install.configuration.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import install.bean.FileSetup
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * Created by sujkim on 2017-02-22.
@@ -16,11 +14,11 @@ import org.slf4j.LoggerFactory
 @TerminalValueProtocol(['from', 'to'])
 class Copy extends TaskUtil{
 
-    @Value(name='from', filter='getFilePath', required=true)
-    String filePath
+    @Value(name='from', filter='getFilePathList', required=true)
+    List<String> sourcePathList
 
-    @Value(name='to', filter='getFilePath', required=true)
-    String destPath
+    @Value(name='to', filter='getFilePathList', required=true)
+    List<String> destPathList
 
     @Value
     FileSetup fileSetup
@@ -29,7 +27,11 @@ class Copy extends TaskUtil{
 
     @Override
     Integer run(){
-        FileMan.copy(filePath, destPath, fileSetup)
+        sourcePathList.each{ String sourceFilePath ->
+            destPathList.each{ String destFilePath ->
+                FileMan.copy(sourceFilePath, destFilePath, fileSetup)
+            }
+        }
         return STATUS_TASK_DONE
     }
 

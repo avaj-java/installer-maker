@@ -130,8 +130,20 @@ class PropertyProvider {
     }
 
     List<String> getFilePathList(String propertyName, String extention){
-        String filePath = get(propertyName)
-        return FileMan.getSubFilePathList(filePath, extention)
+        def value = parse(propertyName)
+        List<String> sourceList = []
+        List<String> resultSourceList = []
+
+        if (value instanceof String){
+            sourceList << value
+        }else if (value instanceof List){
+            sourceList = value
+        }
+
+        sourceList.each{
+            resultSourceList.addAll( FileMan.getSubFilePathList(it, extention) )
+        }
+        return resultSourceList
     }
 
     @Filter('getFilePath')
