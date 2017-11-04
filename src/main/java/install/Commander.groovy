@@ -174,8 +174,13 @@ class Commander {
             }
         }
 
-        if ([Level.DEBUG, Level.TRACE].contains( config.logGen.getConsoleLogLevel() ))
+        if ([Level.DEBUG, Level.TRACE].contains( config.logGen.getConsoleLogLevel() )){
             rootLogger.debug('Error', e)
+        }else{
+            rootLogger.detachAppender('CONSOLE')
+            rootLogger.debug('Error', e)
+        }
+
     }
 
 }

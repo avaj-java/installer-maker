@@ -72,10 +72,10 @@
 		<appender-ref ref="CONSOLE" />
 	</root>
 
-	<logger name="install" level="DEBUG">
-	</logger>
+	<!--<logger name="install" level="DEBUG">-->
+	<!--</logger>-->
 
-	<logger name="jaemisseo.man" level="DEBUG">
-	</logger>
+	<!--<logger name="jaemisseo.man" level="DEBUG">-->
+	<!--</logger>-->
 
 </configuration>
