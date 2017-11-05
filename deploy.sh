@@ -1,1 +1,1 @@
-gradle clean deployLocal
+gradle clean deployLocal "$@"

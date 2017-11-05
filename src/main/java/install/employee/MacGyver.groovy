@@ -69,8 +69,8 @@ class MacGyver extends EmployeeUtil {
         ReportSetup reportSetup = config.injectValue(new ReportSetup())
 
         //Each level by level
-        List<Class> validTaskList = Util.findAllClasses('install', [Task])
-        eachTaskWithCommit(commandName, validTaskList){ String propertyPrefix ->
+        validTaskList = Util.findAllClasses('install', [Task])
+        eachTaskWithCommit(commandName){ String propertyPrefix ->
             try{
                 return runTaskByPrefix("${propertyPrefix}")
             }catch(e){

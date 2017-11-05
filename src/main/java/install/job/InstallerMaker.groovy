@@ -96,7 +96,7 @@ class InstallerMaker extends JobUtil{
         You can generate Sample Properties Files to build installer 
     
         1. installer-maker.yml        
-        3. installer.yml        
+        2. installer.yml        
     """)
     void initCommand(){
         //Ready
@@ -147,15 +147,15 @@ class InstallerMaker extends JobUtil{
     - Options
         1. You can change your build directory on Builder Script  
             [default value list]
-                installer.name=installer_myproject                        
-                build.dir=./build
-                build.temp.dir=${build.dir}/installer_temp
-                build.dist.dir=${build.dir}/installer_dist
-                build.installer.home=${build.dir}/${installer.name}
+                installer.name: installer_myproject                        
+                build.dir: ./build
+                build.temp.dir: ${build.dir}/installer_temp
+                build.dist.dir: ${build.dir}/installer_dist
+                build.installer.home: ${build.dir}/${installer.name}
                 
         2. You can specify script files path on your workspace.
             [default value list]
-                properties.dir=./
+                properties.dir: ./
             [example]
                 installer-maker clean build -properties.dir=./installer-data/                     
     ''')
@@ -196,15 +196,15 @@ class InstallerMaker extends JobUtil{
     - Options
         1. You can change your build directory on Builder Script(builder.yml)  
             [default value list]
-                installer.name=installer_myproject                        
-                build.dir=./build
-                build.temp.dir=${build.dir}/installer_temp
-                build.dist.dir=${build.dir}/installer_dist
-                build.installer.home=${build.dir}/${installer.name}
+                installer.name: installer_myproject                        
+                build.dir: ./build
+                build.temp.dir: ${build.dir}/installer_temp
+                build.dist.dir: ${build.dir}/installer_dist
+                build.installer.home: ${build.dir}/${installer.name}
                 
         2. You can specify script files path on your workspace.
             [default value list]
-                properties.dir=./
+                properties.dir: ./
             [example]
                 installer-maker clean build -properties.dir=./installer-data/        
     ''')

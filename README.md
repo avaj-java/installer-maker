@@ -50,7 +50,8 @@ Click `Release` to download` zip file `, extract it to the folder you want and r
     path/to/installer-maker
     ```           
     
-2. set Envirionment Variable `INSTALLER_MAKER_HOME`    ```bash
+2. set Envirionment Variable `INSTALLER_MAKER_HOME`    
+    ```bash
     INSTALLER_MAKER_HOME=path/to/installer-maker
     ```
     
