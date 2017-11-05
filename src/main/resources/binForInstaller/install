@@ -145,4 +145,4 @@ if [ "$THIS_OS" = "WIN" ]; then
 fi
 
 ##### Run Jar
-java -Xss10m -cp "${PATH_TO_LIB_DIR}/*" install.Starter --installer ask install "$@"
+java -Xss50m -cp "${PATH_TO_LIB_DIR}/*" install.Starter --installer ask install "$@"

@@ -38,7 +38,7 @@ goto execute
 set CMD_LINE_ARGS=%$
 
 :execute
-java -Xss10m -cp "%PATH_TO_LIB_DIR%/*" install.Starter --macgyver %CMD_LINE_ARGS%
+java -Xss50m -cp "%PATH_TO_LIB_DIR%/*" install.Starter --macgyver %CMD_LINE_ARGS%
 
 :pause
 set /p DUMMY=Hit [ENTER] to continue...
