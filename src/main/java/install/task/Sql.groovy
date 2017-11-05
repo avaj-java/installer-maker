@@ -65,8 +65,7 @@ class Sql extends TaskUtil{
                     sqlman.checkBefore(sqlSetup)
 
                 }catch(e){
-                    println "<ERROR> Checking Before Execution"
-                    throw new SQLException('Error, Checking Before Execution.')
+                    throw new SQLException('Error, Checking Before Execution.', e)
                 }
             }
 
