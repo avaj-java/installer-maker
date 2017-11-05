@@ -4,8 +4,8 @@ import install.configuration.annotation.type.Task
 import install.configuration.annotation.Value
 import install.configuration.annotation.type.TerminalValueProtocol
 import install.util.TaskUtil
-import temp.util.Encryptor
-import temp.util.SEEDUtil
+import install.util.encryptor.Encryptor
+import install.util.encryptor.SEEDUtil
 
 /**
  * Created by sujkim on 2017-03-10.
@@ -56,6 +56,11 @@ class Encrypt extends TaskUtil{
         //LOG
         logger.debug "<RESULT>"
         logger.debug encryptedText
+
+
+        //Set 'answer' and 'value' Property
+        set('value', encryptedText)
+        setPropValue()
 
         return STATUS_TASK_DONE
     }
