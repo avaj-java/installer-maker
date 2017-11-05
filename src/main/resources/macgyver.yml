@@ -118,7 +118,7 @@ macgyver:
   sql8:
     task: SQL
     if: '{"macgyver.chk1.answer":["s"]}'
-    file.path: ${file.path}
+    file: ${file.path}
 
 
 
@@ -134,20 +134,18 @@ macgyver:
     if: '{"macgyver.chk2.answer":"z"}'
     question: file path
     answer.default: ./*
-    property: file.path
+    property: from
 
   zip2:
     task: Question
     if: '{"macgyver.chk2.answer":"z"}'
     question: dest path
     answer.default: ./
-    property: dest.path
+    property: to
 
   zip3:
     task: ZIP
     if: '{"macgyver.chk2.answer":"z"}'
-    file.path: ${file.path}
-    dest.path: ${dest.path}
 
 ####################
 ##### TAR
@@ -157,20 +155,18 @@ macgyver:
     if: '{"macgyver.chk2.answer":"t"}'
     question: file path
     answer.default: ./*
-    property: file.path
+    property: from
 
   tar2:
     task: Question
     if: '{"macgyver.chk2.answer":"t"}'
     question: dest path
     answer.default: ./
-    property: dest.path
+    property: to
 
   tar3:
     task: TAR
     if: '{"macgyver.chk2.answer":"t"}'
-    file.path: ${file.path}
-    dest.path: ${dest.path}
 
 ####################
 ##### JAR
@@ -180,20 +176,18 @@ macgyver:
     if: '{"macgyver.chk2.answer":"j"}'
     question: file path
     answer.default: ./*
-    property: file.path
+    property: from
 
   jar2:
     task: Question
     if: '{"macgyver.chk2.answer":"j"}'
     question: dest path
     answer.default: ./
-    property: dest.path
+    property: to
 
   jar3:
     task: jar
     if: '{"macgyver.chk2.answer":"j"}'
-    file.path: ${file.path}
-    dest.path: ${dest.path}
 
 ####################
 ##### UNZIP
@@ -203,20 +197,18 @@ macgyver:
     if: '{"macgyver.chk2.answer":"xz"}'
     question: file path
     answer.default: ./*.zip
-    property: file.path
+    property: from
 
   unzip2:
     task: Question
     if: '{"macgyver.chk2.answer":"xz"}'
     question: dest path
     answer.default: ./
-    property: dest.path
+    property: to
 
   unzip3:
     task: ZIP
     if: '{"macgyver.chk2.answer":"xz"}'
-    file.path: ${file.path}
-    dest.path: ${dest.path}
 
 ####################
 ##### UNTAR
@@ -226,20 +218,18 @@ macgyver:
     if: '{"macgyver.chk2.answer":"xt"}'
     question: file path
     answer.default: ./*.tar
-    property: file.path
+    property: from
 
   untar2:
     task: Question
     if: '{"macgyver.chk2.answer":"xt"}'
     question: dest path
     answer.default: ./
-    property: dest.path
+    property: to
 
   untar3:
     task: TAR
     if: '{"macgyver.chk2.answer":"xt"}'
-    file.path: ${file.path}
-    dest.path: ${dest.path}
 
 ####################
 ##### UNJAR
@@ -249,20 +239,18 @@ macgyver:
     if: '{"macgyver.chk2.answer":"xj"}'
     question: file path
     answer.default: ./*.jar
-    property: file.path
+    property: from
 
   unjar2:
     task: Question
     if: '{"macgyver.chk2.answer":"xj"}'
     question: dest path
     answer.default: ./
-    property: dest.path
+    property: to
 
   unjar3:
     task: jar
     if: '{"macgyver.chk2.answer":"xj"}'
-    file.path: ${file.path}
-    dest.path: ${dest.path}
 
 
 ####################
