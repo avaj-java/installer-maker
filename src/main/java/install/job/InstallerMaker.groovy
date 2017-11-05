@@ -275,11 +275,13 @@ class InstallerMaker extends JobUtil{
         String binPath = provider.get('build.installer.bin.path') ?: FileMan.getFullPath(gOpt.buildInstallerHome, gOpt.installerHomeToBinRelPath)
         String argsExceptCommand = provider.get('args.except.command')
         String argsModeExec = '-mode.exec.self=true'
-        String installBinPathForWIn = "${binPath}/install.bat".replaceAll(/[\/\\]+/, "\\$File.separator")
-        String installBinPathForLin = "${binPath}/install".replaceAll(/[\/\\]+/, "/")
-        provider.setRaw('exec.command.win', "${installBinPathForWIn} ${argsExceptCommand} ${argsModeExec}")
-        provider.setRaw('exec.command.lin', "${installBinPathForLin} ${argsExceptCommand} ${argsModeExec}")
+        String installBinPathForWIn = "${binPath}/installer.bat".replaceAll(/[\/\\]+/, "\\$File.separator")
+        String installBinPathForLin = "${binPath}/installer".replaceAll(/[\/\\]+/, "/")
+        provider.setRaw('exec.command.win', "${installBinPathForWIn} ask install ${argsExceptCommand} ${argsModeExec}")
+        provider.setRaw('exec.command.lin', "${installBinPathForLin} ask install ${argsExceptCommand} ${argsModeExec}")
+        //run
         runTaskByType('exec')
+        //clear
         provider.setRaw('exec.command.win', "")
         provider.setRaw('exec.command.lin', "")
     }
