@@ -31,7 +31,6 @@ class JobUtil extends TaskUtil{
     File propertiesFile
     String propertyPrefix = ''
 
-    List<Class> validCommandList = []
     List<Class> validTaskList = []
     List<Class> invalidTaskList = []
     List<Class> allTaskList = Util.findAllClasses('install', [Task])

@@ -34,15 +34,14 @@ class Sql extends TaskUtil{
     @Value
     ReportSetup reportSetup
 
-    List sqlObjectListList = []
-
+    List<List<SqlAnalMan.SqlObject>> sqlObjectListList = []
 
 
     @Override
     Integer run(){
 
         //1. Default Setup
-        sqlman = new SqlMan()
+        SqlMan sqlman = new SqlMan()
         sqlObjectListList = []
 
         // -Mode No Progress Bar
@@ -83,7 +82,7 @@ class Sql extends TaskUtil{
             }
 
             sqlObjectListList << sqlman.getAnalysisResultList()
-
+            sqlman.reportResult()
         }
 
         return STATUS_TASK_DONE
@@ -91,7 +90,7 @@ class Sql extends TaskUtil{
 
     @Override
     void reportWithConsole(ReportSetup reportSetup, List reportMapList){
-        sqlman.reportResult()
+        
     }
 
     @Override

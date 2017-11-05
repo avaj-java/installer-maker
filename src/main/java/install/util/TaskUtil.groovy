@@ -24,9 +24,6 @@ class TaskUtil{
 
     PropMan propman
     VariableMan varman
-    SqlMan sqlman
-    FileMan fileman
-    QuestionMan qman
 
     Integer status
     List reportMapList = []

@@ -24,7 +24,7 @@ class QuestionYN extends TaskUtil{
     @Override
     Integer run(){
         //Get Properties
-        qman = new QuestionMan().setValidAnswer([undoSign, redoSign])
+        QuestionMan qman = new QuestionMan().setValidAnswer([undoSign, redoSign])
         if (opt.questionColor){
             qman.setBeforeQuestionClosure{
                 config.logGen.setupConsoleLoggerColorPattern(opt.questionColor)
@@ -65,8 +65,7 @@ class QuestionYN extends TaskUtil{
      * BUILD FORM
      */
     List<String> buildForm(String propertyPrefix){
-        this.propertyPrefix = propertyPrefix
-        qman = new QuestionMan().setValidAnswer([undoSign, redoSign])
+        QuestionMan qman = new QuestionMan().setValidAnswer([undoSign, redoSign])
         return (!opt.modeOnlyInteractive) ? qman.genQuestionAndSelection(opt) : []
     }
 
