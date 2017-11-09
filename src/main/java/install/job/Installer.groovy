@@ -134,8 +134,10 @@ class Installer extends JobUtil{
 
         //0. Check Response File
         if (checkResponseFile(gOpt.responseFilePath)){
-            PropMan responsePropMan = generatePropMan(gOpt.responseFilePath, 'ask')
+            PropMan responsePropMan = generatePropMan((gOpt.responseFilePath as String), 'ask')
+            PropMan propmanExternal = provider.propGen.getExternalProperties()
             propman.merge(responsePropMan)
+                   .merge(propmanExternal)
             propman.set('answer.repeat.limit', 0)
             logTaskDescription('added response file answer')
         }
