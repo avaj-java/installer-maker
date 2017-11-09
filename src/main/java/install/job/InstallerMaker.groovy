@@ -66,6 +66,9 @@ class InstallerMaker extends JobUtil{
 
     @Command
     void customCommand(){
+        if (!propertiesFile)
+            throw new Exception('Does not exists script file [ installer-maker.yml ]')
+
         //Setup Log
         setuptLog(gOpt.logSetup)
 
@@ -164,12 +167,12 @@ class InstallerMaker extends JobUtil{
         setuptLog(gOpt.logSetup)
 
         if (!buildCallCount++)
-            logBigTitle "Builder"
+            logBigTitle "Installer-Maker"
 
         logTaskDescription('clean')
 
         if (!propertiesFile)
-            throw Exception('Does not exists script file [ builder.yml ]')
+            throw new Exception('Does not exists script file [ installer-maker.yml ]')
 
         try{
             FileMan.delete(gOpt.buildInstallerHome)
@@ -194,7 +197,7 @@ class InstallerMaker extends JobUtil{
           You need 2 Script files(installer-maker.yml, installer.yml)
 
     - Options
-        1. You can change your build directory on Builder Script(builder.yml)  
+        1. You can change your build directory on Builder Script(installer-maker.yml)  
             [default value list]
                 installer.name: installer_myproject                        
                 build.dir: ./build
@@ -213,12 +216,12 @@ class InstallerMaker extends JobUtil{
         setuptLog(gOpt.logSetup)
 
         if (!buildCallCount++)
-            logBigTitle "Builder"
+            logBigTitle "Installer-Maker"
 
         logTaskDescription('build')
 
         if (!propertiesFile)
-            throw Exception('Does not exists script file [ builder.yml ]')
+            throw new Exception('Does not exists script file [ installer-maker.yml ]')
 
         try{
             ReportSetup reportSetup = gOpt.reportSetup
@@ -269,7 +272,7 @@ class InstallerMaker extends JobUtil{
         logTaskDescription('RUN')
 
         if (!propertiesFile)
-            throw Exception('Does not exists script file [ builder.yml ]')
+            throw new Exception('Does not exists script file [ installer-maker.yml ]')
 
 
         String binPath = provider.get('build.installer.bin.path') ?: FileMan.getFullPath(gOpt.buildInstallerHome, gOpt.installerHomeToBinRelPath)
@@ -348,7 +351,7 @@ class InstallerMaker extends JobUtil{
         String libToHomeRelPath = FileMan.getRelativePath(libDestPath, buildInstallerHome)
 
         /** 1. Convert library for builder to installer**/
-        logger.debug """<Builder> Copy And Generate Installer Library
+        logger.debug """<Installer-Maker> Copy And Generate Installer Library
          - Installer Home: ${buildInstallerHome}"
          - Copy Installer Lib: 
             FROM : ${libSourcePath}
@@ -406,7 +409,7 @@ class InstallerMaker extends JobUtil{
         String binInstallBatSourcePath = 'binForInstaller/install.bat'
         String binInstallShDestPath = "${binDestPath}/install"
         String binInstallBatDestPath = "${binDestPath}/install.bat"
-        logger.debug """<Builder> Generate Bin, install:
+        logger.debug """<Installer-Maker> Generate Bin, install:
             SH  : ${binInstallShDestPath}
             BAT : ${binInstallBatDestPath}
         """
@@ -436,7 +439,7 @@ class InstallerMaker extends JobUtil{
         String binInstallerBatSourcePath = 'binForInstaller/installer.bat'
         String binInstallerShDestPath = "${binDestPath}/installer"
         String binInstallerBatDestPath = "${binDestPath}/installer.bat"
-        logger.debug """<Builder> Generate Bin, installer:
+        logger.debug """<Installer-Maker> Generate Bin, installer:
             SH  : ${binInstallerShDestPath}
             BAT : ${binInstallerBatDestPath}
         """
@@ -466,7 +469,7 @@ class InstallerMaker extends JobUtil{
         String binMacgyverBatSourcePath = 'binForInstaller/macgyver.bat'
         String binMacgyverShDestPath = "${binDestPath}/macgyver"
         String binMacgyverBatDestPath = "${binDestPath}/macgyver.bat"
-        logger.debug """<Builder> Generate Bin, Macgyver:
+        logger.debug """<Installer-Maker> Generate Bin, Macgyver:
             SH  : ${binMacgyverShDestPath}
             BAT : ${binMacgyverBatDestPath}
         """
@@ -494,7 +497,7 @@ class InstallerMaker extends JobUtil{
         /** 6. Generate Runable Binary File (check) **/
         String binCheckShSourcePath = 'binForInstaller/check'
         String binCheckShDestPath = "${binDestPath}/check"
-        logger.debug """<Builder> Generate Bin, check:
+        logger.debug """<Installer-Maker> Generate Bin, check:
             SH  : ${binCheckShDestPath}
         """
 
