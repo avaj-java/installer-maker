@@ -11,7 +11,6 @@ data.home: ./.installer-data/data
 ##################################################
 ##### INSTALLER-MAKER - DEFAULT PROPERTIES
 #####
-##### [ Main Properties ]
 ##### build.installer.home
 ##### color.desc
 ##### color.question

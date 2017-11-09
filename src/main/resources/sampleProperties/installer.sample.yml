@@ -36,7 +36,6 @@ var:
 ##################################################
 ##### INSTALLER - DEFAULT PROPERTIES
 #####
-##### [ Main Properties ]
 ##### installer.home
 ##### color.desc
 ##### color.question
