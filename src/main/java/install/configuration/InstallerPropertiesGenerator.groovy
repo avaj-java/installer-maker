@@ -176,7 +176,11 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
         Map propertiesValueMap = genApplicationPropertiesValueMap(argsMap, valueProtocolListMap)
         externalProperties = new PropMan(propertiesValueMap)
         externalProperties.set('args', args.join(' '))
-        externalProperties.set('args.except.command', argsMap.findAll{ it.key }.collect{ "-${it.key}=${it.value}" }.join(' '))
+
+        String normalProperties = argsMap.findAll{ it.key != '' && it.key != '--' }.collect{ "-${it.key}=${it.value}" }.join(' ')
+        String dashDashFlagProperties = argsMap['--'].collect{ "--${it}" }.join(' ')
+        String argsExceptCommand = normalProperties+ ' ' +dashDashFlagProperties
+        externalProperties.set('args.except.command', argsExceptCommand)
         return this
     }
 
