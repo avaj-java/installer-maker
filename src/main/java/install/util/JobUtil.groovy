@@ -385,7 +385,7 @@ class JobUtil extends TaskUtil{
 
     protected void descript(TaskSetup task){
         String description = task.desc ? "$task.jobName:$task.desc" : "$task.jobName:$task.taskName:$task.taskTypeName"
-        if (description){
+        if (description && !task.commandName.equalsIgnoreCase('ask')){
             if (task.descColor)
                 config.logGen.setupConsoleLoggerColorPattern(task.descColor)
             logTaskDescription(description)
