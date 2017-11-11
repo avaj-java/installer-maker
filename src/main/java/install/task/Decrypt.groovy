@@ -6,6 +6,7 @@ import install.configuration.annotation.type.TerminalValueProtocol
 import install.util.TaskUtil
 import install.util.encryptor.AES256FromCryptoJS
 import install.util.encryptor.AESUtil
+import install.util.encryptor.Base64Util
 import install.util.encryptor.DES128Util
 import install.util.encryptor.MD5Util
 import install.util.encryptor.SEEDUtil
@@ -51,16 +52,19 @@ class Decrypt extends TaskUtil{
         //Decrypt
         switch (method.toUpperCase()){
             case Encrypt.AES:
-                decryptedText = new AESUtil().decrypt(value)
+                decryptedText = new AESUtil(key).decrypt(value)
                 break
             case Encrypt.AES256:
-                decryptedText = new AES256FromCryptoJS().decrypt(value)
+                decryptedText = new AES256FromCryptoJS(key).decrypt(value)
                 break
             case Encrypt.DES128:
-                decryptedText = new DES128Util().decrypt(value)
+                decryptedText = new DES128Util(key).decrypt(value)
                 break
             case Encrypt.SEED128:
-                decryptedText = SEEDUtil.getSeedDecrypt(value, SEEDUtil.getSeedRoundKey("1234567890123456"))
+                decryptedText = SEEDUtil.getSeedDecrypt(value, SEEDUtil.getSeedRoundKey(key))
+                break
+            case Encrypt.BASE64:
+                decryptedText = new Base64Util().decrypt(value)
                 break
 
             case Encrypt.MD5:

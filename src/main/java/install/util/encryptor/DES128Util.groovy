@@ -27,7 +27,8 @@ class DES128Util implements EncryptionUtil{
     }
 
     DES128Util(String key) {
-        this.key = key
+        if (key != null)
+            this.key = key
     }
 
     String key = "ab_booktv_abcd09"

@@ -64,6 +64,9 @@ public class SEEDUtil {
     public static int[] getSeedRoundKey(String keyStr) throws Exception {
         int[] seedKey = new int[32];
 
+        if (keyStr == "" || keyStr == null)
+            keyStr = DEFAULT_IV;
+
         SEEDUtil.SeedRoundKey(seedKey, keyStr.getBytes());
 
         return seedKey;

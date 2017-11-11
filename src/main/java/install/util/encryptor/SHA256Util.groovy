@@ -17,7 +17,8 @@ class SHA256Util implements EncryptionUtil{
         println d
     }
 
-    
+    public SHA256Util() {
+    }
 
     public SHA256Util(String key) {
     }

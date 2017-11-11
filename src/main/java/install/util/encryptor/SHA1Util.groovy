@@ -17,7 +17,8 @@ class SHA1Util implements EncryptionUtil{
         println d
     }
 
-
+    public SHA1Util() {
+    }
 
     public SHA1Util(String key) {
     }

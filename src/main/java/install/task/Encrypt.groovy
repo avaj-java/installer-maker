@@ -6,6 +6,7 @@ import install.configuration.annotation.type.TerminalValueProtocol
 import install.util.TaskUtil
 import install.util.encryptor.AESUtil
 import install.util.encryptor.AES256FromCryptoJS
+import install.util.encryptor.Base64Util
 import install.util.encryptor.DES128Util
 import install.util.encryptor.MD5Util
 import install.util.encryptor.SEEDUtil
@@ -41,6 +42,7 @@ class Encrypt extends TaskUtil{
     static final String AES256 = "AES256"
     static final String DES128 = "DES128"
     static final String SEED128 = "SEED128"
+    static final String BASE64 = "BASE64"
 
     static final String MD5 = "MD5"
     static final String SHA1 = "SHA1"
@@ -59,16 +61,19 @@ class Encrypt extends TaskUtil{
         //Encrypt
         switch (method.toUpperCase()){
             case Encrypt.AES:
-                encryptedText = new AESUtil().encrypt(value)
+                encryptedText = new AESUtil(key).encrypt(value)
                 break
             case Encrypt.AES256:
-                encryptedText = new AES256FromCryptoJS().encrypt(value)
+                encryptedText = new AES256FromCryptoJS(key).encrypt(value)
                 break
             case Encrypt.DES128:
-                encryptedText = new DES128Util().encrypt(value)
+                encryptedText = new DES128Util(key).encrypt(value)
                 break
             case Encrypt.SEED128:
-                encryptedText = SEEDUtil.getSeedEncrypt(value, SEEDUtil.getSeedRoundKey("1234567890123456"))
+                encryptedText = SEEDUtil.getSeedEncrypt(value, SEEDUtil.getSeedRoundKey(key))
+                break
+            case Encrypt.BASE64:
+                encryptedText = new Base64Util().encrypt(value)
                 break
 
             case Encrypt.MD5:
