@@ -11,7 +11,7 @@ import java.security.*;
 import java.util.Arrays;
 import java.util.Random;
 
-public class AES256FromCryptoJS {
+public class AES256FromCryptoJS implements EncryptionUtil{
 
     /**
      * Try Test
@@ -21,19 +21,45 @@ public class AES256FromCryptoJS {
      * @throws DecoderException
      */
     public static void main(String[] args) throws UnsupportedEncodingException, GeneralSecurityException, DecoderException {
-        String plainText = "Hello. Tester~!";
-        String password = "607db3fd8d54429bb2f80adb6a978ebe";
+        //Info
+        String content = "Hello. Tester~!"
+        String key = "12345678901234561234567890123456"
+        //Run
+        AES256FromCryptoJS util = new AES256FromCryptoJS(key)
+        String e = util.encrypt(content)
+        String d = util.decrypt(e)
+        //Log
+        println content
+        println e
+        println d
+        //Assert
+        assert content == d
+    }
 
-        String encryptedText = encrypt(plainText, password);
-        String decryptedText = decrypt(encryptedText, password);
-        System.out.println ( "01. PLAINTEXT : " +plainText );
-        System.out.println ( "01. ENCRYPT   : " +encryptedText );
-        System.out.println ( "01. DECRYPT   : " +decryptedText );
+    public AES256FromCryptoJS() {
+    }
 
-        assert plainText == decryptedText;
+    public AES256FromCryptoJS(String key) {
+        if (key != null)
+            this.key = key
     }
 
 
+
+    String key = "12345678901234561234567890123456"
+    String salt = "Salted__"
+    String charset = 'UTF-8'
+    int iterations = 1
+
+    @Override
+    public String encrypt(String content) {
+        return encrypt(content, key, salt, iterations)
+    }
+
+    @Override
+    public String decrypt(String encryptedContent) {
+        return decrypt(encryptedContent, key, salt, iterations)
+    }
 
     /**
      * Encrypt
@@ -41,7 +67,7 @@ public class AES256FromCryptoJS {
      * @param passphrase passphrase
      * @return
      */
-    public static String encrypt(String plaintext, String passphrase) throws InvalidKeyException {
+    public static String encrypt(String plaintext, String passphrase, String salt, int iterations) throws InvalidKeyException {
         try {
             final int keySize = 256;
             final int ivSize = 128;
@@ -54,7 +80,7 @@ public class AES256FromCryptoJS {
             byte[] saltBytes = generateSalt(8);
 
             // Derive key and iv from passphrase and salt
-            EvpKDF(passphrase.getBytes("UTF-8"), keySize, ivSize, saltBytes, key, iv);
+            EvpKDF(passphrase.getBytes("UTF-8"), keySize, ivSize, saltBytes, iterations, key, iv);
 
             // Actual encrypt
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
@@ -70,7 +96,7 @@ public class AES256FromCryptoJS {
              * 4. Concatenate encrypted data to b
              * 5. Encode b using Base64
              */
-            byte[] sBytes = "Salted__".getBytes("UTF-8");
+            byte[] sBytes = salt.getBytes("UTF-8");
             byte[] b = new byte[sBytes.length + saltBytes.length + cipherBytes.length];
             System.arraycopy(sBytes, 0, b, 0, sBytes.length);
             System.arraycopy(saltBytes, 0, b, sBytes.length, saltBytes.length);
@@ -95,7 +121,7 @@ public class AES256FromCryptoJS {
      * @param ciphertext encrypted string
      * @param passphrase passphrase
      */
-    public static String decrypt(String ciphertext, String passphrase) throws InvalidKeyException{
+    public static String decrypt(String ciphertext, String passphrase, String salt, int iterations) throws InvalidKeyException{
         try {
             final int keySize = 256;
             final int ivSize = 128;
@@ -110,7 +136,7 @@ public class AES256FromCryptoJS {
 
             byte[] key = new byte[keySize / 8];
             byte[] iv = new byte[ivSize / 8];
-            EvpKDF(passphrase.getBytes("UTF-8"), keySize, ivSize, saltBytes, key, iv);
+            EvpKDF(passphrase.getBytes("UTF-8"), keySize, ivSize, saltBytes, iterations, key, iv);
 
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key, "AES"), new IvParameterSpec(iv));
@@ -126,8 +152,8 @@ public class AES256FromCryptoJS {
         return null;
     }
 
-    private static byte[] EvpKDF(byte[] password, int keySize, int ivSize, byte[] salt, byte[] resultKey, byte[] resultIv) throws NoSuchAlgorithmException {
-        return EvpKDF(password, keySize, ivSize, salt, 1, "MD5", resultKey, resultIv);
+    private static byte[] EvpKDF(byte[] password, int keySize, int ivSize, byte[] salt, int iterations, byte[] resultKey, byte[] resultIv) throws NoSuchAlgorithmException {
+        return EvpKDF(password, keySize, ivSize, salt, iterations, "MD5", resultKey, resultIv);
     }
 
     private static byte[] EvpKDF(byte[] password, int keySize, int ivSize, byte[] salt, int iterations, String hashAlgorithm, byte[] resultKey, byte[] resultIv) throws NoSuchAlgorithmException {

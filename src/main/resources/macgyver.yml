@@ -448,9 +448,27 @@ macgyver:
     task: QuestionChoice
     if: '{"macgyver.chk1.answer":["c"]}'
     question: crypt method?
-    answer.description.map: '{"s":"SEED", "a":"AES"}'
-    answer.value.map: '{"s":"SEED", "a":"AES"}'
-    answer.default: s
+    answer.description.map: '{
+      "aes":"AES",
+      "aes256":"AES256",
+      "des128":"DES128",
+      "seed128":"SEED128",
+      "base64":"BASE64",
+      "md5":"MD5",
+      "sha1":"SHA1",
+      "sha256":"SHA256"
+    }'
+    answer.value.map: '{
+      "aes":"AES",
+      "aes256":"AES256",
+      "des128":"DES128",
+      "seed128":"SEED128",
+      "base64":"BASE64",
+      "md5":"MD5",
+      "sha1":"SHA1",
+      "sha256":"SHA256"
+    }'
+    answer.default: aes
     property: method
 
 ####################

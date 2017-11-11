@@ -12,7 +12,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-public class Encryptor {
+public class AESUtil {
 
     private static final String ALGORITHM = "AES";
 
@@ -20,12 +20,12 @@ public class Encryptor {
 
     private Key secretKeySpec;
 
-    public Encryptor() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException,
+    public AESUtil() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException,
             UnsupportedEncodingException {
         this(null);
     }
 
-    public Encryptor(String secretKey) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
+    public AESUtil(String secretKey) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
             UnsupportedEncodingException {
         this.secretKeySpec = generateKey(secretKey);
     }
@@ -88,11 +88,11 @@ public class Encryptor {
         if (args.length == 1 || args.length == 2) {
             String plainText = args[0];
             String secretKey = args.length == 2 ? args[1] : null;
-            Encryptor aes = null;
+            AESUtil aes = null;
             if (secretKey == null) {
-                aes = new Encryptor();
+                aes = new AESUtil();
             } else {
-                aes = new Encryptor(secretKey);
+                aes = new AESUtil(secretKey);
             }
             String encryptedString = aes.encrypt(plainText);
             System.out.println(plainText + ":" + encryptedString);
