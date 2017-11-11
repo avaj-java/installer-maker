@@ -139,8 +139,16 @@ class PropertyProvider {
 
     @Filter('getList')
     List getList(String propertyName){
-        List list = parse(propertyName)
-        return list
+        List resultList = []
+        def value = parse(propertyName)
+        if (value){
+            if (value instanceof List){
+                resultList = value
+            }else{
+                resultList << value
+            }
+        }
+        return resultList
     }
 
     @Filter('getFilePathList')
@@ -149,20 +157,12 @@ class PropertyProvider {
     }
 
     List<String> getFilePathList(String propertyName, String extention){
-        def value = parse(propertyName)
-        List<String> sourceList = []
-        List<String> resultSourceList = []
-
-        if (value instanceof String){
-            sourceList << value
-        }else if (value instanceof List){
-            sourceList = value
+        List<String> resultList = []
+        List<String> valueList = getList(propertyName)
+        valueList.each{
+            resultList.addAll( FileMan.getSubFilePathList(it, extention) )
         }
-
-        sourceList.each{
-            resultSourceList.addAll( FileMan.getSubFilePathList(it, extention) )
-        }
-        return resultSourceList
+        return resultList
     }
 
     @Filter('getFilePath')
