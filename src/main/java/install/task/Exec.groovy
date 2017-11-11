@@ -15,13 +15,13 @@ import jaemisseo.man.util.Util
 class Exec extends TaskUtil{
 
     @Value('exec.command')
-    String commandForAll
+    List<String> commandForAllList
 
     @Value('exec.command.lin')
-    String commandForLin
+    List<String> commandForLinList
 
     @Value('exec.command.win')
-    String commandForWin
+    List<String> commandForWinList
 
     @HelpIgnore
     @Value('os.name')
@@ -41,10 +41,12 @@ class Exec extends TaskUtil{
     Integer run(){
         try{
             //Get Command
-            String userCommand = (commandForAll) ? commandForAll : (isWindows) ? commandForWin : commandForLin
+            List<String> userCommandList = (commandForAllList) ? commandForAllList : (isWindows) ? commandForWinList : commandForLinList
 
             //Exec Command
-            commandWIthStyleB(userCommand)
+            userCommandList.each{ String command ->
+                commandWIthStyleB(command)
+            }
 
         }catch(e){
             throw e
