@@ -50,38 +50,45 @@ class Sql extends TaskUtil{
 
         //2. Execute All SQL
         filePathList.each{ String filePath ->
+            try{
+                String originFileName = new File(filePath).getName()
 
-            String originFileName = new File(filePath).getName()
+                //2. Generate Query Replaced With New Object Name
+                sqlman.init()
+                    .queryFromFile(filePath)
+                    .command([SqlMan.ALL])
+                    .replace(sqlSetup)
 
-            //2. Generate Query Replaced With New Object Name
-            sqlman.init()
-                .queryFromFile(filePath)
-                .command([SqlMan.ALL])
-                .replace(sqlSetup)
+                //3. Report Checking Before
+                if (sqlSetup.modeSqlCheckBefore){
+                    try {
+                        sqlman.checkBefore(sqlSetup)
 
-            //3. Report Checking Before
-            if (sqlSetup.modeSqlCheckBefore){
-                try {
-                    sqlman.checkBefore(sqlSetup)
-
-                }catch(e){
-                    throw new SQLException('Error, Checking Before Execution.', e)
+                    }catch(e){
+                        throw new SQLException('Error, Checking Before Execution.', e)
+                    }
                 }
+
+                //- Generate SQL File
+                if (sqlSetup.modeSqlFileGenerate){
+                    println "Creating SQL File..."
+                    FileMan.write("./replaced_${originFileName}", sqlman.getReplacedQueryList(), reportSetup.fileSetup)
+                }
+
+                //4. Execute
+                if (sqlSetup.modeSqlExecute){
+                    sqlman.run(sqlSetup)
+                }
+
+            }catch(e){
+                throw e
+            }finally{
+                //Add Report
+                sqlObjectListList << sqlman.getAnalysisResultList()
+                //Report to console
+                sqlman.reportResult()
             }
 
-            //- Generate SQL File
-            if (sqlSetup.modeSqlFileGenerate){
-                println "Creating SQL File..."
-                FileMan.write("./replaced_${originFileName}", sqlman.getReplacedQueryList(), reportSetup.fileSetup)
-            }
-
-            //4. Execute
-            if (sqlSetup.modeSqlExecute){
-                sqlman.run(sqlSetup)
-            }
-
-            sqlObjectListList << sqlman.getAnalysisResultList()
-            sqlman.reportResult()
         }
 
         return STATUS_TASK_DONE
@@ -106,9 +113,11 @@ class Sql extends TaskUtil{
                 reportMapList.add(new ReportSql(
                         sqlFileName: sqlObj.sqlFileName,
                         seq: sqlObj.seq,
-                        query: sqlObj.query,
-//                    isExistOnDB     : sqlObj.isExistOnDB?'Y':'N',
                         isOk: (sqlObj.isOk == null) ? '' : (sqlObj.isOk) ? 'Complete' : 'Failed',
+                        query: sqlObj.query,
+                        commandType: sqlObj.commandType,
+                        objectType: sqlObj.objectType,
+                        objectName: sqlObj.objectName,
                         warnningMessage: sqlObj.warnningMessage,
                         error: sqlObj.error?.toString(),
                 ))
