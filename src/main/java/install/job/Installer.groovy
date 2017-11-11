@@ -206,7 +206,7 @@ class Installer extends JobUtil{
         logTaskDescription('auto create response file')
 
         //Each level by level
-        validTaskList = undoableList
+        validTaskList = undoableTaskList
         eachTask('ask'){ String propertyPrefix ->
             String taskName = getTaskName(propertyPrefix)
             Class taskClazz = getTaskClass(taskName)

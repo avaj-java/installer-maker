@@ -34,8 +34,8 @@ class JobUtil extends TaskUtil{
     List<Class> validTaskList = []
     List<Class> invalidTaskList = []
     List<Class> allTaskList = Util.findAllClasses('install', [Task])
-    List<Class> undoableList = [Question, QuestionChoice, QuestionYN, QuestionFindFile, Set, Notice]
-    List<Class> undoMoreList = [Set, Notice]
+    List<Class> undoableTaskList = [Question, QuestionChoice, QuestionYN, QuestionFindFile, Set, Notice]
+    List<Class> undoMoreTaskList = [Set, Notice]
 
     def gOpt
     Integer taskResultStatus
@@ -226,9 +226,9 @@ class JobUtil extends TaskUtil{
      *****/
     int undo(List<Class> taskClassList, List<String> prefixList, int i){
         i -= 1
-        if (undoableList.contains(taskClassList[i])){
+        if ( isUndoableTask(taskClassList[i]) || !checkCondition(prefixList[i]) ){
             propman.undo()
-            while (i > 0 && (undoMoreList.contains(taskClassList[i]) || !checkCondition(prefixList[i])) ){
+            while ( i > 0 && (isUndoMoreTask(taskClassList[i]) || !checkCondition(prefixList[i])) ){
                 i -= 1
                 propman.undo()
             }
@@ -236,11 +236,11 @@ class JobUtil extends TaskUtil{
             if (i <= -1){
                 i = -1
                 propman.checkout(0)
-                //First is undoMore, then auto-redo
-                if (undoMoreList.contains(taskClassList[0])){
+                //If First Task is undoMore, then auto-redo
+                if (isUndoMoreTask(taskClassList[0])){
                     i += 1
                     propman.redo()
-                    while ( propman.isNotHeadLast() && undoableList.contains(taskClassList[i+1]) && (undoMoreList.contains(taskClassList[i+1]) || !checkCondition(prefixList[i+1])) ){
+                    while ( propman.isNotHeadLast() && isUndoableTask(taskClassList[i+1]) && (isUndoMoreTask(taskClassList[i+1]) || !checkCondition(prefixList[i+1])) ){
                         i += 1
                         propman.redo()
                     }
@@ -262,7 +262,7 @@ class JobUtil extends TaskUtil{
     int redo(List<Class> taskClassList, List<String> prefixList, int i){
         if (propman.isNotHeadLast()){
             propman.redo()
-            while ( propman.isNotHeadLast() && undoableList.contains(taskClassList[i+1]) && (undoMoreList.contains(taskClassList[i+1]) || !checkCondition(prefixList[i+1])) ){
+            while ( propman.isNotHeadLast() && isUndoableTask(taskClassList[i+1]) && (isUndoMoreTask(taskClassList[i+1]) || !checkCondition(prefixList[i+1])) ){
                 i += 1
                 propman.redo()
             }
@@ -279,6 +279,14 @@ class JobUtil extends TaskUtil{
      *****/
     void commit(){
         propman.commit()
+    }
+
+    boolean isUndoableTask(Class task){
+        return undoableTaskList.contains(task)
+    }
+
+    boolean isUndoMoreTask(Class task){
+        return undoMoreTaskList.contains(task)
     }
 
 
