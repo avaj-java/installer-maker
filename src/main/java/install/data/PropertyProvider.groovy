@@ -7,6 +7,7 @@ import install.configuration.annotation.method.Filter
 import install.configuration.annotation.type.Data
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
+import jaemisseo.man.util.Util
 
 /**
  * Created by sujkim on 2017-06-20.
@@ -43,8 +44,26 @@ class PropertyProvider {
 
 
     boolean checkCondition(String propertyPrefix){
+        boolean isTrue
         def conditionIfObj = propman.parse("${propertyPrefix}if")
-        boolean isTrue = propman.match(conditionIfObj)
+        isTrue = propman.match(conditionIfObj)
+        return isTrue
+    }
+
+    boolean checkDashDashOption(String propertyPrefix){
+        boolean isTrue
+        def conditionIfObj = propman.parse("${propertyPrefix}ifoption")
+        List dashDashOptionList = propman.get("--")
+        if (conditionIfObj){
+            Map optionMap = [:]
+            conditionIfObj.each{ String optionName, def value ->
+                optionMap[optionName] = dashDashOptionList.contains(optionName)
+            }
+            def foundItem = Util.find(optionMap, conditionIfObj)
+            isTrue = !!foundItem
+        }else{
+            isTrue = true
+        }
         return isTrue
     }
 

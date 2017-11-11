@@ -388,7 +388,7 @@ class JobUtil extends TaskUtil{
     }
 
     protected boolean checkCondition(String propertyPrefix){
-        return provider.checkCondition(propertyPrefix)
+        return (provider.checkCondition(propertyPrefix) && provider.checkDashDashOption(propertyPrefix))
     }
 
     protected void descript(TaskSetup task){
