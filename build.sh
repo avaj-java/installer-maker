@@ -1,1 +1,3 @@
-gradle clean build
+#!/usr/bin/env sh
+
+gradle clean build "$@"
