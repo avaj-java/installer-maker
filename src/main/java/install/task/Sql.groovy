@@ -45,13 +45,14 @@ class Sql extends TaskUtil{
         sqlObjectListList = []
 
         // -Mode No Progress Bar
-        if ([Level.INFO, Level.WARN, Level.ERROR, Level.OFF].contains(config.logGen.getConsoleLogLevel()))
+        if ([Level.WARN, Level.ERROR, Level.OFF].contains(config.logGen.getConsoleLogLevel()))
             sqlSetup.modeSqlProgressBar = false
 
         //2. Execute All SQL
         filePathList.each{ String filePath ->
             try{
                 String originFileName = new File(filePath).getName()
+                logger.info(" <<< SQL: ${originFileName} >>> ")
 
                 //2. Generate Query Replaced With New Object Name
                 sqlman.init()
@@ -71,7 +72,7 @@ class Sql extends TaskUtil{
 
                 //- Generate SQL File
                 if (sqlSetup.modeSqlFileGenerate){
-                    println "Creating SQL File..."
+                    logger.info("Creating SQL File...")
                     FileMan.write("./replaced_${originFileName}", sqlman.getReplacedQueryList(), reportSetup.fileSetup)
                 }
 
@@ -87,6 +88,7 @@ class Sql extends TaskUtil{
                 sqlObjectListList << sqlman.getAnalysisResultList()
                 //Report to console
                 sqlman.reportResult()
+                logger.info("")
             }
 
         }
@@ -117,6 +119,7 @@ class Sql extends TaskUtil{
                         query: sqlObj.query,
                         commandType: sqlObj.commandType,
                         objectType: sqlObj.objectType,
+                        schemeName: sqlObj.schemeName,
                         objectName: sqlObj.objectName,
                         warnningMessage: sqlObj.warnningMessage,
                         error: sqlObj.error?.toString(),
