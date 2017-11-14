@@ -280,13 +280,13 @@ class InstallerMaker extends JobUtil{
         String argsModeExec = '-mode.exec.self=true'
         String installBinPathForWIn = "${binPath}/installer.bat".replaceAll(/[\/\\]+/, "\\$File.separator")
         String installBinPathForLin = "${binPath}/installer".replaceAll(/[\/\\]+/, "/")
-        provider.setRaw('exec.command.win', "${installBinPathForWIn} ask install ${argsExceptCommand} ${argsModeExec}")
-        provider.setRaw('exec.command.lin', "${installBinPathForLin} ask install ${argsExceptCommand} ${argsModeExec}")
+        provider.setRaw('command.win', "${installBinPathForWIn} ask install ${argsExceptCommand} ${argsModeExec}")
+        provider.setRaw('command.lin', "${installBinPathForLin} ask install ${argsExceptCommand} ${argsModeExec}")
         //run
         runTaskByType('exec')
         //clear
-        provider.setRaw('exec.command.win', "")
-        provider.setRaw('exec.command.lin', "")
+        provider.setRaw('command.win', "")
+        provider.setRaw('command.lin', "")
     }
 
     void buildForm(){

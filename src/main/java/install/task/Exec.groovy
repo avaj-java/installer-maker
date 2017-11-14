@@ -11,16 +11,16 @@ import jaemisseo.man.util.Util
  * Created by sujkim on 2017-04-04.
  */
 @Task
-@TerminalValueProtocol(['exec.command'])
+@TerminalValueProtocol(['command'])
 class Exec extends TaskUtil{
 
-    @Value('exec.command')
+    @Value('command')
     List<String> commandForAllList
 
-    @Value('exec.command.lin')
+    @Value('command.lin')
     List<String> commandForLinList
 
-    @Value('exec.command.win')
+    @Value('command.win')
     List<String> commandForWinList
 
     @HelpIgnore
