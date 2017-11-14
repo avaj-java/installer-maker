@@ -18,33 +18,15 @@ class TestPort extends TaskUtil{
     @Value('port')
     String port
 
-    @Value('from')
-    String from
-
-    @Value('to')
-    String to
-
 
 
     @Override
     Integer run(){
-        //Ready
-        def rangeFrom   = (port ?: from ?: 0) as int
-        def rangeTo     = (to ?: rangeFrom) as int
-        def ip = ip ?: "127.0.0.1"
-        // - No Reverse
-        if (rangeFrom > rangeTo){
-            def temp = rangeTo
-            rangeTo = rangeFrom
-            rangeFrom = temp
-        }
-
-        //START
-        logger.debug "START TESTPORT (${rangeFrom}${(rangeFrom!=rangeTo)?' to '+rangeTo:''})"
-
         //RUN
-        Map portMap = getUsingPortMap(rangeFrom, rangeTo, ip)
-        logger.debug "\n - Port Count (You Can Use): ${portMap.findAll{ !it.value }.size()}"
+        if (ip)
+            testPort(ip, port)
+        else
+            testPort(port)
 
         //FINISH
         return STATUS_TASK_DONE
@@ -52,22 +34,6 @@ class TestPort extends TaskUtil{
 
 
 
-    private Map getUsingPortMap(Integer rangeFrom){
-        return getUsingPortMap(rangeFrom, rangeFrom)
-    }
-
-    private Map getUsingPortMap(Integer rangeFrom, Integer rangeTo, String ip){
-        Map portMap = [:]
-        for (int port=rangeFrom; port<=rangeTo; port++){
-            if (testPort(ip, port)){
-                portMap[port] = "is Being Used"
-            }else{
-                portMap[port] = null
-
-            }
-        }
-        return portMap
-    }
 
     boolean testPort(String ipport){
         boolean result
