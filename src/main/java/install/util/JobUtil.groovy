@@ -387,10 +387,33 @@ class JobUtil extends TaskUtil{
         return status
     }
 
+    /*************************
+     * CONDITION
+     *************************/
     protected boolean checkCondition(String propertyPrefix){
-        return (provider.checkCondition(propertyPrefix) && provider.checkDashDashOption(propertyPrefix))
+        return (provider.checkCondition(propertyPrefix) && provider.checkDashDashOption(propertyPrefix) && checkPortCondition(propertyPrefix))
     }
 
+    protected boolean checkPortCondition(propertyPrefix){
+        boolean isTrue
+        def conditionIfObj = propman.parse("${propertyPrefix}ifport")
+        if (conditionIfObj){
+            logger.info("!Checking Port")
+            Map optionMap = [:]
+            conditionIfObj.each{ String optionName, def value ->
+                optionMap[optionName] = new TestPort().testPort(optionName)
+            }
+            def foundItem = Util.find(optionMap, conditionIfObj)
+            isTrue = !!foundItem
+        }else{
+            isTrue = true
+        }
+        return isTrue
+    }
+    
+    /*************************
+     * DESCRIPT
+     *************************/
     protected void descript(TaskSetup task){
         String description = task.desc ? "$task.jobName:$task.desc" : "$task.jobName:$task.taskName:$task.taskTypeName"
         if (description && !task.commandName.equalsIgnoreCase('ask')){
