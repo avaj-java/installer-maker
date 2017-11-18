@@ -30,17 +30,22 @@ class Replace extends TaskUtil{
     @Value('replace.line')
     Map replaceLineMap
 
-    @Value('replace.property')
-    Map replacePropertyMap
+    @Value('replace.properties')
+    Map replacePropertiesMap
+
+    @Value('replace.yml')
+    Map replaceYamlMap
 
 
 
     @Override
     Integer run(){
 
+        logger.debug "[Replacement]"
         logger.debug replaceMap ? replaceMap.toMapString() : ''
         logger.debug replaceLineMap ? replaceLineMap.toMapString() : ''
-        logger.debug replacePropertyMap ? replacePropertyMap.toMapString() : ''
+        logger.debug replacePropertiesMap ? replacePropertiesMap.toMapString() : ''
+        logger.debug replaceYamlMap ? replaceYamlMap.toMapString() : ''
 
         filePathList.each{ String filePath ->
             new FileMan(filePath)
@@ -49,7 +54,8 @@ class Replace extends TaskUtil{
                         .read()
                         .replace( replaceMap )
                         .replaceLine( replaceLineMap )
-                        .replaceProperty( replacePropertyMap )
+                        .replaceProperties( replacePropertiesMap )
+                        .replaceYaml( replaceYamlMap )
                         .write( fileSetup.clone([modeAutoOverWrite:true]) )
                         .report()
         }
