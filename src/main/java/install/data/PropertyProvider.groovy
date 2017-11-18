@@ -44,22 +44,28 @@ class PropertyProvider {
 
 
     boolean checkCondition(String propertyPrefix){
-        boolean isTrue
         def conditionIfObj = propman.parse("${propertyPrefix}if")
-        isTrue = propman.match(conditionIfObj)
-        return isTrue
+        return checkCondition(conditionIfObj)
+    }
+
+    boolean checkCondition(def conditionIfObj){
+        return propman.match(conditionIfObj)
     }
 
     boolean checkDashDashOption(String propertyPrefix){
+        def conditionIfDashDashObj = propman.parse("${propertyPrefix}ifoption")
+        return checkDashDashOption(conditionIfDashDashObj)
+    }
+
+    boolean checkDashDashOption(def conditionIfDashDashObj){
         boolean isTrue
-        def conditionIfObj = propman.parse("${propertyPrefix}ifoption")
         List dashDashOptionList = propman.get("--")
-        if (conditionIfObj){
+        if (conditionIfDashDashObj){
             Map optionMap = [:]
-            conditionIfObj.each{ String optionName, def value ->
+            conditionIfDashDashObj.each{ String optionName, def value ->
                 optionMap[optionName] = dashDashOptionList.contains(optionName)
             }
-            def foundItem = Util.find(optionMap, conditionIfObj)
+            def foundItem = Util.find(optionMap, conditionIfDashDashObj)
             isTrue = !!foundItem
         }else{
             isTrue = true

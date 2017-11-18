@@ -46,17 +46,19 @@ class InstallerMaker extends JobUtil{
         PropMan propmanDefault = provider.propGen.getDefaultProperties()
         PropMan propmanExternal = provider.propGen.getExternalProperties()
 
-        //From User's FileSystem
+        //- Try to get from User's FileSystem
         String propertiesDir = propmanExternal.get('properties.dir') ?: propmanDefault.get('user.dir')
-        propertiesFile = FileMan.find(propertiesDir, propertiesFileName, ["yml", "yaml", "properties"])
-        propertiesFileExtension = FileMan.getExtension(propertiesFile)
+        if (propertiesDir)
+            propertiesFile = FileMan.find(propertiesDir, propertiesFileName, ["yml", "yaml", "properties"])
+
+        //- Make Property Manager
         if (propertiesFile && propertiesFile.exists()){
+            propertiesFileExtension = FileMan.getExtension(propertiesFile)
             Map propertiesMap = generatePropertiesMap(propertiesFile)
             propmanForInstallerMaker.merge(propertiesMap)
                             .merge(propmanExternal)
                             .mergeNew(propmanDefault)
                             .merge(['builder.home': FileMan.getFullPath(propmanDefault.get('lib.dir'), '../')])
-        }else{
         }
 
         return propmanForInstallerMaker
@@ -227,7 +229,7 @@ class InstallerMaker extends JobUtil{
             ReportSetup reportSetup = gOpt.reportSetup
 
             //1. Gen Starter and Response File
-            String binPath = genLibAndBin(gOpt)
+            String binPath = generateLibAndBin(gOpt)
 
             //- set bin path on builded installer
             provider.setRaw('build.installer.bin.path', binPath)
@@ -328,10 +330,10 @@ class InstallerMaker extends JobUtil{
      *  2. Generate Lib
      *  3. Generate Bin
      *************************/
-    private String genLibAndBin(GlobalOptionForInstallerMaker gOpt){
+    private String generateLibAndBin(GlobalOptionForInstallerMaker gOpt){
         //Ready
         FileSetup fileSetup = gOpt.fileSetup
-        FileSetup fileSetupForLin = fileSetup.clone([lineBreak:'\n'])
+        FileSetup fileSetupForLin = fileSetup.clone([chmod:'755', lineBreak:'\n'])
         String buildTempDir = gOpt.buildTempDir
         String buildDistDir = gOpt.buildDistDir
         String buildInstallerHome = gOpt.buildInstallerHome

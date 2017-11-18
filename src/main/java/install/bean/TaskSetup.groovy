@@ -13,6 +13,15 @@ class TaskSetup extends Option {
     @Value(name='if', filter='parse')
     def condition
 
+    @Value(name='ifoption', filter='parse')
+    def conditionOption
+
+    @Value(name='ifport', filter='parse')
+    def conditionPort
+
+    @Value('task')
+    String taskTypeName
+
     @Value(name='desc', modeRenderJansi=true)
     String desc
 
@@ -22,8 +31,8 @@ class TaskSetup extends Option {
     @Value('color.desc')
     String descColor
 
-    @Value('task')
-    String taskTypeName
+    @Value('variable.sign')
+    String variableSign
 
     String jobName
     String commandName

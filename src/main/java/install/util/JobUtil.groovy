@@ -127,7 +127,7 @@ class JobUtil extends TaskUtil{
     protected void eachTaskWithCommit(String commandName, Closure closure){
         //1. Try to get task order from property
         String taskOrderProperty = "${commandName}.order".toString()
-        List<String> taskOrderList = getSpecificLevelList(taskOrderProperty) ?: getTaskLineOrderList(propertiesFileName, propertiesFileExtension, commandName, taskOrderProperty)
+        List<String> taskOrderList = getSpecificLevelList(taskOrderProperty) ?: getTaskLineOrderList(propertiesFile, propertiesFileExtension, commandName, taskOrderProperty)
         List<String> prefixList = taskOrderList.collect{ "${commandName}.${it}.".toString() }
         List<Class> taskTypeList = prefixList.collect{ getTaskClass(getTaskName(it)) }
 
@@ -154,7 +154,7 @@ class JobUtil extends TaskUtil{
     protected void eachTask(String commandName, Closure closure){
         //1. Try to get levels from level property
         String taskOrderProperty = "${commandName}.order".toString()
-        List<String> taskOrderList = getSpecificLevelList(taskOrderProperty) ?: getTaskLineOrderList(propertiesFileName, propertiesFileExtension, commandName, taskOrderProperty)
+        List<String> taskOrderList = getSpecificLevelList(taskOrderProperty) ?: getTaskLineOrderList(propertiesFile, propertiesFileExtension, commandName, taskOrderProperty)
 
         //2. Do Each Tasks
         taskOrderList.eachWithIndex{ taskName, i ->
@@ -180,10 +180,9 @@ class JobUtil extends TaskUtil{
         return resultList
     }
 
-    protected List<String> getTaskLineOrderList(String fileName, String fileExtension, String executorName, String taskOrderProperty){
+    protected List<String> getTaskLineOrderList(File propertiesFile, String fileExtension, String executorName, String taskOrderProperty){
         Map taskNameMap = [:]
-        String userSetPropertiesDir = propman.get('properties.dir')
-        File scriptFile = (userSetPropertiesDir) ? new File("${userSetPropertiesDir}/${fileName}.${fileExtension}") : FileMan.getFileFromResource("${fileName}.${fileExtension}")
+        File scriptFile = propertiesFile
 
         //-YML or YAML
         if (fileExtension == 'yml' || fileExtension == 'yaml'){
@@ -358,6 +357,7 @@ class JobUtil extends TaskUtil{
         TaskUtil taskInstance = config.findInstance(task.taskClazz)
         // - Inject Value
         provider.shift( task.jobName, task.propertyPrefix )
+        varman.setVariableSign(task.variableSign)
         config.cleanValue(taskInstance)
         config.injectValue(taskInstance)
         taskInstance.rememberAnswerLineList = rememberAnswerLineList

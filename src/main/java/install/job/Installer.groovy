@@ -50,17 +50,17 @@ class Installer extends JobUtil{
             //Mode Build Form
             PropMan propmanForInstallerMaker = provider.propGen.get('installer-maker')
 
-            //From User's FileSystem
+            //- Try to get from User's FileSystem
             String propertiesDir = propmanExternal.get('properties.dir') ?: propmanDefault.get('user.dir')
-            if (propertiesDir){
+            if (propertiesDir)
                 propertiesFile = FileMan.find(propertiesDir, propertiesFileName, ["yml", "yaml", "properties"])
-            }
-            propertiesFileExtension = FileMan.getExtension(propertiesFile)
+
+            //- Make Property Manager
             if (propertiesFile && propertiesFile.exists()){
+                propertiesFileExtension = FileMan.getExtension(propertiesFile)
                 Map propertiesMap = generatePropertiesMap(propertiesFile)
                 propmanForInstaller.merge(propertiesMap)
                                     .mergeNew(propmanForInstallerMaker)
-            }else{
             }
 
         }else{

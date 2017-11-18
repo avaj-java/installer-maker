@@ -65,7 +65,7 @@ class MergeProperties extends TaskUtil{
 
         //Merge DifferentValue into SourceProperties
         if (differentValuePropMap)
-            fileman.backup().replaceProperty(differentValuePropMap).write()
+            fileman.backup().replaceProperties(differentValuePropMap).write()
         else
             logger.error "=> NOTHING TO MERGE\n"
 
