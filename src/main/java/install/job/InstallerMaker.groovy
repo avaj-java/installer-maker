@@ -115,7 +115,10 @@ class InstallerMaker extends JobUtil{
         logger.info "<Init File>"
         logger.info "- Dest Path: ${propertiesDir}"
 
-        if (propman.getBoolean(['macgyver', 'm'])){
+        PropMan externalPropMan = config.propGen.getExternalProperties()
+        List<String> dashDashOptionList = externalPropMan.get('--')
+
+        if (dashDashOptionList.contains('macgyver')){
             try{
                 fileFrom = "macgyver.yml"
                 fileTo = "${propertiesDir}/macgyver.yml"
@@ -123,23 +126,23 @@ class InstallerMaker extends JobUtil{
             }catch(e){
                 logger.warn "File Aready Exists. ${fileTo}\n"
             }
-            return
-        }
 
-        try{
-            fileFrom = "sampleProperties/installer-maker.sample.yml"
-            fileTo = "${propertiesDir}/installer-maker.yml"
-            new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
-        }catch(e){
-            logger.warn "File Aready Exists. ${fileTo}\n"
-        }
+        }else{
+            try{
+                fileFrom = "sampleProperties/installer-maker.sample.yml"
+                fileTo = "${propertiesDir}/installer-maker.yml"
+                new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
+            }catch(e){
+                logger.warn "File Aready Exists. ${fileTo}\n"
+            }
 
-        try{
-            fileFrom = "sampleProperties/installer.sample.yml"
-            fileTo = "${propertiesDir}/installer.yml"
-            new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
-        }catch(e){
-            logger.warn "File Aready Exists. ${fileTo}\n"
+            try{
+                fileFrom = "sampleProperties/installer.sample.yml"
+                fileTo = "${propertiesDir}/installer.yml"
+                new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
+            }catch(e){
+                logger.warn "File Aready Exists. ${fileTo}\n"
+            }
         }
     }
 
