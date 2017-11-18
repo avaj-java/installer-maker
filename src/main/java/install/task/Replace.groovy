@@ -41,11 +41,15 @@ class Replace extends TaskUtil{
     @Override
     Integer run(){
 
-        logger.debug "[Replacement]"
-        logger.debug replaceMap ? replaceMap.toMapString() : ''
-        logger.debug replaceLineMap ? replaceLineMap.toMapString() : ''
-        logger.debug replacePropertiesMap ? replacePropertiesMap.toMapString() : ''
-        logger.debug replaceYamlMap ? replaceYamlMap.toMapString() : ''
+        logger.debug "Replacement>>>"
+        if (replaceMap)
+            logger.debug replaceMap.toMapString()
+        if (replaceLineMap)
+            logger.debug replaceLineMap.toMapString()
+        if (replacePropertiesMap)
+            logger.debug replacePropertiesMap.toMapString()
+        if (replaceYamlMap)
+            logger.debug replaceYamlMap.toMapString()
 
         filePathList.each{ String filePath ->
             new FileMan(filePath)
