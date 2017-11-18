@@ -135,9 +135,9 @@ repositories {
     maven { url "http://maven.springframework.org/release" }
 }
 List<String> subprojectList = [
-        'com.github.avaj-java:common-util:0.3.3',
-        'com.github.avaj-java:common-man:0.3.5',
-        'com.github.avaj-java:fileman:0.3.4',
+        'com.github.avaj-java:common-util:0.3.4',
+        'com.github.avaj-java:common-man:0.3.6',
+        'com.github.avaj-java:fileman:0.3.5',
         'com.github.avaj-java:reportman:0.3.0.1',
         'com.github.avaj-java:restman:0.3.0.1'
 ]
@@ -278,11 +278,14 @@ jar {
  *
  *************************/
 /** Before distZip **/
-applicationDistribution.from([
-        "src/main/resources/binForBuilder/macgyver",
-        "src/main/resources/binForBuilder/macgyver.bat",
-]){
-    into "bin"
+distributions{
+    main.contents.into("bin"){
+        from([
+                "src/main/resources/binForBuilder/macgyver",
+                "src/main/resources/binForBuilder/macgyver.bat",
+        ])
+        fileMode 0755
+    }
 }
 
 distZip {
