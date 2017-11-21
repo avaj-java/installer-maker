@@ -203,7 +203,7 @@ class MacGyver extends EmployeeUtil {
     
     - Response File(.rsp) can help your test.
          
-      installer-maker test -response.file.path=<File>  
+      installer-maker test -rsp=<File>  
     """)
     void test(){
         config.command( 'clean')

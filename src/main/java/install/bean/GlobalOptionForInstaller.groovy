@@ -12,7 +12,7 @@ class GlobalOptionForInstaller extends Option{
 
     @Value('remember.answer.file.path')
     String rememberFilePath
-    @Value('response.file.path')
+    @Value('rsp')
     String responseFilePath
 
     @Value('mode.remember.answer')

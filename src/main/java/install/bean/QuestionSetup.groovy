@@ -29,6 +29,6 @@ class QuestionSetup extends jaemisseo.man.bean.QuestionSetup {
 
     @Value('mode.only.interactive')
     Boolean modeOnlyInteractive
-    @Value('response.file.path')
+    @Value('rsp')
     Boolean modeLoadResponseFile
 }
