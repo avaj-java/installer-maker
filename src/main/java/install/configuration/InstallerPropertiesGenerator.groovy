@@ -21,6 +21,7 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
 
 
     PropMan defaultProperties
+    PropMan programProperties
     PropMan externalProperties
 
 
@@ -109,6 +110,7 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
                 'java.home': replacePathWinToLin( System.getProperty('java.home') ),
                 'user.dir': replacePathWinToLin( System.getProperty('user.dir') ),
                 'user.home': replacePathWinToLin( System.getProperty('user.home') ),
+                //TODO: maybe programProperties
                 // installer.jar path
                 'lib.dir': replacePathWinToLin( new InstallerPropertiesGenerator().getThisAppFile()?.getParentFile()?.getPath() ) ?: '',
                 'lib.path': replacePathWinToLin( new InstallerPropertiesGenerator().getThisAppFile()?.getPath() ) ?: '',
@@ -171,23 +173,30 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
     /**
      *
      */
-    InstallerPropertiesGenerator makeExternalProperties(String[] args, Map<Class, List> valueProtocolListMap){
-        Map argsMap = genApplicationPropertiesValueMap(args)
-        Map propertiesValueMap = genApplicationPropertiesValueMap(argsMap, valueProtocolListMap)
-        externalProperties = new PropMan(propertiesValueMap)
-        externalProperties.set('args', args.join(' '))
-
-        String normalProperties = argsMap.findAll{ it.key != '' && it.key != '--' }.collect{ "-${it.key}=${it.value}" }.join(' ')
-        String dashDashFlagProperties = argsMap['--'].collect{ "--${it}" }.join(' ')
-        String argsExceptCommand = normalProperties+ ' ' +dashDashFlagProperties
-        externalProperties.set('args.except.command', argsExceptCommand)
-        return this
-    }
-
     InstallerPropertiesGenerator makeDefaultProperties(){
         defaultProperties = genDefaultProperties()
         return this
     }
+
+    InstallerPropertiesGenerator makeProgramProperties(){
+        programProperties = new PropMan()
+        return this
+    }
+
+    InstallerPropertiesGenerator makeExternalProperties(String[] args, Map<Class, List> valueProtocolListMap){
+        Map argsMap = genApplicationPropertiesValueMap(args)
+        Map propertiesValueMap = genApplicationPropertiesValueMap(argsMap, valueProtocolListMap)
+        externalProperties = new PropMan(propertiesValueMap)
+        //
+        programProperties.set('program.args', args.join(' '))
+        String normalProperties = argsMap.findAll{ it.key != '' && it.key != '--' }.collect{ "-${it.key}=${it.value}" }.join(' ')
+        String dashDashFlagProperties = argsMap['--'].collect{ "--${it}" }.join(' ')
+        String argsExceptCommand = normalProperties+ ' ' +dashDashFlagProperties
+        programProperties.set('program.args.except.command', argsExceptCommand)
+        return this
+    }
+
+
 
     PropMan getExternalProperties(){
         return externalProperties
@@ -195,6 +204,10 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
 
     PropMan getDefaultProperties(){
         return defaultProperties
+    }
+
+    PropMan getProgramProperties(){
+        return programProperties
     }
 
 

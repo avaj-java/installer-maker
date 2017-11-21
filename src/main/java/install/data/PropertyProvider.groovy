@@ -59,7 +59,7 @@ class PropertyProvider {
 
     boolean checkDashDashOption(def conditionIfDashDashObj){
         boolean isTrue
-        List dashDashOptionList = propman.get("--")
+        List dashDashOptionList = propman.get('--')
         if (conditionIfDashDashObj){
             Map optionMap = [:]
             conditionIfDashDashObj.each{ String optionName, def value ->

@@ -77,8 +77,9 @@ class Config {
 
     Config makeProperties(String[] args){
         propGen = new InstallerPropertiesGenerator()
-        propGen.makeExternalProperties(args, lowerTaskNameAndValueProtocolListMap)
         propGen.makeDefaultProperties()
+        propGen.makeProgramProperties()
+        propGen.makeExternalProperties(args, lowerTaskNameAndValueProtocolListMap)
         propGen.genResourceSingleton('installer-maker', 'defaultProperties/installer-maker.default.properties')
         propGen.genResourceSingleton('installer', 'defaultProperties/installer.default.properties')
         propGen.genResourceSingleton('macgyver', 'defaultProperties/macgyver.default.properties')

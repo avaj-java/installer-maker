@@ -44,6 +44,7 @@ class InstallerMaker extends JobUtil{
     PropMan setupPropMan(PropertyProvider provider){
         PropMan propmanForInstallerMaker = provider.propGen.get('installer-maker')
         PropMan propmanDefault = provider.propGen.getDefaultProperties()
+        PropMan propmanProgram = provider.propGen.getProgramProperties()
         PropMan propmanExternal = provider.propGen.getExternalProperties()
 
         //- Try to get from User's FileSystem
@@ -58,6 +59,7 @@ class InstallerMaker extends JobUtil{
             propmanForInstallerMaker.merge(propertiesMap)
                             .merge(propmanExternal)
                             .mergeNew(propmanDefault)
+                            .mergeNew(propmanProgram)
                             .merge(['builder.home': FileMan.getFullPath(propmanDefault.get('lib.dir'), '../')])
         }
 
@@ -281,7 +283,7 @@ class InstallerMaker extends JobUtil{
 
 
         String binPath = provider.get('build.installer.bin.path') ?: FileMan.getFullPath(gOpt.buildInstallerHome, gOpt.installerHomeToBinRelPath)
-        String argsExceptCommand = provider.get('args.except.command')
+        String argsExceptCommand = provider.get('program.args.except.command')
         String argsModeExec = '-mode.exec.self=true'
         String installBinPathForWIn = "${binPath}/installer.bat".replaceAll(/[\/\\]+/, "\\$File.separator")
         String installBinPathForLin = "${binPath}/installer".replaceAll(/[\/\\]+/, "/")

@@ -39,6 +39,7 @@ class MacGyver extends EmployeeUtil {
     PropMan setupPropMan(PropertyProvider provider){
         PropMan propmanForMacgyver = provider.propGen.get('macgyver')
         PropMan propmanDefault = provider.propGen.getDefaultProperties()
+        PropMan propmanProgram = provider.propGen.getProgramProperties()
         PropMan propmanExternal = provider.propGen.getExternalProperties()
 
         //- Try to get from User's FileSystem
@@ -57,6 +58,7 @@ class MacGyver extends EmployeeUtil {
             propmanForMacgyver.merge(propertiesMap)
                             .merge(propmanExternal)
                             .mergeNew(propmanDefault)
+                            .mergeNew(propmanProgram)
         }
 
         return propmanForMacgyver

@@ -57,8 +57,11 @@ class Commander {
         String applicationName = getApplicationName(propmanExternal)
         propmanDefault.set('application.name', applicationName)
 
+        /** [Command] Auto Command **/
         if (!hasCommand && !hasTask){
-            /** [Run] Specific Command **/
+            //- Check External Property
+            logExternalProperty(propmanExternal)
+
             if ([APPLICATION_INSTALLER_MAKER].contains(applicationName))
                 config.command(['help'])
             if ([APPLICATION_INSTALLER].contains(applicationName))
@@ -66,8 +69,10 @@ class Commander {
             if ([APPLICATION_MACGYVER].contains(applicationName))
                 config.command(['macgyver'])
 
+        /** [Command] **/
         }else if (hasCommand && !modeHelp){
-            /** [Command] **/
+            //- Check External Property
+            logExternalProperty(propmanExternal)
             // -[Command] Start
             startCommand(commandCalledByUserList, applicationName)
             if (modeExecSelf)
@@ -75,8 +80,9 @@ class Commander {
             // -[Command] Finish
             finishCommand(commandCalledByUserList, timeman.stop().getTime())
 
+        /** [Task / Help] **/
         }else if ((!hasCommand && hasTask) || (hasCommand && modeHelp)){
-            /** [Run] Specific Task or Help **/
+
             if ([APPLICATION_INSTALLER_MAKER, APPLICATION_MACGYVER].contains(applicationName)){
                 config.command('doSomething')
             }
@@ -180,7 +186,34 @@ class Commander {
             rootLogger.detachAppender('CONSOLE')
             rootLogger.debug('Error', e)
         }
+    }
 
+    /*************************
+     * LOG arguments from terminal
+     * @param e
+     *************************/
+    void logExternalProperty(PropMan propmanExternal){
+        //TODO:INFO => DEBUG
+        logger.info(" [ CHECK External Option ] ")
+
+        //Command Properties
+        List commandProperties = propmanExternal['']
+        commandProperties.each{ String commandOption ->
+            logger.info("${commandOption}")
+        }
+
+        //Properties
+        propmanExternal.properties.each{
+            if (!['--', ''].contains(it.key))
+                logger.info("${it.key}=${it.value}")
+        }
+
+        //Special Properties
+        List specialProperties = propmanExternal['--']
+        specialProperties.each{ String specialOption ->
+            logger.info("--${specialOption}")
+        }
+        logger.info("")
     }
 
 }

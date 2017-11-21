@@ -44,6 +44,7 @@ class Installer extends JobUtil{
     PropMan setupPropMan(PropertyProvider provider){
         PropMan propmanForInstaller = provider.propGen.get('installer')
         PropMan propmanDefault = provider.propGen.getDefaultProperties()
+        PropMan propmanProgram = provider.propGen.getProgramProperties()
         PropMan propmanExternal = provider.propGen.getExternalProperties()
 
         if (propmanDefault.getBoolean('mode.build.form')){
@@ -61,6 +62,7 @@ class Installer extends JobUtil{
                 Map propertiesMap = generatePropertiesMap(propertiesFile)
                 propmanForInstaller.merge(propertiesMap)
                                     .mergeNew(propmanForInstallerMaker)
+                                    .mergeNew(propmanProgram)
             }
 
         }else{
@@ -81,6 +83,7 @@ class Installer extends JobUtil{
                 propmanForInstaller.merge(propertiesMap)
                                     .merge(propmanExternal)
                                     .mergeNew(propmanDefault)
+                                    .mergeNew(propmanProgram)
                                     .merge(['installer.home': installerHome])
             }else{
             }
