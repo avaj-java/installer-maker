@@ -142,7 +142,7 @@ class TaskUtil{
         }
 
         //- Set Some Properties from Properties File
-        def propertiesFilePath = provider.getString("properties.file.path")                                                                   
+        def propertiesFilePath = provider.getString("properties.file")
         if (propertiesFilePath){
 //            String fullPath = FileMan.getFullPath(propertiesFilePath)
 //            provider.propman.mergeFile(fullPath)
