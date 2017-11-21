@@ -195,7 +195,16 @@ class Help extends TaskUtil{
                     propertyList.each {
                         propertyPrintItemList << "-${it}=<value>"
                     }
-                    logger.info "${this.applicationName} -${taskName} ${propertyPrintItemList.join(' ')}"
+
+                    //
+//                    logger.info "${this.applicationName} -${taskName} ${propertyPrintItemList.join(' ')}"
+
+                    //
+                    logger.info('')
+                    logger.info(' [ Properties ] ')
+                    propertyPrintItemList.each{
+                        logger.info("${it}")
+                    }
                 }
 
                 printDocument(documentAnt)
