@@ -1,7 +1,7 @@
-package install.data
+package install.configuration.data
 
-import install.configuration.InstallerLogGenerator
-import install.configuration.InstallerPropertiesGenerator
+import install.configuration.LogGenerator
+import install.configuration.PropertiesGenerator
 import install.configuration.annotation.method.Init
 import install.configuration.annotation.method.Filter
 import install.configuration.annotation.type.Data
@@ -17,8 +17,8 @@ class PropertyProvider {
 
     PropMan propman
     String propertyPrefix
-    InstallerPropertiesGenerator propGen
-    InstallerLogGenerator logGen
+    PropertiesGenerator propGen
+    LogGenerator logGen
 
     @Init
     void init(){

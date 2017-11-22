@@ -30,6 +30,7 @@ class Commander {
     Commander(Config config, TimeMan timeman){
         this.config = config
         this.timeman = timeman
+        init(config)
     }
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -37,6 +38,12 @@ class Commander {
     TimeMan timeman
 
 
+
+    void init(Config config){
+        config.propGen.genSingletonPropManFromResource('installer-maker', 'defaultProperties/installer-maker.default.properties')
+        config.propGen.genSingletonPropManFromResource('installer', 'defaultProperties/installer.default.properties')
+        config.propGen.genSingletonPropManFromResource('macgyver', 'defaultProperties/macgyver.default.properties')
+    }
 
     void run(){
         //- Properties
@@ -194,26 +201,26 @@ class Commander {
      *************************/
     void logExternalProperty(PropMan propmanExternal){
         //TODO:INFO => DEBUG
-        logger.info(" [ CHECK External Option ] ")
+        logger.debug(" [ CHECK External Option ] ")
 
         //Command Properties
         List commandProperties = propmanExternal['']
         commandProperties.each{ String commandOption ->
-            logger.info("${commandOption}")
+            logger.debug("${commandOption}")
         }
 
         //Properties
         propmanExternal.properties.each{
             if (!['--', ''].contains(it.key))
-                logger.info("${it.key}=${it.value}")
+                logger.debug("${it.key}=${it.value}")
         }
 
         //Special Properties
         List specialProperties = propmanExternal['--']
         specialProperties.each{ String specialOption ->
-            logger.info("--${specialOption}")
+            logger.debug("--${specialOption}")
         }
-        logger.info("")
+        logger.debug("")
     }
 
 }

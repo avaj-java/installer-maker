@@ -14,14 +14,16 @@ import install.configuration.annotation.type.Employee
 import install.configuration.annotation.type.Job
 import install.configuration.annotation.type.Task
 import install.configuration.annotation.type.TerminalValueProtocol
+import install.configuration.exception.OutOfArgumentException
 import install.configuration.reflection.FieldInfomation
 import install.configuration.reflection.MethodInfomation
 import install.configuration.reflection.ReflectInfomation
-import install.data.PropertyProvider
-import install.data.Validator
+import install.configuration.data.PropertyProvider
+import install.configuration.data.Validator
 import jaemisseo.man.PropMan
 import jaemisseo.man.util.Util
 import org.fusesource.jansi.Ansi
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import java.lang.annotation.Annotation
@@ -34,6 +36,8 @@ import java.lang.reflect.Method
  */
 class Config {
 
+    static final Logger logger = LoggerFactory.getLogger(getClass());
+
     //Default
     Map<Class, ReflectInfomation> reflectionMap = [:]
 
@@ -45,11 +49,13 @@ class Config {
     //Data
     Map<String, MethodInfomation> methodFilterNameMap = [:]
 
+    String[] args
+
     //Task's Value Protocol
     Map<String, List<String>> lowerTaskNameAndValueProtocolListMap = [:]
 
-    InstallerPropertiesGenerator propGen
-    InstallerLogGenerator logGen
+    PropertiesGenerator propGen
+    LogGenerator logGen
 
     List<String> commandCalledByUserList = []
     List<String> taskCalledByUserList = []
@@ -57,37 +63,47 @@ class Config {
     //Validator
     Validator validator = new Validator()
 
-    Config setup(String[] args){
-        scan()
 
-        makeProperties(args)
-        makeLogger()
 
-        commandCalledByUserList = getCommandListCalledByUser(propGen.getExternalProperties())
-        taskCalledByUserList = getTaskListCalledByUser(propGen.getExternalProperties())
+    Config setup(String packageNameToScan, String[] args){
+        try{
+            scan(packageNameToScan)
 
-        PropertyProvider provider = findInstanceByAnnotation(Data)
-        provider.propGen = propGen
-        provider.logGen = logGen
+            makeProperties(args)
+            makeLogger()
 
-        inject()
-        init()
+            commandCalledByUserList = getCommandListCalledByUser(propGen.getExternalProperties())
+            taskCalledByUserList = getTaskListCalledByUser(propGen.getExternalProperties())
+
+            PropertyProvider provider = findInstanceByAnnotation(Data)
+            provider.propGen = propGen
+            provider.logGen = logGen
+
+            inject()
+            init()
+
+        }catch(OutOfArgumentException ooae){
+            logger.error(ooae.getMessage())
+            System.exit(0)
+        }catch(Exception e){
+            /** [Error] **/
+            logger.error('Error on Starter', e)
+            throw e
+        }
         return this
     }
 
     Config makeProperties(String[] args){
-        propGen = new InstallerPropertiesGenerator()
+        this.args = args
+        propGen = new PropertiesGenerator()
         propGen.makeDefaultProperties()
         propGen.makeProgramProperties()
         propGen.makeExternalProperties(args, lowerTaskNameAndValueProtocolListMap)
-        propGen.genResourceSingleton('installer-maker', 'defaultProperties/installer-maker.default.properties')
-        propGen.genResourceSingleton('installer', 'defaultProperties/installer.default.properties')
-        propGen.genResourceSingleton('macgyver', 'defaultProperties/macgyver.default.properties')
         return this
     }
 
     Config makeLogger(String[] args){
-        logGen = new InstallerLogGenerator()
+        logGen = new LogGenerator()
         boolean modeSystemDebugLog = false
         boolean modeSystemDebugLogFile = false
 
@@ -134,13 +150,13 @@ class Config {
      * 1. Scan Class
      * 2. New Instance
      *************************/
-    Config scan(){
+    Config scan(String packageName){
         try {
             //1. Scan Classes
-            List<Class> jobList = Util.findAllClasses('install', [Job, Employee])
-            List<Class> taskList = Util.findAllClasses('install', [Task])
-            List<Class> dataList = Util.findAllClasses('install', [Data])
-            List<Class> beanList = Util.findAllClasses('install', [Bean])
+            List<Class> jobList = Util.findAllClasses(packageName, [Job, Employee])
+            List<Class> taskList = Util.findAllClasses(packageName, [Task])
+            List<Class> dataList = Util.findAllClasses(packageName, [Data])
+            List<Class> beanList = Util.findAllClasses(packageName, [Bean])
 
             //SJTEST
 //            println "Job:${jobList.size()} / Task:${taskList.size()} / Data:${dataList.size()} / Bean:${beanList.size()}"

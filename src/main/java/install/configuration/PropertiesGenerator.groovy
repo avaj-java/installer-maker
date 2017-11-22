@@ -1,9 +1,9 @@
 package install.configuration
 
 import install.configuration.annotation.type.Bean
+import install.configuration.exception.OutOfArgumentException
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
-import jaemisseo.man.util.PropertiesGenerator
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -13,7 +13,7 @@ import java.security.CodeSource
  * Created by sujkim on 2017-03-29.
  */
 @Bean
-class InstallerPropertiesGenerator extends PropertiesGenerator{
+class PropertiesGenerator extends jaemisseo.man.util.PropertiesGenerator{
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -59,7 +59,7 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
                             applicationPropertyValueMap[propName] = parseValue(value)
                         }
                     }else{
-                        throw new Exception("So Many arguments!. Check ${proppertyName}'s Arguments")
+                        throw new OutOfArgumentException("So Many arguments!. Check ${proppertyName}'s Arguments")
                     }
                 }
 
@@ -112,8 +112,8 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
                 'user.home': replacePathWinToLin( System.getProperty('user.home') ),
                 //TODO: maybe programProperties
                 // installer.jar path
-                'lib.dir': replacePathWinToLin( new InstallerPropertiesGenerator().getThisAppFile()?.getParentFile()?.getPath() ) ?: '',
-                'lib.path': replacePathWinToLin( new InstallerPropertiesGenerator().getThisAppFile()?.getPath() ) ?: '',
+                'lib.dir': replacePathWinToLin( new PropertiesGenerator().getThisAppFile()?.getParentFile()?.getPath() ) ?: '',
+                'lib.path': replacePathWinToLin( new PropertiesGenerator().getThisAppFile()?.getPath() ) ?: '',
                 'lib.version': FileMan.getFileFromResource('.version').text,
                 'lib.compiler': FileMan.getFileFromResource('.compiler').text,
                 'lib.build.date': FileMan.getFileFromResource('.date').text,
@@ -146,23 +146,23 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
         return dataMap[key]
     }
 
-    InstallerPropertiesGenerator add(String key, String filePath){
+    PropertiesGenerator add(String key, String filePath){
         dataMap[key] = new PropMan().readFile(filePath)
         return this
     }
 
-    InstallerPropertiesGenerator addResource(String key, String resourcePath){
+    PropertiesGenerator addResource(String key, String resourcePath){
         dataMap[key] = new PropMan().readResource(resourcePath)
         return this
     }
 
-    PropMan genSingleton(String key, String filePath){
+    PropMan genSingletonPropManFromFileSystem(String key, String filePath){
         if (!dataMap.containsKey(key))
             add(key, filePath)
         return dataMap[key]
     }
 
-    PropMan genResourceSingleton(String key, String filePath){
+    PropMan genSingletonPropManFromResource(String key, String filePath){
         if (!dataMap.containsKey(key))
             addResource(key, filePath)
         return dataMap[key]
@@ -173,17 +173,17 @@ class InstallerPropertiesGenerator extends PropertiesGenerator{
     /**
      *
      */
-    InstallerPropertiesGenerator makeDefaultProperties(){
+    PropertiesGenerator makeDefaultProperties(){
         defaultProperties = genDefaultProperties()
         return this
     }
 
-    InstallerPropertiesGenerator makeProgramProperties(){
+    PropertiesGenerator makeProgramProperties(){
         programProperties = new PropMan()
         return this
     }
 
-    InstallerPropertiesGenerator makeExternalProperties(String[] args, Map<Class, List> valueProtocolListMap){
+    PropertiesGenerator makeExternalProperties(String[] args, Map<Class, List> valueProtocolListMap){
         Map argsMap = genApplicationPropertiesValueMap(args)
         Map propertiesValueMap = genApplicationPropertiesValueMap(argsMap, valueProtocolListMap)
         externalProperties = new PropMan(propertiesValueMap)

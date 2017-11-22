@@ -1,11 +1,23 @@
-##################################################
-##
-##    INSTALLER
-##
-##################################################
-##################################################
-##### INSTALLER - CUSTOM PROPERTIES
-##################################################
+####################################################################################################
+#
+# INSTALLER
+#
+#   - 'installer-maker help --default' to see more default variables.
+#   - You can change it or use it as a variable.
+#   - You can also create a variable. (However, avoid reserved words.)
+#
+#  < DEFAULT PROPERTIES >
+# installer.home=[UNCHANGEABLE]
+# log.dir=${installer.home}/log/
+# log.file.name=installer_${date(yyMMdd_HHmms)}
+# log.level.console=info
+# log.level.file=debug
+# color.desc=yellow
+# color.question=yellow
+# color.task=
+# variable.sign=$
+# rsp=
+####################################################################################################
 var:
   data.dir: ${installer.home}/data
   java.opts: -Xms512m -Xmx1524m -XX:MaxPermSize=1024m
@@ -34,44 +46,21 @@ var:
       idx: ''
 
 ##################################################
-##### INSTALLER - DEFAULT PROPERTIES
-#####
-##### installer.home
-##### color.desc
-##### color.question
-##### color.task
-##################################################
-color:
-  desc: yellow
-  question: yellow
-  task:
-
-sql:
-  db: orcl
-  ip: localhost
-  password: ${db.password}
-  port: 1521
-  replace:
-    all: ''
-    datafile: ''
-    function: ''
-    index: ''
-    password: ${db.password}
-    sequence: ''
-    table: ''
-    tablespace: ''
-    user: ${db.user}
-    view: ''
-  user: ${db.user}
-  vendor: oracle
-
-
-##################################################
 #####
 ##### INSTALLER - COMMANDS (ask)
 #####
 ##################################################
+ask:
+  helloMessage:
+    task: msg
 
+  ask1:
+    task: question
+    question: Hi! What your name?
+
+  ask2:
+    task: questionYN
+    question: Do you like banana?
 
 ##################################################
 #####

@@ -9,7 +9,7 @@ import install.configuration.annotation.method.Init
 import install.configuration.annotation.type.Document
 import install.configuration.annotation.type.Employee
 import install.configuration.annotation.type.Task
-import install.data.PropertyProvider
+import install.configuration.data.PropertyProvider
 import install.util.EmployeeUtil
 import install.util.TaskUtil
 import jaemisseo.man.FileMan

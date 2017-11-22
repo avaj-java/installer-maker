@@ -1,4 +1,4 @@
-package install.data
+package install.configuration.data
 
 import install.configuration.annotation.Value
 import org.slf4j.Logger

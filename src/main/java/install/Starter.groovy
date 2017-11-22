@@ -1,6 +1,7 @@
 package install
 
 import install.configuration.Config
+import install.configuration.exception.OutOfArgumentException
 import jaemisseo.man.TimeMan
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -12,31 +13,25 @@ class Starter {
 
 
     /*************************
-     * START INSTALL
+     * START INSTALLER-MAKER
      * @param args
      * @throws Exception
      *************************/
     static void main(String[] args) throws Exception{
-        /** [Start] INSTALLER-MAKER **/
-        TimeMan timeman     // -TimeChecker
-        Config config
-        Commander commander
+        /** TimeChecker **/
+        TimeMan timeman = new TimeMan().init().start()
 
-        try {
-            /** [Config] **/
-            timeman = new TimeMan().init().start()
-            config = new Config().setup(args)
-        }catch(Exception e){
-            /** [Error] **/
-            logger.error('Error on Starter', e)
-        }
+        /** Config **/
+        Config config = new Config().setup('install', args)
+
+        /** Commander **/
+        Commander commander
 
         try{
             commander = new Commander(config, timeman)
             commander.run()
 
         }catch(Exception e){
-            /** [Error] **/
             commander.logError(e)
         }
     }

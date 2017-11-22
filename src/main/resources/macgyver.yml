@@ -1,21 +1,22 @@
-##################################################
-##
-##    MacGyver
-##
-##################################################
-##################################################
-##### SETUP - CUSTOM PROPERTIES
-##################################################
-
-##################################################
-##### SETUP - DEFAULT
-##################################################
-color:
-  desc: yellow
-  question: yellow
-  task:
-
-
+####################################################################################################
+#
+# MACGYVER
+#
+# <DEFAULT PROPERTIES>
+#   - 'installer-maker -default' to see more default variables.
+#   - You can change it or use it as a variable.
+#   - You can also create a variable. (However, avoid reserved words.)
+#
+# log.dir=
+# log.file.name=
+# log.level.console=debug
+# log.level.file=
+# color.desc=yellow
+# color.question=yellow
+# color.task=
+# variable.sign=$
+# properties.dir=./
+####################################################################################################
 
 ##################################################
 ##### SETUP - COMMANDS

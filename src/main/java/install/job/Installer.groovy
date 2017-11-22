@@ -9,7 +9,7 @@ import install.configuration.annotation.type.Document
 import install.configuration.annotation.type.Job
 import install.configuration.annotation.type.Task
 import install.bean.ReportSetup
-import install.data.PropertyProvider
+import install.configuration.data.PropertyProvider
 import install.task.System
 import install.util.JobUtil
 import install.util.TaskUtil

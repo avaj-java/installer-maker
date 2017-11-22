@@ -1,31 +1,37 @@
-##################################################
-##
-##    INSTALLER-MAKER
-##
-##################################################
-##################################################
-##### INSTALLER-MAKER - CUSTOM PROPERTIES
-##################################################
-data.home: ./.installer-data/data
-
-##################################################
-##### INSTALLER-MAKER - DEFAULT PROPERTIES
-#####
-##### build.installer.home
-##### color.desc
-##### color.question
-##### color.task
-##### product.name
-##### product.version
-##################################################
-product:
-  name: Program
-  version:
-
-color:
-  desc: yellow
-  question: yellow
-  task:
+####################################################################################################
+#
+# INSTALLER-MAKER
+#
+#   - 'installer-maker help --default' to see more default variables.
+#   - You can change it or use it as a variable.
+#   - You can also create a variable. (However, avoid reserved words.)
+#
+#  < DEFAULT PROPERTIES >
+# installer.name=installer_myproject
+# installer.home.to.lib.relpath=./lib
+# installer.home.to.bin.relpath=./bin
+# installer.home.to.rsp.relpath=./rsp
+# build.dir=./build
+# build.temp.dir=${build.dir}/installer_temp
+# build.dist.dir=${build.dir}/installer_dist
+# build.installer.home=${build.dir}/${installer.name}
+# product.name=MyProduct
+# product.version=test
+# log.dir=${build.dir}/log
+# log.file.name=installer_maker_${date(yyMMdd_HHmms)}
+# log.level.console=info
+# log.level.file=debug
+# color.desc=yellow
+# color.question=yellow
+# color.task=
+# mode.auto.rsp=true
+# mode.auto.zip=true
+# mode.auto.tar=false
+# variable.sign=$
+# properties.dir=./
+####################################################################################################
+var:
+  data.home: ./.installer-data/data
 
 ##################################################
 #####
@@ -47,7 +53,7 @@ build:
 
   step1:
     task: Copy
-    from: ${data.home}/tomcat/*
+    from: ${var.data.home}/tomcat/*
     to: ${build.installer.home}/data/tomcat
 
   step2:
@@ -57,5 +63,5 @@ build:
 
   step3:
     task: Copy
-    from: ${data.home}/sql/*
+    from: ${var.data.home}/sql/*
     to: ${build.installer.home}/data/sql
