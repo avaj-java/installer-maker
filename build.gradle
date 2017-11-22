@@ -150,6 +150,7 @@ List<String> dependencyList = [
         'com.sun.mail:javax.mail:1.5.5',
         "com.oracle:ojdbc6:11.2.0.3",
         'org.yaml:snakeyaml:1.18',
+        'com.jcraft:jsch:0.1.54'
 ]
 dependencies {
     //JAEMISSEO

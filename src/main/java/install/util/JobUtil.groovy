@@ -8,9 +8,8 @@ import install.configuration.annotation.Inject
 import install.configuration.annotation.method.After
 import install.configuration.annotation.method.Before
 import install.configuration.annotation.type.Task
-import install.data.PropertyProvider
+import install.configuration.data.PropertyProvider
 import install.task.*
-import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.VariableMan
 import jaemisseo.man.util.Util

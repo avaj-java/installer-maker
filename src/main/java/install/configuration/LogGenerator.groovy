@@ -20,9 +20,9 @@ import org.slf4j.LoggerFactory
 /**
  * Created by sujkim on 2017-03-29.
  */
-class InstallerLogGenerator {
+class LogGenerator {
 
-    InstallerLogGenerator(){
+    LogGenerator(){
         logLevelStackTraceList << getConsoleLogLevel()
         logPatternStackTraceList << getConsoleLogPattern()
     }

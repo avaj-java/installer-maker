@@ -8,7 +8,7 @@ import install.configuration.annotation.method.Init
 import install.configuration.annotation.type.Document
 import install.configuration.annotation.type.Job
 import install.configuration.annotation.type.Task
-import install.data.PropertyProvider
+import install.configuration.data.PropertyProvider
 import install.employee.MacGyver
 import install.util.JobUtil
 import jaemisseo.man.FileMan
