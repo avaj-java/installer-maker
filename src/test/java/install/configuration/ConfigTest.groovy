@@ -1,7 +1,7 @@
 package install.configuration
 
 import install.configuration.annotation.type.Data
-import install.data.PropertyProvider
+import install.configuration.data.PropertyProvider
 import org.junit.Test
 
 /**
@@ -13,7 +13,7 @@ class ConfigTest {
 
     @Test
     void SimplTest(){
-        config.scan()
+        config.scan('install')
         PropertyProvider provider = (config.findInstanceByAnnotation(Data) as PropertyProvider)
         provider.propGen = config.propGen
         config.inject()
