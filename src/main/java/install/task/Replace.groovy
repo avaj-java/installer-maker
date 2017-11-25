@@ -40,17 +40,6 @@ class Replace extends TaskUtil{
 
     @Override
     Integer run(){
-
-        logger.debug "Replacement>>>"
-        if (replaceMap)
-            logger.debug replaceMap.toMapString()
-        if (replaceLineMap)
-            logger.debug replaceLineMap.toMapString()
-        if (replacePropertiesMap)
-            logger.debug replacePropertiesMap.toMapString()
-        if (replaceYamlMap)
-            logger.debug replaceYamlMap.toMapString()
-
         filePathList.each{ String filePath ->
             new FileMan(filePath)
                         .set( fileSetup )
@@ -63,7 +52,6 @@ class Replace extends TaskUtil{
                         .write( fileSetup.clone([modeAutoOverWrite:true]) )
                         .report()
         }
-
         return STATUS_TASK_DONE
     }
 
