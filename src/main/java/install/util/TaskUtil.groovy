@@ -161,12 +161,9 @@ class TaskUtil{
         Map prop
         //Load to Map
         if (propertiesFile.name.endsWith('.yml') || propertiesFile.name.endsWith('.yaml'))
-            prop = YamlUtil.generatePropertiesMap(propertiesFile)
+            prop = YamlUtil.generatePropertiesMap(propertiesFile, propertyNameFilterTargetList)
         else
-            prop = new PropMan(propertiesFile).properties
-        //PropertyName Filter
-        if (propertyNameFilterTargetList)
-            prop = new PropMan(prop, propertyNameFilterTargetList).properties
+            prop = new PropMan(propertiesFile, propertyNameFilterTargetList).properties
         return prop
     }
 
