@@ -1,9 +1,11 @@
 package install.task
 
+import install.configuration.annotation.Value
 import install.configuration.annotation.type.Task
 import install.configuration.annotation.type.TerminalIgnore
 import install.configuration.annotation.type.Undoable
 import install.util.TaskUtil
+import jaemisseo.man.PropMan
 
 /**
  * Created by sujkim on 2017-03-18.
@@ -13,8 +15,36 @@ import install.util.TaskUtil
 @TerminalIgnore
 class Set extends TaskUtil{
 
+    @Value(name='properties.file', filter="getFilePathList")
+    List<String> propertiesFilePathList
+
+    @Value('target')
+    List<String> targetProperties
+
+    @Value(name='rsp.file', filter="getFilePath")
+    String rspFilePath
+
+
+
     @Override
     Integer run(){
+        //- Set Some Properties from Response File(.rsp)
+        if (rspFilePath){
+            PropMan runtimeLoadedPropMan = generatePropMan(rspFilePath, 'ask')
+            provider.propman.merge([
+                'mode.load.rsp': true,
+                'answer.repeat.limit': 0
+            ]).merge(runtimeLoadedPropMan)
+        }
+
+        //- Set Some Properties from Properties File
+        if (propertiesFilePathList){
+            propertiesFilePathList.each{ String propertiesFilepath ->
+                Map propertiesMap = generateMapFromPropertiesFile(new File(propertiesFilepath), targetProperties)
+                provider.propman.merge(propertiesMap)
+            }
+        }
+
         //Set Some Property
         setPropValue()
         return STATUS_TASK_DONE

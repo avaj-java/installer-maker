@@ -141,6 +141,7 @@ class Installer extends JobUtil{
             PropMan propmanExternal = provider.propGen.getExternalProperties()
             propman.merge(responsePropMan)
                    .merge(propmanExternal)
+            propman.set('mode.load.rsp', true)
             propman.set('answer.repeat.limit', 0)
             logTaskDescription('added response file answer')
         }
