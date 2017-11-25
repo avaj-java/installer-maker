@@ -359,7 +359,7 @@ class JobUtil extends TaskUtil{
                 config.logGen.setupConsoleLoggerColorPattern(task.color)
 
             //Description
-            if ( !task.jobName.equalsIgnoreCase('macgyver') && !task.jobName.equalsIgnoreCase('receptionist') )
+//            if ( !task.jobName.equalsIgnoreCase('macgyver') && !task.jobName.equalsIgnoreCase('receptionist') )
                 descript(task)
 
             //Start Task
