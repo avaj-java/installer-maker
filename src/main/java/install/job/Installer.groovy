@@ -59,7 +59,7 @@ class Installer extends JobUtil{
             //- Make Property Manager
             if (propertiesFile && propertiesFile.exists()){
                 propertiesFileExtension = FileMan.getExtension(propertiesFile)
-                Map propertiesMap = generatePropertiesMap(propertiesFile)
+                Map propertiesMap = generateMapFromPropertiesFile(propertiesFile)
                 propmanForInstaller.merge(propertiesMap)
                                     .mergeNew(propmanForInstallerMaker)
                                     .mergeNew(propmanProgram)
@@ -79,7 +79,7 @@ class Installer extends JobUtil{
 //            }
             propertiesFileExtension = FileMan.getExtension(propertiesFile)
             if (propertiesFile && propertiesFile.exists()){
-                Map propertiesMap = generatePropertiesMap(propertiesFile)
+                Map propertiesMap = generateMapFromPropertiesFile(propertiesFile)
                 propmanForInstaller.merge(propertiesMap)
                                     .merge(propmanExternal)
                                     .mergeNew(propmanDefault)

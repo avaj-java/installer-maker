@@ -111,14 +111,6 @@ class JobUtil extends TaskUtil{
         return propmanToSet
     }
 
-    Map generatePropertiesMap(File propertiesFile){
-        Map prop
-        if (propertiesFile.name.endsWith('.yml') || propertiesFile.name.endsWith('.yaml'))
-            prop = YamlUtil.generatePropertiesMap(propertiesFile)
-        else
-            prop = new PropMan(propertiesFile).properties
-        return prop
-    }
 
 
 
@@ -184,8 +176,8 @@ class JobUtil extends TaskUtil{
         File scriptFile = propertiesFile
 
         //-YML or YAML
-        if (fileExtension == 'yml' || fileExtension == 'yaml'){
-            Map scriptMap = generatePropertiesMap(scriptFile)
+        if (['yml', 'yaml'].contains(fileExtension)){
+            Map scriptMap = generateMapFromPropertiesFile(scriptFile)
             scriptMap.each{ String propertyName, String value ->
                 List<String> propElementList = propertyName.split('[.]').toList()
                 if (propElementList && propElementList.size() > 2){
