@@ -1,17 +1,16 @@
 package install.task
 
 import install.Commander
-import install.Starter
-import install.configuration.annotation.Alias
-import install.configuration.annotation.HelpIgnore
-import install.configuration.annotation.Value
-import install.configuration.annotation.type.Document
-import install.configuration.annotation.type.Task
-import install.configuration.annotation.type.TerminalIgnore
-import install.configuration.annotation.type.TerminalValueProtocol
-import install.configuration.reflection.FieldInfomation
-import install.configuration.reflection.MethodInfomation
-import install.configuration.reflection.ReflectInfomation
+import jaemisseo.man.configuration.annotation.Alias
+import jaemisseo.man.configuration.annotation.HelpIgnore
+import jaemisseo.man.configuration.annotation.Value
+import jaemisseo.man.configuration.annotation.type.Document
+import jaemisseo.man.configuration.annotation.type.Task
+import jaemisseo.man.configuration.annotation.type.TerminalIgnore
+import jaemisseo.man.configuration.annotation.type.TerminalValueProtocol
+import jaemisseo.man.configuration.reflection.FieldInfomation
+import jaemisseo.man.configuration.reflection.MethodInfomation
+import jaemisseo.man.configuration.reflection.ReflectInfomation
 import install.util.TaskUtil
 import jaemisseo.man.util.Util
 

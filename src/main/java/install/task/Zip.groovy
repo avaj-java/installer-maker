@@ -1,8 +1,8 @@
 package install.task
 
-import install.configuration.annotation.type.TerminalValueProtocol
-import install.configuration.annotation.type.Task
-import install.configuration.annotation.Value
+import jaemisseo.man.configuration.annotation.type.TerminalValueProtocol
+import jaemisseo.man.configuration.annotation.type.Task
+import jaemisseo.man.configuration.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import install.bean.FileSetup

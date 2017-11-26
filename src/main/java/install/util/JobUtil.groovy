@@ -3,12 +3,13 @@ package install.util
 import install.bean.LogSetup
 import install.bean.ReportSetup
 import install.bean.TaskSetup
-import install.configuration.Config
-import install.configuration.annotation.Inject
-import install.configuration.annotation.method.After
-import install.configuration.annotation.method.Before
-import install.configuration.annotation.type.Task
-import install.configuration.data.PropertyProvider
+import jaemisseo.man.configuration.Config
+import jaemisseo.man.configuration.Config
+import jaemisseo.man.configuration.annotation.Inject
+import jaemisseo.man.configuration.annotation.method.After
+import jaemisseo.man.configuration.annotation.method.Before
+import jaemisseo.man.configuration.annotation.type.Task
+import jaemisseo.man.configuration.data.PropertyProvider
 import install.task.*
 import jaemisseo.man.PropMan
 import jaemisseo.man.VariableMan
@@ -359,7 +360,7 @@ class JobUtil extends TaskUtil{
                 config.logGen.setupConsoleLoggerColorPattern(task.color)
 
             //Description
-//            if ( !task.jobName.equalsIgnoreCase('macgyver') && !task.jobName.equalsIgnoreCase('receptionist') )
+            if ( !(task.jobName.equalsIgnoreCase('macgyver') && [Version, System, Help].contains(task.taskClazz)) )
                 descript(task)
 
             //Start Task

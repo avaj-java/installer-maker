@@ -1,8 +1,7 @@
 package install
 
-import install.configuration.Config
-import install.configuration.exception.OutOfArgumentException
 import jaemisseo.man.TimeMan
+import jaemisseo.man.configuration.Config
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 

@@ -1,7 +1,8 @@
 package install.configuration
 
-import install.configuration.annotation.type.Data
-import install.configuration.data.PropertyProvider
+import jaemisseo.man.configuration.Config
+import jaemisseo.man.configuration.annotation.type.Data
+import jaemisseo.man.configuration.data.PropertyProvider
 import org.junit.Test
 
 /**
@@ -13,7 +14,7 @@ class ConfigTest {
 
     @Test
     void SimplTest(){
-        config.scan('install')
+        config.scan('jaemisseo')
         PropertyProvider provider = (config.findInstanceByAnnotation(Data) as PropertyProvider)
         provider.propGen = config.propGen
         config.inject()

@@ -2,13 +2,13 @@ package install.job
 
 import install.bean.GlobalOptionForInstallerMaker
 import install.bean.ReportSetup
-import install.configuration.annotation.HelpIgnore
-import install.configuration.annotation.method.Command
-import install.configuration.annotation.method.Init
-import install.configuration.annotation.type.Document
-import install.configuration.annotation.type.Job
-import install.configuration.annotation.type.Task
-import install.configuration.data.PropertyProvider
+import jaemisseo.man.configuration.annotation.HelpIgnore
+import jaemisseo.man.configuration.annotation.method.Command
+import jaemisseo.man.configuration.annotation.method.Init
+import jaemisseo.man.configuration.annotation.type.Document
+import jaemisseo.man.configuration.annotation.type.Job
+import jaemisseo.man.configuration.annotation.type.Task
+import jaemisseo.man.configuration.data.PropertyProvider
 import install.employee.MacGyver
 import install.util.JobUtil
 import jaemisseo.man.FileMan
