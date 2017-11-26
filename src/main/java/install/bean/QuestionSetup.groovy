@@ -1,7 +1,7 @@
 package install.bean
 
-import install.configuration.annotation.Value
-import install.configuration.annotation.type.Bean
+import jaemisseo.man.configuration.annotation.Value
+import jaemisseo.man.configuration.annotation.type.Bean
 
 /**
  * Created by sujkim on 2017-03-18.
@@ -29,6 +29,6 @@ class QuestionSetup extends jaemisseo.man.bean.QuestionSetup {
 
     @Value('mode.only.interactive')
     Boolean modeOnlyInteractive
-    @Value('rsp')
+    @Value('mode.load.rsp')
     Boolean modeLoadResponseFile
 }

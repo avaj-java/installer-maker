@@ -1,6 +1,6 @@
 package install
 
-import install.configuration.Config
+import jaemisseo.man.configuration.Config
 import install.employee.MacGyver
 import install.job.InstallerMaker
 import install.job.Installer
@@ -60,9 +60,21 @@ class Commander {
         boolean hasCommand = !!commandCalledByUserList
         boolean hasTask = !!taskCalledByUserList
 
-        //- Application Identity
+        //- Set Application Identity
         String applicationName = getApplicationName(propmanExternal)
         propmanDefault.set('application.name', applicationName)
+
+        //- Set Log
+        List<String> specialValueList = propmanExternal.get('--')
+        if (specialValueList.contains('error')){
+            propmanExternal.set('log.level.console', 'error')
+        }else if (specialValueList.contains('debug')){
+            propmanExternal.set('log.level.console', 'debug')
+        }else if (specialValueList.contains('trace')){
+            propmanExternal.set('log.level.console', 'trace')
+            propmanExternal.set('log.level.file', 'trace')
+        }
+
 
         /** [Command] Auto Command **/
         if (!hasCommand && !hasTask){

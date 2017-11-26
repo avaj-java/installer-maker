@@ -1,6 +1,7 @@
 package install.util
 
 import groovy.json.JsonOutput
+import jaemisseo.man.PropMan
 import org.yaml.snakeyaml.Yaml
 
 class YamlUtil {
@@ -11,43 +12,56 @@ class YamlUtil {
      * Generate PropertiesMap From file(YAML or YML)
      *************************/
    static Map<String, Object> generatePropertiesMap(String filePath){
-       Map<String, Object> propertiesMap
-        String absolutePath = getFullPath(filePath)
-        File file = new File(absolutePath)
-        propertiesMap = generatePropertiesMap(file)
-        return propertiesMap
+        return generatePropertiesMap(filePath, [])
+    }
+
+    static Map<String, Object> generatePropertiesMap(String filePath, List<String> propertyNameFilterTargetList){
+        File file = new File(getFullPath(filePath))
+        return generatePropertiesMap(file, propertyNameFilterTargetList)
     }
 
     static Map<String, Object> generatePropertiesMap(File file){
         Map<String, Object> resultMap = [:]
-        return extractPropertiesRecursivly(file, resultMap)
+        return extractPropertiesRecursivly(file, resultMap, [])
     }
 
-    private static Map<String, Object> extractPropertiesRecursivly(File file, Map<String, Object> properties){
+    static Map<String, Object> generatePropertiesMap(File file, List<String> propertyNameFilterTargetList){
+        Map<String, Object> resultMap = [:]
+        return extractPropertiesRecursivly(file, resultMap, propertyNameFilterTargetList)
+    }
+
+    private static Map<String, Object> extractPropertiesRecursivly(File file, Map<String, Object> resultMap, List<String> propertyNameFilterTargetList){
         Map<String, Map<String, String>> ymlDataMap = readYml(file)
-        return extractPropertiesRecursivly('', ymlDataMap, properties)
+        return extractPropertiesRecursivly('', ymlDataMap, resultMap, propertyNameFilterTargetList)
     }
 
-    private static extractPropertiesRecursivly(Map<String, Map<String, String>> ymlDataMap, Map<String, Object> properties){
-        return extractPropertiesRecursivly('', ymlDataMap, properties)
+    private static Map<String, Object> extractPropertiesRecursivly(Map<String, Map<String, String>> ymlDataMap, Map<String, Object> resultMap, List<String> propertyNameFilterTargetList){
+        return extractPropertiesRecursivly('', ymlDataMap, resultMap, propertyNameFilterTargetList)
     }
 
-    private static Map extractPropertiesRecursivly(String propertyNameFollowingBranch, Map<String, Map<String, String>> ymlDataMapFollowingBranch, Map<String, Object> properties){
-        ymlDataMapFollowingBranch.each{ String propertyNamePart, Object nextItem ->
+    private static Map<String, Object> extractPropertiesRecursivly(String propertyNameFollowingBranch, Map<String, Map<String, String>> ymlDataMapFollowingBranch, Map<String, Object> resultMap, List<String> propertyNameFilterTargetList){
+        ymlDataMapFollowingBranch.each { String propertyNamePart, Object nextItem ->
             String nextPropertyName = propertyNameFollowingBranch ? "${propertyNameFollowingBranch}.${propertyNamePart}" : propertyNamePart
-            if (nextItem instanceof Map){
-                extractPropertiesRecursivly(nextPropertyName, nextItem, properties)
-            }else if (nextItem instanceof String){
-                properties[nextPropertyName] = nextItem
-            }else if (nextItem instanceof List){
-                properties[nextPropertyName] = JsonOutput.toJson(nextItem as List)
-            }else if (nextItem instanceof Boolean){
-                properties[nextPropertyName] = nextItem ? 'true' : 'false'
-            }else if (nextItem){
-                properties[nextPropertyName] = String.valueOf(nextItem)
+            if (nextItem instanceof Map) {
+                extractPropertiesRecursivly(nextPropertyName, nextItem, resultMap, propertyNameFilterTargetList)
+            }else{
+                if (PropMan.isMatchingProperty(nextPropertyName, propertyNameFilterTargetList))
+                    putValue(nextPropertyName, nextItem, resultMap)
             }
         }
-        return properties
+        return resultMap
+    }
+
+    private static void putValue(String nextPropertyName, Object nextItem, Map<String, Object> properties){
+        if (nextItem instanceof String) {
+            properties[nextPropertyName] = nextItem
+        } else if (nextItem instanceof List) {
+            properties[nextPropertyName] = JsonOutput.toJson(nextItem as List)
+        } else if (nextItem instanceof Boolean) {
+            properties[nextPropertyName] = nextItem ? 'true' : 'false'
+        } else if (nextItem) {
+            properties[nextPropertyName] = String.valueOf(nextItem)
+        }
     }
 
     private static Map<String, Map<String, String>> readYml(File file){

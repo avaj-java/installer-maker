@@ -1,9 +1,9 @@
 package install.task
 
-import install.configuration.annotation.type.TerminalValueProtocol
-import install.configuration.annotation.type.Document
-import install.configuration.annotation.type.Task
-import install.configuration.annotation.Value
+import jaemisseo.man.configuration.annotation.type.TerminalValueProtocol
+import jaemisseo.man.configuration.annotation.type.Document
+import jaemisseo.man.configuration.annotation.type.Task
+import jaemisseo.man.configuration.annotation.Value
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import install.bean.FileSetup
@@ -40,17 +40,6 @@ class Replace extends TaskUtil{
 
     @Override
     Integer run(){
-
-        logger.debug "Replacement>>>"
-        if (replaceMap)
-            logger.debug replaceMap.toMapString()
-        if (replaceLineMap)
-            logger.debug replaceLineMap.toMapString()
-        if (replacePropertiesMap)
-            logger.debug replacePropertiesMap.toMapString()
-        if (replaceYamlMap)
-            logger.debug replaceYamlMap.toMapString()
-
         filePathList.each{ String filePath ->
             new FileMan(filePath)
                         .set( fileSetup )
@@ -63,7 +52,6 @@ class Replace extends TaskUtil{
                         .write( fileSetup.clone([modeAutoOverWrite:true]) )
                         .report()
         }
-
         return STATUS_TASK_DONE
     }
 

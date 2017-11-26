@@ -1,2 +1,2 @@
-include "common-util", "common-man", "fileman", "reportman", "restman"
+include 'command-man', "common-util", "common-man", "fileman", "reportman", "restman"
 

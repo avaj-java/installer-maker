@@ -1,10 +1,10 @@
 package install.task
 
 import ch.qos.logback.classic.Level
-import install.configuration.annotation.type.Document
-import install.configuration.annotation.type.Task
-import install.configuration.annotation.Value
-import install.configuration.annotation.type.TerminalValueProtocol
+import jaemisseo.man.configuration.annotation.type.Document
+import jaemisseo.man.configuration.annotation.type.Task
+import jaemisseo.man.configuration.annotation.Value
+import jaemisseo.man.configuration.annotation.type.TerminalValueProtocol
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.SqlAnalMan

@@ -2,14 +2,14 @@ package install.employee
 
 import install.bean.GlobalOptionForMacgyver
 import install.bean.ReportSetup
-import install.configuration.annotation.Alias
-import install.configuration.annotation.HelpIgnore
-import install.configuration.annotation.method.Command
-import install.configuration.annotation.method.Init
-import install.configuration.annotation.type.Document
-import install.configuration.annotation.type.Employee
-import install.configuration.annotation.type.Task
-import install.configuration.data.PropertyProvider
+import jaemisseo.man.configuration.annotation.Alias
+import jaemisseo.man.configuration.annotation.HelpIgnore
+import jaemisseo.man.configuration.annotation.method.Command
+import jaemisseo.man.configuration.annotation.method.Init
+import jaemisseo.man.configuration.annotation.type.Document
+import jaemisseo.man.configuration.annotation.type.Employee
+import jaemisseo.man.configuration.annotation.type.Task
+import jaemisseo.man.configuration.data.PropertyProvider
 import install.util.EmployeeUtil
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
@@ -54,7 +54,7 @@ class MacGyver extends EmployeeUtil {
         //- Make Property Manager
         if (propertiesFile && propertiesFile.exists()){
             propertiesFileExtension = FileMan.getExtension(propertiesFile)
-            Map propertiesMap = generatePropertiesMap(propertiesFile)
+            Map propertiesMap = generateMapFromPropertiesFile(propertiesFile)
             propmanForMacgyver.merge(propertiesMap)
                             .merge(propmanExternal)
                             .mergeNew(propmanDefault)

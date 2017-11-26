@@ -3,23 +3,38 @@ package install.task
 import com.jcraft.jsch.JSchException
 import com.jcraft.jsch.SftpException
 import install.bean.FileSetup
-import install.configuration.annotation.Value
-import install.configuration.annotation.type.Task
-import install.configuration.annotation.type.TerminalValueProtocol
+import jaemisseo.man.configuration.annotation.Value
+import jaemisseo.man.configuration.annotation.type.Document
+import jaemisseo.man.configuration.annotation.type.Task
+import jaemisseo.man.configuration.annotation.type.TerminalValueProtocol
 import install.util.SFTPMan
 import install.util.TaskUtil
 
 /**
  * Created by sujkim on 2017-02-22.
  */
+
+@Document("""
+Upload and Download with SFTP
+
+<url> 
+  username/password@host:port:path   
+  ex) username/password@127.0.0.1:22:~/path/to/do/something
+
+<usage>
+ex) macgyver -sftp upload username/password@127.0.0.1:22:/server/path/to/file /local/path/to/file        
+ex) macgyver -sftp download username/password@127.0.0.1:22:/server/path/to/file /local/path/to/file
+ex) macgyver -sftp -method=list -url=username/password@127.0.0.1:22:/server/path/to/file
+ex) macgyver -sftp -method=entrylist -url=username/password@127.0.0.1:22:/server/path/to/file
+""")
 @Task
-@TerminalValueProtocol(['url', 'method', 'param'])
+@TerminalValueProtocol(['method', 'url', 'param'])
 class SFTP extends TaskUtil{
 
     @Value(name='url')
     String url
 
-    @Value(name='method', required=true)
+    @Value(name='method', required=true, caseIgnoreValidList=['UPLOAD','DOWNLOAD','LIST','ENTRYLIST'])
     String method
 
     @Value(name='param')
@@ -60,10 +75,16 @@ class SFTP extends TaskUtil{
             //Do
             switch(method.toUpperCase()){
                 case SFTPMan.UPLOAD:
-                    sftpman.upload(param, path)
+                    sftpman.upload(param, path, fileSetup)
                     break
                 case SFTPMan.DOWNLOAD:
-                    sftpman.download(path, param)
+                    sftpman.download(path, param, fileSetup)
+                    break
+                case SFTPMan.LIST:
+                    sftpman.printLs(path)
+                    break
+                case SFTPMan.ENTRYLIST:
+                    sftpman.printRecursiveLs(path)
                     break
                 default:
                     break
