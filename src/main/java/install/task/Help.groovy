@@ -265,6 +265,7 @@ class Help extends TaskUtil{
             String documentString = documentAnt.value()
             if (documentString){
                 logger.info ''
+                logger.info ' [ Detail ]'
                 logger.info multiTrim(documentString)
             }
         }
@@ -283,7 +284,7 @@ class Help extends TaskUtil{
                     break
                 }
             }
-            if (indentIndex > 0){
+            if (indentIndex >= 0){
                 if (shortestIndentIndex == 0 || shortestIndentIndex > indentIndex){
                     shortestIndentIndex =  indentIndex
                 }
