@@ -1,7 +1,7 @@
 package install.bean
 
-import install.configuration.annotation.Value
-import install.configuration.annotation.type.Bean
+import jaemisseo.man.configuration.annotation.Value
+import jaemisseo.man.configuration.annotation.type.Bean
 
 /**
  * Created by sujkim on 2017-02-19.

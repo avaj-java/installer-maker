@@ -1,9 +1,9 @@
 package install.task
 
-import install.configuration.annotation.Value
-import install.configuration.annotation.type.Task
-import install.configuration.annotation.type.TerminalIgnore
-import install.configuration.annotation.type.Undoable
+import jaemisseo.man.configuration.annotation.Value
+import jaemisseo.man.configuration.annotation.type.Task
+import jaemisseo.man.configuration.annotation.type.TerminalIgnore
+import jaemisseo.man.configuration.annotation.type.Undoable
 import install.util.TaskUtil
 import jaemisseo.man.PropMan
 

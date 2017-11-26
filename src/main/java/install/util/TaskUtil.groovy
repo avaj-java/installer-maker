@@ -1,9 +1,9 @@
 package install.util
 
 import install.bean.ReportSetup
-import install.configuration.Config
-import install.configuration.annotation.Inject
-import install.configuration.data.PropertyProvider
+import jaemisseo.man.configuration.Config
+import jaemisseo.man.configuration.annotation.Inject
+import jaemisseo.man.configuration.data.PropertyProvider
 import jaemisseo.man.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

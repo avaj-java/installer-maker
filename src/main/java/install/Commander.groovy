@@ -1,6 +1,6 @@
 package install
 
-import install.configuration.Config
+import jaemisseo.man.configuration.Config
 import install.employee.MacGyver
 import install.job.InstallerMaker
 import install.job.Installer

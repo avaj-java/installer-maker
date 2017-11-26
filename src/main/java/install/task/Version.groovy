@@ -1,9 +1,9 @@
 package install.task
 
-import install.configuration.annotation.Alias
-import install.configuration.annotation.HelpIgnore
-import install.configuration.annotation.Value
-import install.configuration.annotation.type.Task
+import jaemisseo.man.configuration.annotation.Alias
+import jaemisseo.man.configuration.annotation.HelpIgnore
+import jaemisseo.man.configuration.annotation.Value
+import jaemisseo.man.configuration.annotation.type.Task
 import install.util.TaskUtil
 
 /**
