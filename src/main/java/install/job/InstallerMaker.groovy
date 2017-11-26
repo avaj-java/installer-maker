@@ -55,7 +55,7 @@ class InstallerMaker extends JobUtil{
         //- Make Property Manager
         if (propertiesFile && propertiesFile.exists()){
             propertiesFileExtension = FileMan.getExtension(propertiesFile)
-            Map propertiesMap = generatePropertiesMap(propertiesFile)
+            Map propertiesMap = generateMapFromPropertiesFile(propertiesFile)
             propmanForInstallerMaker.merge(propertiesMap)
                             .merge(propmanExternal)
                             .mergeNew(propmanDefault)

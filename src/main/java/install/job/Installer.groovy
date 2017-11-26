@@ -59,7 +59,7 @@ class Installer extends JobUtil{
             //- Make Property Manager
             if (propertiesFile && propertiesFile.exists()){
                 propertiesFileExtension = FileMan.getExtension(propertiesFile)
-                Map propertiesMap = generatePropertiesMap(propertiesFile)
+                Map propertiesMap = generateMapFromPropertiesFile(propertiesFile)
                 propmanForInstaller.merge(propertiesMap)
                                     .mergeNew(propmanForInstallerMaker)
                                     .mergeNew(propmanProgram)
@@ -79,7 +79,7 @@ class Installer extends JobUtil{
 //            }
             propertiesFileExtension = FileMan.getExtension(propertiesFile)
             if (propertiesFile && propertiesFile.exists()){
-                Map propertiesMap = generatePropertiesMap(propertiesFile)
+                Map propertiesMap = generateMapFromPropertiesFile(propertiesFile)
                 propmanForInstaller.merge(propertiesMap)
                                     .merge(propmanExternal)
                                     .mergeNew(propmanDefault)
@@ -141,6 +141,7 @@ class Installer extends JobUtil{
             PropMan propmanExternal = provider.propGen.getExternalProperties()
             propman.merge(responsePropMan)
                    .merge(propmanExternal)
+            propman.set('mode.load.rsp', true)
             propman.set('answer.repeat.limit', 0)
             logTaskDescription('added response file answer')
         }

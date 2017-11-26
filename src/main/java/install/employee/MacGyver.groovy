@@ -54,7 +54,7 @@ class MacGyver extends EmployeeUtil {
         //- Make Property Manager
         if (propertiesFile && propertiesFile.exists()){
             propertiesFileExtension = FileMan.getExtension(propertiesFile)
-            Map propertiesMap = generatePropertiesMap(propertiesFile)
+            Map propertiesMap = generateMapFromPropertiesFile(propertiesFile)
             propmanForMacgyver.merge(propertiesMap)
                             .merge(propmanExternal)
                             .mergeNew(propmanDefault)

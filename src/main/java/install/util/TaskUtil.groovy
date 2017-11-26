@@ -140,15 +140,42 @@ class TaskUtil{
                 }
             }
         }
+    }
 
-        //- Set Some Properties from Properties File
-        def propertiesFilePath = provider.getString("properties.file")
-        if (propertiesFilePath){
-//            String fullPath = FileMan.getFullPath(propertiesFilePath)
-//            provider.propman.mergeFile(fullPath)
-            PropMan runtimeLoadedPropMan = generatePropMan(propertiesFilePath, ['installer-maker', 'installer'])
-            provider.propman.merge(runtimeLoadedPropMan)
-        }
+
+
+    /*************************
+     *
+     * File(YML or YML or PROPERTIES) => Map
+     *
+     *************************/
+    Map generateMapFromPropertiesFile(File propertiesFile){
+        return generateMapFromPropertiesFile(propertiesFile, [])
+    }
+
+    Map generateMapFromPropertiesFile(File propertiesFile, String propertyNameFilterTarget){
+        return generateMapFromPropertiesFile(propertiesFile, [propertyNameFilterTarget])
+    }
+
+    Map generateMapFromPropertiesFile(File propertiesFile, List<String> propertyNameFilterTargetList){
+        Map prop
+        //Load to Map
+        if (propertiesFile.name.endsWith('.yml') || propertiesFile.name.endsWith('.yaml'))
+            prop = YamlUtil.generatePropertiesMap(propertiesFile, propertyNameFilterTargetList)
+        else
+            prop = new PropMan(propertiesFile, propertyNameFilterTargetList).properties
+        return prop
+    }
+
+
+
+    /*************************
+     *
+     * File(YML or YML or PROPERTIES) =>  Property Values(${} Parsed) => PropMan
+     *
+     *************************/
+    PropMan generatePropMan(String responseFilePath){
+        return generatePropMan(responseFilePath, [])
     }
 
     PropMan generatePropMan(String responseFilePath, String excludeStartsWith){
@@ -157,6 +184,15 @@ class TaskUtil{
 
     PropMan generatePropMan(String responseFilePath, List<String> excludeStartsWithList){
         PropMan responsePropMan = new PropMan(responseFilePath)
+        return generatePropMan(responsePropMan, excludeStartsWithList)
+    }
+
+    PropMan generatePropMan(Map responseMap, List<String> excludeStartsWithList){
+        PropMan responsePropMan = new PropMan(responseMap)
+        return generatePropMan(responsePropMan, excludeStartsWithList)
+    }
+
+    PropMan generatePropMan(PropMan responsePropMan, List<String> excludeStartsWithList){
         PropMan parsedResponsePropMan = parsePropMan(responsePropMan, new VariableMan(), excludeStartsWithList)
         return parsedResponsePropMan
     }
