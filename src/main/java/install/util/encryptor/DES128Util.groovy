@@ -7,27 +7,55 @@ import java.security.Key
 
 class DES128Util implements EncryptionUtil{
 
-    public static void main(String[] args) throws Exception {
-        //Info
-        String content = "java12345^&*()하하호호"
-        String key = "ab_booktv_abcd09"
-        //Run
-        DES128Util util = new DES128Util()
-        String e = util.encrypt(content)
-        String d = util.decrypt(e)
-        //Log
-        println content
-        println e
-        println d
-        //Assert
-        assert content == d
+    /*************************
+     * Let's Test
+     *  - 16 or 24byte key
+     *************************/
+    public static void main(String[] args) throws Exception{
+        String plainText = '하하하$호호%숫2자$특^수@문6자$~~meta~~stream~~';
+        String password = "12345678901234561234567890123456";
+
+        String encryptedText = doEncrypt(plainText, password);
+        String decryptedText = doDecrypt(encryptedText, password);
+        System.out.println ( "01. PLAINTEXT : " +plainText );
+        System.out.println ( "01. ENCRYPT   : " +encryptedText );
+        System.out.println ( "01. DECRYPT   : " +decryptedText );
+
+        assert plainText == decryptedText;
     }
 
+    /*************************
+     * Static - encrypt
+     *************************/
+    public static String doEncrypt(String content) throws Exception{
+        return new DES128Util().encrypt(content);
+    }
+
+    public static String doEncrypt(String content, String key) throws Exception{
+        return new DES128Util(key).encrypt(content);
+    }
+
+    /*************************
+     * Static - decrypt
+     *************************/
+    public static String doDecrypt(String content) throws Exception{
+        return new DES128Util().decrypt(content);
+    }
+
+    public static String doDecrypt(String content, String key) throws Exception{
+        return new DES128Util(key).decrypt(content);
+    }
+
+
+
+    /*************************
+     * Implement
+     *************************/
     DES128Util() {
     }
 
     DES128Util(String key) {
-        if (key != null)
+        if (key)
             this.key = key
     }
 

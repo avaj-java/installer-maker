@@ -1,41 +1,58 @@
-package install.util.encryptor;
+package install.util.encryptor
 
-import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import java.io.UnsupportedEncodingException;
-import java.security.*;
-import java.util.Arrays;
-import java.util.Random;
+import javax.crypto.spec.SecretKeySpec
+import java.security.*
 
 public class AES256FromCryptoJS implements EncryptionUtil{
 
-    /**
-     * Try Test
-     * @param args
-     * @throws UnsupportedEncodingException
-     * @throws GeneralSecurityException
-     * @throws DecoderException
-     */
-    public static void main(String[] args) throws UnsupportedEncodingException, GeneralSecurityException, DecoderException {
-        //Info
-        String content = "Hello. Tester~!"
-        String key = "12345678901234561234567890123456"
-        //Run
-        AES256FromCryptoJS util = new AES256FromCryptoJS(key)
-        String e = util.encrypt(content)
-        String d = util.decrypt(e)
-        //Log
-        println content
-        println e
-        println d
-        //Assert
-        assert content == d
+    /*************************
+     * Let's Test
+     *  - 16byte key only
+     *************************/
+    public static void main(String[] args) throws Exception {
+        String plainText = 'haha$hoho%di2git$spe^cial@cha6r$#~~meta~~stream~~';
+        String password = "12345678901234561234567890123456";
+
+        String encryptedText = doEncrypt(plainText, password);
+        String decryptedText = doDecrypt(encryptedText, password);
+        System.out.println ( "01. PLAINTEXT : " +plainText );
+        System.out.println ( "01. ENCRYPT   : " +encryptedText );
+        System.out.println ( "01. DECRYPT   : " +decryptedText );
+
+        assert plainText == decryptedText;
     }
 
+    /*************************
+     * Static - encrypt
+     *************************/
+    public static String doEncrypt(String content) throws Exception{
+        return new AES256FromCryptoJS().encrypt(content);
+    }
+
+    public static String doEncrypt(String content, String key) throws Exception{
+        return new AES256FromCryptoJS(key).encrypt(content);
+    }
+
+    /*************************
+     * Static - decrypt
+     *************************/
+    public static String doDecrypt(String content) throws Exception{
+        return new AES256FromCryptoJS().decrypt(content);
+    }
+
+    public static String doDecrypt(String content, String key) throws Exception{
+        return new AES256FromCryptoJS(key).decrypt(content);
+    }
+
+
+
+    /*************************
+     * Implement
+     *************************/
     public AES256FromCryptoJS() {
     }
 
@@ -44,21 +61,21 @@ public class AES256FromCryptoJS implements EncryptionUtil{
             this.key = key
     }
 
-
-
     String key = "12345678901234561234567890123456"
     String salt = "Salted__"
     String charset = 'UTF-8'
     int iterations = 1
 
+
+
     @Override
     public String encrypt(String content) {
-        return encrypt(content, key, salt, iterations)
+        return runEncrypt(content, key, salt, iterations)
     }
 
     @Override
     public String decrypt(String encryptedContent) {
-        return decrypt(encryptedContent, key, salt, iterations)
+        return runDecrypt(encryptedContent, key, salt, iterations)
     }
 
     /**
@@ -67,7 +84,7 @@ public class AES256FromCryptoJS implements EncryptionUtil{
      * @param passphrase passphrase
      * @return
      */
-    public static String encrypt(String plaintext, String passphrase, String salt, int iterations) throws InvalidKeyException {
+    public static String runEncrypt(String plaintext, String passphrase, String salt, int iterations) throws InvalidKeyException {
         try {
             final int keySize = 256;
             final int ivSize = 128;
@@ -121,7 +138,7 @@ public class AES256FromCryptoJS implements EncryptionUtil{
      * @param ciphertext encrypted string
      * @param passphrase passphrase
      */
-    public static String decrypt(String ciphertext, String passphrase, String salt, int iterations) throws InvalidKeyException{
+    public static String runDecrypt(String ciphertext, String passphrase, String salt, int iterations) throws InvalidKeyException{
         try {
             final int keySize = 256;
             final int ivSize = 128;

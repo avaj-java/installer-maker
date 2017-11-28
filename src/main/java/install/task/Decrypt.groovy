@@ -9,7 +9,7 @@ import install.util.encryptor.AESUtil
 import install.util.encryptor.Base64Util
 import install.util.encryptor.DES128Util
 import install.util.encryptor.MD5Util
-import install.util.encryptor.SEEDUtil
+import install.util.encryptor.SEED128Util
 import install.util.encryptor.SHA1Util
 import install.util.encryptor.SHA256Util
 
@@ -36,7 +36,7 @@ class Decrypt extends TaskUtil{
     String charset
 
     @Value('iterations')
-    long iterations
+    Long iterations
 
     static final String error1 = "It can not decrypt."
 
@@ -61,12 +61,11 @@ class Decrypt extends TaskUtil{
                 decryptedText = new DES128Util(key).decrypt(value)
                 break
             case Encrypt.SEED128:
-                decryptedText = SEEDUtil.getSeedDecrypt(value, SEEDUtil.getSeedRoundKey(key))
+                decryptedText = new SEED128Util(key).decrypt(value)
                 break
             case Encrypt.BASE64:
                 decryptedText = new Base64Util().decrypt(value)
                 break
-
             case Encrypt.MD5:
                 throw new Exception(error1)
                 decryptedText = new MD5Util().decrypt(value)

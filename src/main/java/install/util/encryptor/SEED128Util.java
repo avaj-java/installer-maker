@@ -4,28 +4,113 @@ import javax.xml.bind.DatatypeConverter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SEEDUtil {
+public class SEED128Util {
+
+    /*************************
+     * Let's Test
+     *  - 16byte key only
+     *************************/
+    public static void main(String[] args) throws Exception{
+        String plainText = "haha$hoho%di2git$spe^cial@cha6r$#~~meta~~stream~~";
+        String password = "1234567890123456";
+
+        String encryptedText = doEncrypt(plainText, password);
+        String decryptedText = doDecrypt(encryptedText, password);
+        System.out.println ( "01. PLAINTEXT : " +plainText );
+        System.out.println ( "01. ENCRYPT   : " +encryptedText );
+        System.out.println ( "01. DECRYPT   : " +decryptedText );
+
+        assert plainText == decryptedText;
+    }
+
+    /*************************
+     * Static - encrypt
+     *************************/
+    public static String doEncrypt(String content) throws Exception{
+        return new SEED128Util().encrypt(content);
+    }
+
+    public static String doEncrypt(String content, String key) throws Exception{
+        return new SEED128Util(key).encrypt(content);
+    }
+
+    /*************************
+     * Static - decrypt
+     *************************/
+    public static String doDecrypt(String content) throws Exception{
+        return new SEED128Util().decrypt(content);
+    }
+
+    public static String doDecrypt(String content, String key) throws Exception{
+        return new SEED128Util(key).decrypt(content);
+    }
+
+
+
+    /*************************
+     * Implement
+     *************************/
+    public SEED128Util() throws Exception{
+        try{
+            seedRoundKey = SEED128Util.getSeedRoundKey("1234567890123456");
+        }catch(Exception e){
+            throw new Exception(e);
+        }
+    }
+
+    public SEED128Util(String key) throws Exception{
+        try{
+            this.key = key;
+            seedRoundKey = SEED128Util.getSeedRoundKey(key);
+        }catch(Exception e){
+            throw new Exception(e);
+        }
+    }
 
     private static final String CHARACTER_SET = "UTF-8";
     private static final String DEFAULT_IV = "1234567890123456";
+    private int [] seedRoundKey = null;
+    String key;
+    String salt = "Salted__";
+    String charset = "UTF-8";
+    int iterations = 1;
 
-    public static String getSeedDecrypt(String encVal, int[] seedKey) throws Exception {
 
-        List<byte[]> encByteList = getByteList(encVal, true);
+    public String encrypt(String content) throws Exception{
+        String encryptedContent;
+        try{
+            encryptedContent = SEED128Util.getSeedEncrypt(content, seedRoundKey);
+        }catch(Exception e){
+            throw e;
+        }
+        return encryptedContent;
+    }
 
+    public String decrypt(String encryptedContent) throws Exception{
+        String decryptedText;
+        try{
+            decryptedText = SEED128Util.getSeedDecrypt(encryptedContent, seedRoundKey, key, salt, iterations);
+        }catch(Exception e){
+            throw e;
+        }
+        return decryptedText;
+    }
+
+    public static String getSeedDecrypt(String ciphertext, int[] seedKey, String passphrase, String salt, int iterations) throws Exception {
+
+        //
+        List<byte[]> encByteList = getByteList(ciphertext, true);
         List<byte[]> decByteList = new ArrayList<byte[]>();
-
         byte[] byteIV = DEFAULT_IV.getBytes();
 
+        //
         for(int i=0; i<encByteList.size(); i++){
             byte[] encByte = (byte[])encByteList.get(i);
             byte[] tempDecByte = new byte[16];
-
-            SEEDUtil.SeedDecrypt(encByte, seedKey, tempDecByte);
-
+            SEED128Util.SeedDecrypt(encByte, seedKey, tempDecByte);
+            // CBC MODE
             exclusiveOR(tempDecByte, byteIV);
             byteIV = encByte;
-
             decByteList.add(tempDecByte);
         }
 
@@ -35,26 +120,19 @@ public class SEEDUtil {
     public static String getSeedEncrypt(String strVal, int[] seedKey) throws Exception {
 
         List<byte[]> byteList = getByteList(strVal, false);
-
         List<byte[]> encByteList = new ArrayList<byte[]>();
-
         byte[] byteIV = DEFAULT_IV.getBytes();
 
         for(int i=0; i<byteList.size(); i++){
-
             byte[] byteVal = (byte[])byteList.get(i);
             byte[] tempEncVal = new byte[16];
-
+            // CBC MODE
             exclusiveOR(byteVal, byteIV);
-
-            SEEDUtil.SeedEncrypt(byteVal, seedKey, tempEncVal);
-
+            SEED128Util.SeedEncrypt(byteVal, seedKey, tempEncVal);
             byteIV = tempEncVal;
-
 //            for(int j=0; j<tempEncVal.length; j++){
 //                System.out.println("" + (j+(i*16)) + " : " + tempEncVal[j]);
 //            }
-
             encByteList.add(tempEncVal);
         }
 
@@ -63,23 +141,23 @@ public class SEEDUtil {
 
     public static int[] getSeedRoundKey(String keyStr) throws Exception {
         int[] seedKey = new int[32];
-
-        if (keyStr == "" || keyStr == null)
-            keyStr = DEFAULT_IV;
-
-        SEEDUtil.SeedRoundKey(seedKey, keyStr.getBytes());
-
+        SEED128Util.SeedRoundKey(seedKey, keyStr.getBytes());
         return seedKey;
     }
 
+    /**
+     * XOR (CBC MODE)
+     * 128bit
+     */
     private static void exclusiveOR(byte[] value1, byte[] value2){
-
         for(int i=0; i<16; i++){
             value1[i] = Integer.valueOf(value1[i] ^ value2[i]).byteValue();
         }
-
     }
 
+    /**
+     * seed 128bit
+     */
     private static List<byte[]> getByteList(String nomal, boolean isDecode) throws Exception {
 
         List<byte[]> byteList = new ArrayList<byte[]>();
