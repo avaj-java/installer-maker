@@ -3,7 +3,7 @@ package install.util.encryptor;
 /**
  * From: https://github.com/leeinuk/Seed256
  */
-public class SEED256Util implements EncryptionUtil{
+public class SEED256Util {
 
     private static final String charset = "UTF-8";
 
@@ -12,7 +12,7 @@ public class SEED256Util implements EncryptionUtil{
      *  - 32byte key only
      *************************/
     public static void main(String[] args) throws Exception {
-        String plainText = "하하하$호호%숫2자$특^수@문6자$#~~meta~~stream~~";
+        String plainText = "haha$hoho%di2git$spe^cial@cha6r$#~~meta~~stream~~";
         String password = "12345678901234561234567890123456";
 
         String encryptedText = doEncrypt(plainText, password);
@@ -75,15 +75,12 @@ public class SEED256Util implements EncryptionUtil{
     private int[] seedRoundKey = null;
 
     
-
-    @Override
-    public String encrypt(String content) throws Exception{
-        return Encrypt(content, seedRoundKey);
+    public String encrypt(String content) {
+        return runEncrypt(content, seedRoundKey);
     }
 
-    @Override
-    public String decrypt(String encryptedContent) throws Exception{
-        return Decrypt(encryptedContent, seedRoundKey);
+    public String decrypt(String encryptedContent) {
+        return runDecrypt(encryptedContent, seedRoundKey);
     }
 
 
@@ -606,7 +603,7 @@ public class SEED256Util implements EncryptionUtil{
         return SeedEncrypt (password.getBytes (charset), seedRoundKey);
     }
 
-    public static String Decrypt (byte[] hash, int[] seedRoundKey) throws Exception {
+    public static String runDecrypt(byte[] hash, int[] seedRoundKey) throws Exception {
         byte[] result = new byte[hash.length];
 
 
@@ -634,12 +631,7 @@ public class SEED256Util implements EncryptionUtil{
         return new String(result, 0, result.length, charset);
     }
 
-    /**
-     * 복호화
-     * @param hash
-     * @return
-     */
-    public static String Decrypt (String hash, int[] seedRoundKey){
+    public static String runDecrypt(String hash, int[] seedRoundKey){
         try{
             if(isEmpty (hash)) {
                 return null;
@@ -653,7 +645,7 @@ public class SEED256Util implements EncryptionUtil{
                     hashArray[count] = (byte) Integer.parseInt (String.valueOf (Long.decode ("0x" + hash.substring (i, i + 2))));
                     count++;
                 }
-                return Decrypt (hashArray, seedRoundKey);
+                return runDecrypt(hashArray, seedRoundKey);
             }
         }catch(Exception e){
             e.printStackTrace();
@@ -661,12 +653,7 @@ public class SEED256Util implements EncryptionUtil{
         return "";
     }
 
-    /**
-     * 암호화
-     * @param password
-     * @return
-     */
-    public static String Encrypt (String password, int[] seedRoundKey){
+    public static String runEncrypt(String password, int[] seedRoundKey){
         try{
             if(isEmpty (password)) {
                 return null;
@@ -721,12 +708,6 @@ public class SEED256Util implements EncryptionUtil{
      * StringUtil
      *
      **************************************************/
-    /**
-     * (length - str.length) 만큼 앞에 0을 추가한다.
-     * @param str
-     * @param length
-     * @return
-     */
     public static String addZero (String str, int length) {
         String temp = "";
         for (int i = str.length(); i < length; i++)
@@ -811,7 +792,7 @@ public class SEED256Util implements EncryptionUtil{
 
 
     /**
-     * 여기서부터 kisa에서 제공하는 seed 암호화 모듈
+     * provided from kisa
      */
     private static int SS0[] = {
             0x2989a1a8, 0x05858184, 0x16c6d2d4, 0x13c3d3d0, 0x14445054, 0x1d0d111c, 0x2c8ca0ac, 0x25052124,

@@ -4,14 +4,14 @@ import javax.xml.bind.DatatypeConverter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SEED128Util implements EncryptionUtil{
+public class SEED128Util {
 
     /*************************
      * Let's Test
      *  - 16byte key only
      *************************/
     public static void main(String[] args) throws Exception{
-        String plainText = "하하하$호호%숫2자$특^수@문6자$#~~meta~~stream~~";
+        String plainText = "haha$hoho%di2git$spe^cial@cha6r$#~~meta~~stream~~";
         String password = "1234567890123456";
 
         String encryptedText = doEncrypt(plainText, password);
@@ -76,7 +76,6 @@ public class SEED128Util implements EncryptionUtil{
     int iterations = 1;
 
 
-    @Override
     public String encrypt(String content) throws Exception{
         String encryptedContent;
         try{
@@ -87,7 +86,6 @@ public class SEED128Util implements EncryptionUtil{
         return encryptedContent;
     }
 
-    @Override
     public String decrypt(String encryptedContent) throws Exception{
         String decryptedText;
         try{

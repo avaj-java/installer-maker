@@ -2,14 +2,14 @@ package install.util.encryptor
 
 import java.security.MessageDigest
 
-class SHA1Util implements EncryptionUtil{
+class SHA1Util {
 
     /*************************
      * Let's Test
      *  -
      *************************/
     public static void main(String[] args) throws Exception {
-        String plainText = '하하하$호호%숫2자$특^수@문6자$#~~meta~~stream~~';
+        String plainText = 'haha$hoho%di2git$spe^cial@cha6r$#~~meta~~stream~~';
         String password = "12345678901234561234567890123456";
 
         String encryptedText = doEncrypt(plainText, password);
@@ -49,7 +49,6 @@ class SHA1Util implements EncryptionUtil{
 
 
 
-    @Override
     String encrypt(String content) {
         StringBuffer sbuf = new StringBuffer()
 
@@ -77,7 +76,6 @@ class SHA1Util implements EncryptionUtil{
         return sbuf.toString()
     }
 
-    @Override
     String decrypt(String encryptedContent) {
         return null
     }
