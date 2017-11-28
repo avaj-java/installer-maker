@@ -4,19 +4,38 @@ import java.security.MessageDigest
 
 class SHA1Util implements EncryptionUtil{
 
+    /*************************
+     * Let's Test
+     *  -
+     *************************/
     public static void main(String[] args) throws Exception {
-        //Info
-        String content = "java12345^&*()하하호호"
-        //Run
-        SHA1Util util = new SHA1Util()
-        String e = util.encrypt(content)
-        String d = util.decrypt(e)
-        //Log
-        println content
-        println e
-        println d
+        String plainText = '하하하$호호%숫2자$특^수@문6자$#~~meta~~stream~~';
+        String password = "12345678901234561234567890123456";
+
+        String encryptedText = doEncrypt(plainText, password);
+        System.out.println ( "01. PLAINTEXT : " +plainText );
+        System.out.println ( "01. ENCRYPT   : " +encryptedText );
+
+        assert plainText != encryptedText;
     }
 
+    /*************************
+     * Static - encrypt
+     *************************/
+    public static String doEncrypt(String content) throws Exception{
+        return new SHA1Util().encrypt(content);
+    }
+
+    public static String doEncrypt(String content, String key) throws Exception{
+        return new SHA1Util(key).encrypt(content);
+    }
+
+
+
+
+    /*************************
+     * Implement
+     *************************/
     public SHA1Util() {
     }
 

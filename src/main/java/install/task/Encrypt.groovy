@@ -9,7 +9,7 @@ import install.util.encryptor.AES256FromCryptoJS
 import install.util.encryptor.Base64Util
 import install.util.encryptor.DES128Util
 import install.util.encryptor.MD5Util
-import install.util.encryptor.SEEDUtil
+import install.util.encryptor.SEED128Util
 import install.util.encryptor.SHA1Util
 import install.util.encryptor.SHA256Util
 
@@ -32,11 +32,11 @@ class Encrypt extends TaskUtil{
     @Value('salt')
     String salt
 
-    @Value('iterations')
-    String iterations
-
     @Value('charset')
     String charset
+
+    @Value('iterations')
+    Long iterations
 
     static final String AES = "AES"
     static final String AES256 = "AES256"
@@ -70,7 +70,7 @@ class Encrypt extends TaskUtil{
                 encryptedText = new DES128Util(key).encrypt(value)
                 break
             case Encrypt.SEED128:
-                encryptedText = SEEDUtil.getSeedEncrypt(value, SEEDUtil.getSeedRoundKey(key))
+                encryptedText = new SEED128Util(key).encrypt(value)
                 break
             case Encrypt.BASE64:
                 encryptedText = new Base64Util().encrypt(value)
