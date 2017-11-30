@@ -1,5 +1,6 @@
 package install
 
+import jaemisseo.man.FileMan
 import jaemisseo.man.configuration.Config
 import install.employee.MacGyver
 import install.job.InstallerMaker
@@ -30,7 +31,7 @@ class Commander {
     Commander(Config config, TimeMan timeman){
         this.config = config
         this.timeman = timeman
-        init(config)
+        init()
     }
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -39,11 +40,27 @@ class Commander {
 
 
 
-    void init(Config config){
-        config.propGen.genSingletonPropManFromResource('installer-maker', 'defaultProperties/installer-maker.default.properties')
-        config.propGen.genSingletonPropManFromResource('installer', 'defaultProperties/installer.default.properties')
-        config.propGen.genSingletonPropManFromResource('macgyver', 'defaultProperties/macgyver.default.properties')
+    void init(){
+        //- Try to get from User's FileSystem
+        generatePropMan('installer-maker')
+        generatePropMan('installer')
+        generatePropMan('macgyver')
     }
+
+    void generatePropMan(String fileName){
+        PropMan propmanExternal = config.propGen.getExternalProperties()
+        PropMan propmanDefault = config.propGen.getDefaultProperties()
+        File propertiesFile
+        String propertiesDir = propmanExternal.get('properties.dir') ?: propmanDefault.get('user.dir')
+        if (propertiesDir)
+            propertiesFile = FileMan.find(propertiesDir, "${fileName}.default", ["properties"])
+        if (propertiesFile)
+            config.propGen.genSingletonPropManFromFileSystem(fileName, propertiesFile.path)
+        else
+            config.propGen.genSingletonPropManFromResource(fileName, "defaultProperties/${fileName}.default.properties")
+    }
+
+
 
     void run(){
         //- Properties

@@ -98,12 +98,22 @@ class InstallerMaker extends JobUtil{
 
     @Command('init')
     @Document("""
-    Init 3 Installer-Maker script files
-
-        You can generate Sample Properties Files to build installer 
+    Init 2 Installer-Maker script files
+    You can generate Sample Properties Files to build installer (installer-maker.yml, installer.yml)
     
-        1. installer-maker.yml        
-        2. installer.yml        
+        installer-maker init    
+    
+    You can generate Default Properties Files (installer-maker.default.properties, installer.default.properties) 
+            
+        installer-maker init --default
+    
+    And you can create custum task manager script (macgver.yml) 
+        
+        macgyver init
+            
+    Default.. (macgver.default.properties)
+    
+        macgyver init --default
     """)
     void initCommand(){
         //Ready
@@ -120,30 +130,61 @@ class InstallerMaker extends JobUtil{
         PropMan externalPropMan = config.propGen.getExternalProperties()
         List<String> dashDashOptionList = externalPropMan.get('--')
 
-        if (dashDashOptionList.contains('macgyver')){
-            try{
-                fileFrom = "macgyver.yml"
-                fileTo = "${propertiesDir}/macgyver.yml"
-                new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
-            }catch(e){
-                logger.warn "File Aready Exists. ${fileTo}\n"
+        /** Default Properties **/
+        if (dashDashOptionList.contains('default')){
+            if (dashDashOptionList.contains('macgyver')) {
+                try{
+                    fileFrom = "defaultProperties/macgyver.default.properties"
+                    fileTo = "${propertiesDir}/macgyver.default.properties"
+                    new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
+                }catch(e){
+                    logger.warn "File Aready Exists. ${fileTo}\n"
+                }
+            }else{
+                try{
+                    fileFrom = "defaultProperties/installer-maker.default.properties"
+                    fileTo = "${propertiesDir}/installer-maker.default.properties"
+                    new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
+                }catch(e){
+                    logger.warn "File Aready Exists. ${fileTo}\n"
+                }
+
+                try{
+                    fileFrom = "defaultProperties/installer.default.properties"
+                    fileTo = "${propertiesDir}/installer.default.properties"
+                    new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
+                }catch(e){
+                    logger.warn "File Aready Exists. ${fileTo}\n"
+                }
             }
 
+        /** Properties **/
         }else{
-            try{
-                fileFrom = "sampleProperties/installer-maker.sample.yml"
-                fileTo = "${propertiesDir}/installer-maker.yml"
-                new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
-            }catch(e){
-                logger.warn "File Aready Exists. ${fileTo}\n"
-            }
+            if (dashDashOptionList.contains('macgyver')){
+                try{
+                    fileFrom = "macgyver.yml"
+                    fileTo = "${propertiesDir}/macgyver.yml"
+                    new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
+                }catch(e){
+                    logger.warn "File Aready Exists. ${fileTo}\n"
+                }
 
-            try{
-                fileFrom = "sampleProperties/installer.sample.yml"
-                fileTo = "${propertiesDir}/installer.yml"
-                new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
-            }catch(e){
-                logger.warn "File Aready Exists. ${fileTo}\n"
+            }else{
+                try{
+                    fileFrom = "sampleProperties/installer-maker.sample.yml"
+                    fileTo = "${propertiesDir}/installer-maker.yml"
+                    new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
+                }catch(e){
+                    logger.warn "File Aready Exists. ${fileTo}\n"
+                }
+
+                try{
+                    fileFrom = "sampleProperties/installer.sample.yml"
+                    fileTo = "${propertiesDir}/installer.yml"
+                    new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
+                }catch(e){
+                    logger.warn "File Aready Exists. ${fileTo}\n"
+                }
             }
         }
     }
