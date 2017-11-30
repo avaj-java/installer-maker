@@ -12,7 +12,7 @@ public class SEED256Util {
      *  - 32byte key only
      *************************/
     public static void main(String[] args) throws Exception {
-        String plainText = "haha$hoho%di2git$spe^cial@cha6r$#~~meta~~stream~~";
+        String plainText = "haha$ho     ho%di2g   it$spe^cial@ch a6r$#~~Meta~~Stream~/~";
         String password = "12345678901234561234567890123456";
 
         String encryptedText = doEncrypt(plainText, password);
@@ -62,6 +62,8 @@ public class SEED256Util {
 
     public SEED256Util(String key) throws Exception {
         try{
+            if (key == null || key.equals(""))
+                key = Key;
             seedRoundKey = new int[KEY_SIZE];
             SeedRoundKey(seedRoundKey, key.getBytes (charset));
         }catch(Exception e){

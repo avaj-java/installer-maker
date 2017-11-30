@@ -11,7 +11,7 @@ public class SEED128Util {
      *  - 16byte key only
      *************************/
     public static void main(String[] args) throws Exception{
-        String plainText = "haha$hoho%di2git$spe^cial@cha6r$#~~meta~~stream~~";
+        String plainText = "haha$ho     ho%di2g   it$spe^cial@ch a6r$#~~Meta~~Stream~/~";
         String password = "1234567890123456";
 
         String encryptedText = doEncrypt(plainText, password);
@@ -52,7 +52,8 @@ public class SEED128Util {
      *************************/
     public SEED128Util() throws Exception{
         try{
-            seedRoundKey = SEED128Util.getSeedRoundKey("1234567890123456");
+            this.key = DEFAULT_IV;
+            seedRoundKey = SEED128Util.getSeedRoundKey(this.key);
         }catch(Exception e){
             throw new Exception(e);
         }
@@ -60,8 +61,8 @@ public class SEED128Util {
 
     public SEED128Util(String key) throws Exception{
         try{
-            this.key = key;
-            seedRoundKey = SEED128Util.getSeedRoundKey(key);
+            this.key = (key != null && key != "") ? key : DEFAULT_IV;
+            seedRoundKey = SEED128Util.getSeedRoundKey(this.key);
         }catch(Exception e){
             throw new Exception(e);
         }

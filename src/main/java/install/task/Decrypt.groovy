@@ -1,5 +1,6 @@
 package install.task
 
+import install.util.encryptor.SEED256Util
 import jaemisseo.man.configuration.annotation.type.Task
 import jaemisseo.man.configuration.annotation.Value
 import jaemisseo.man.configuration.annotation.type.TerminalValueProtocol
@@ -20,7 +21,7 @@ import install.util.encryptor.SHA256Util
 @TerminalValueProtocol(['method', 'value'])
 class Decrypt extends TaskUtil{
 
-    @Value(name='method', caseIgnoreValidList=['aes','aes256','des128','seed128'])
+    @Value(name='method', caseIgnoreValidList=['aes','aes256','des128','seed128','seed256'])
     String method
 
     @Value('value')
@@ -29,14 +30,14 @@ class Decrypt extends TaskUtil{
     @Value('key')
     String key
 
-    @Value('salt')
-    String salt
+//    @Value('salt')
+//    String salt
 
-    @Value('charset')
-    String charset
+//    @Value('charset')
+//    String charset
 
-    @Value('iterations')
-    Long iterations
+//    @Value('iterations')
+//    Long iterations
 
     static final String error1 = "It can not decrypt."
 
@@ -50,7 +51,7 @@ class Decrypt extends TaskUtil{
         logger.debug ""
 
         //Decrypt
-        switch (method.toUpperCase()){
+        switch (method?.toUpperCase()){
             case Encrypt.AES:
                 decryptedText = new AESUtil(key).decrypt(value)
                 break
@@ -62,6 +63,9 @@ class Decrypt extends TaskUtil{
                 break
             case Encrypt.SEED128:
                 decryptedText = new SEED128Util(key).decrypt(value)
+                break
+            case Encrypt.SEED256:
+                decryptedText = new SEED256Util(key).decrypt(value)
                 break
             case Encrypt.BASE64:
                 decryptedText = new Base64Util().decrypt(value)
