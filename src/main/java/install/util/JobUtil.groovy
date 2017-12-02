@@ -4,7 +4,6 @@ import install.bean.LogSetup
 import install.bean.ReportSetup
 import install.bean.TaskSetup
 import jaemisseo.man.configuration.Config
-import jaemisseo.man.configuration.Config
 import jaemisseo.man.configuration.annotation.Inject
 import jaemisseo.man.configuration.annotation.method.After
 import jaemisseo.man.configuration.annotation.method.Before
@@ -216,17 +215,23 @@ class JobUtil extends TaskUtil{
      * UNDO
      *****/
     int undo(List<Class> taskClassList, List<String> prefixList, int i){
+        //Check the previous task
         i -= 1
         if ( isUndoableTask(taskClassList[i]) || !checkCondition(prefixList[i]) ){
             propman.undo()
+
+            //Check the previous task is @Undoable(modeMore=true)?
             while ( i > 0 && (isUndoMoreTask(taskClassList[i]) || !checkCondition(prefixList[i])) ){
                 i -= 1
                 propman.undo()
             }
+
+            //Check It is Last Task?
             i -= 1
             if (i <= -1){
                 i = -1
                 propman.checkout(0)
+
                 //If First Task is undoMore, then auto-redo
                 if (isUndoMoreTask(taskClassList[0])){
                     i += 1
@@ -238,6 +243,7 @@ class JobUtil extends TaskUtil{
                 }
                 logger.error "It can not undo"
             }
+
         }else{
             if (i == -1)
                 logger.error "No more undo"
@@ -319,7 +325,7 @@ class JobUtil extends TaskUtil{
             throw new Exception(" 'Sorry, This is Not my task, [${task.taskTypeName}]. I Can Not do this.' ")
 
         //(Task) Start
-        return start(task)
+        return startTask(task)
     }
 
 
@@ -337,14 +343,16 @@ class JobUtil extends TaskUtil{
     /*************************
      * 2. START
      *************************/
-    Integer start(TaskSetup task){
+    Integer startTask(TaskSetup task){
         status = STATUS_NOTHING
 
-        //Check Condition
-        if ( !checkCondition(task.propertyPrefix) )
-            return
+        /** Check Condition **/
+        if ( !checkCondition(task.propertyPrefix) ){
 
-        //Get Task Instance
+            return
+        }
+
+        /** Get Task Instance **/
         // - Find Task
         TaskUtil taskInstance = config.findInstance(task.taskClazz)
         // - Inject Value
@@ -363,7 +371,7 @@ class JobUtil extends TaskUtil{
             if ( !(task.jobName.equalsIgnoreCase('macgyver') && [Version, System, Help].contains(task.taskClazz)) )
                 descript(task)
 
-            //Start Task
+            /** Start Task **/
             status = taskInstance.run()
 
         }catch(e){
@@ -400,6 +408,8 @@ class JobUtil extends TaskUtil{
         }else{
             isTrue = true
         }
+        if (!isTrue)
+            logger.warn "The port conditions do not match."
         return isTrue
     }
     
