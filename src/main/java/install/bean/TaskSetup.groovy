@@ -1,5 +1,6 @@
 package install.bean
 
+import install.util.TaskUtil
 import jaemisseo.man.configuration.annotation.Value
 import jaemisseo.man.configuration.annotation.type.Bean
 import jaemisseo.man.util.Option
@@ -37,7 +38,10 @@ class TaskSetup extends Option {
     String jobName
     String commandName
     String taskName
-    Class taskClazz
     String propertyPrefix
+
+    Class taskClazz
+    TaskUtil taskInstance
+
 
 }

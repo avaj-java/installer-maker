@@ -315,20 +315,9 @@ class JobUtil extends TaskUtil{
         ))
         task.taskClazz = getTaskClass(task.taskTypeName)
 
-        //Validation
-        //Check Valid Task
-        if (!task.taskClazz)
-            throw new Exception("${task.taskTypeName} Does not exists task. or You Can't")
-        if (!task.taskTypeName)
-            throw new Exception(" 'No Task Name. ${task.propertyPrefix}task=???. Please Check Task.' ")
-        if ( (validTaskList && !validTaskList.contains(task.taskClazz)) || (invalidTaskList && invalidTaskList.contains(task.taskClazz)) )
-            throw new Exception(" 'Sorry, This is Not my task, [${task.taskTypeName}]. I Can Not do this.' ")
-
         //(Task) Start
         return startTask(task)
     }
-
-
 
     String getTaskName(String propertyPrefix){
         String taskName = provider.getString("${propertyPrefix}task")?.trim()?.toUpperCase()
@@ -340,50 +329,30 @@ class JobUtil extends TaskUtil{
         return taskClazz
     }
 
+
+
     /*************************
-     * 2. START
+     * 2. START TASK
      *************************/
     Integer startTask(TaskSetup task){
+        /** Validation **/
+        if (!task.taskClazz)
+            throw new Exception("${task.taskTypeName} Does not exists task. or You Can't")
+        if (!task.taskTypeName)
+            throw new Exception(" 'No Task Name. ${task.propertyPrefix}task=???. Please Check Task.' ")
+        if ( (validTaskList && !validTaskList.contains(task.taskClazz)) || (invalidTaskList && invalidTaskList.contains(task.taskClazz)) )
+            throw new Exception(" 'Sorry, This is Not my task, [${task.taskTypeName}]. I Can Not do this.' ")
+
         status = STATUS_NOTHING
-
         /** Check Condition **/
-        if ( !checkCondition(task.propertyPrefix) ){
-
-            return
-        }
-
-        /** Get Task Instance **/
-        // - Find Task
-        TaskUtil taskInstance = config.findInstance(task.taskClazz)
-        // - Inject Value
-        provider.shift( task.jobName, task.propertyPrefix )
-        varman.setVariableSign(task.variableSign)
-        config.cleanValue(taskInstance)
-        config.injectValue(taskInstance)
-        taskInstance.rememberAnswerLineList = rememberAnswerLineList
-        taskInstance.reportMapList = reportMapList
-
-        try{
-            if (task.color)
-                config.logGen.setupConsoleLoggerColorPattern(task.color)
-
-            //Description
-            if ( !(task.jobName.equalsIgnoreCase('macgyver') && [Version, System, Help].contains(task.taskClazz)) )
-                descript(task)
-
+        if (checkCondition(task.propertyPrefix)){
             /** Start Task **/
-            status = taskInstance.run()
+            status = doTask(task)
 
-        }catch(e){
-            throw e
-        }finally{
-            if (task.color)
-                config.logGen.setupBeforeConsoleLoggerPattern()
-
-            if (status != STATUS_UNDO_QUESTION)
-                report(taskInstance)
+        }else if (propman.getString("${task.propertyPrefix}else.task")){
+            /** Start Else Task **/
+            status = runTaskByPrefix("${task.propertyPrefix}else.")
         }
-
         return status
     }
 
@@ -427,8 +396,64 @@ class JobUtil extends TaskUtil{
         }
     }
 
+
+
     /*************************
-     * 3. REPORT
+     * 3. DO TASK
+     *************************/
+    Integer doTask(TaskSetup task){
+        Integer status = STATUS_NOTHING
+
+        /** Find Task **/
+        task.taskInstance = setupTaskInstance(task)
+
+        try{
+            //Start Color Log Pattern
+            if (task.color)
+                config.logGen.setupConsoleLoggerColorPattern(task.color)
+
+            //Description
+            if ( !(task.jobName.equalsIgnoreCase('macgyver') && [Version, System, Help].contains(task.taskClazz)) )
+                descript(task)
+
+            /** Start Task **/
+            status = task.taskInstance.run()
+
+        }catch(e){
+            throw e
+        }finally{
+            //Finish Color Log Pattern
+            if (task.color)
+                config.logGen.setupBeforeConsoleLoggerPattern()
+
+            //Save Report
+            if (status != STATUS_UNDO_QUESTION)
+                report(task.taskInstance)
+        }
+        return status
+    }
+
+    TaskUtil setupTaskInstance(TaskSetup task){
+        TaskUtil taskInstance = config.findInstance(task.taskClazz)
+        // - Inject Value
+        provider.shift( task.jobName, task.propertyPrefix )
+        varman.setVariableSign(task.variableSign)
+        config.cleanValue(taskInstance)
+        config.injectValue(taskInstance)
+        taskInstance.rememberAnswerLineList = rememberAnswerLineList
+        taskInstance.reportMapList = reportMapList
+        return taskInstance
+    }
+
+    protected void setuptLog(LogSetup logOpt){
+        config.logGen.setupConsoleLogger(logOpt.logLevelConsole)
+        config.logGen.setupFileLogger(jobName, logOpt.logLevelFile, logOpt.logDir, logOpt.logFileName)
+    }
+
+
+
+    /*************************
+     * 4. REPORT
      *************************/
     void report(TaskUtil taskInstance){
         ReportSetup reportSetup = config.injectValue(new ReportSetup())
@@ -447,13 +472,6 @@ class JobUtil extends TaskUtil{
 
 
 
-    /*************************
-     * Setup Log
-     *************************/
-    protected void setuptLog(LogSetup logOpt){
-        config.logGen.setupConsoleLogger(logOpt.logLevelConsole)
-        config.logGen.setupFileLogger(jobName, logOpt.logLevelFile, logOpt.logDir, logOpt.logFileName)
-    }
 
 
 
