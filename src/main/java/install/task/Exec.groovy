@@ -23,6 +23,9 @@ class Exec extends TaskUtil{
     @Value('command.win')
     List<String> commandForWinList
 
+    @Value('mode.ignore.error')
+    Boolean modeIgnoreError
+
     @HelpIgnore
     @Value('os.name')
     void setIsWindows(String osName){
@@ -105,9 +108,10 @@ class Exec extends TaskUtil{
 //                line = reader.readLine()
 //            }
         }
-
         int exitCode = process.waitFor()
-        assert exitCode == 0
+
+        if (!modeIgnoreError)
+            assert exitCode == 0
     }
 
 }
