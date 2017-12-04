@@ -55,7 +55,7 @@ class Exec extends TaskUtil{
             throw e
         }
 
-        logMiddleTitle 'FINISHED EXEC'
+//        logMiddleTitle 'FINISHED EXEC'
 
         return STATUS_TASK_DONE
     }
@@ -109,6 +109,8 @@ class Exec extends TaskUtil{
 //            }
         }
         int exitCode = process.waitFor()
+
+        sleep(200)
 
         if (!modeIgnoreError)
             assert exitCode == 0
