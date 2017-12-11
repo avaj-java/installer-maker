@@ -149,7 +149,7 @@ class JobUtil extends TaskUtil{
             while(i < taskList.size()){
                 task = taskList[i]
                 latestTask = (propman.isHeadLast()) ? task : latestTask
-                logger.debug "[(${propman.headIndex}: ${commandDepth}-${commandStep}: ${propman.getCommitId()}] ${task.propertyPrefix}"
+                logger.trace "[${propman.headIndex}:${commandDepth}-${commandStep}] ${task.propertyPrefix}  (${propman.getCommitId()})"
 
                 //- Do Task
                 taskResultStatus = closure(task)
