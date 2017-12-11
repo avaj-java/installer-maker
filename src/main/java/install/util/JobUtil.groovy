@@ -8,10 +8,12 @@ import jaemisseo.man.configuration.annotation.Inject
 import jaemisseo.man.configuration.annotation.method.After
 import jaemisseo.man.configuration.annotation.method.Before
 import jaemisseo.man.configuration.annotation.type.Task
+import jaemisseo.man.configuration.annotation.type.Undoable
 import jaemisseo.man.configuration.data.PropertyProvider
 import install.task.*
 import jaemisseo.man.PropMan
 import jaemisseo.man.VariableMan
+import jaemisseo.man.util.CommitObject
 import jaemisseo.man.util.Util
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -33,11 +35,14 @@ class JobUtil extends TaskUtil{
     List<Class> validTaskList = []
     List<Class> invalidTaskList = []
     List<Class> allTaskList = Util.findAllClasses('install', [Task])
-    List<Class> undoableTaskList = [Question, QuestionChoice, QuestionYN, QuestionFindFile, Set, Notice]
-    List<Class> undoMoreTaskList = [Set, Notice]
+    List<Class> undoableTaskList = Util.findAllClasses('install', [Undoable])
+    List<Class> undoMoreTaskList = [Set, Notice, Command]
+//    List<Class> undoableTaskList = [Question, QuestionChoice, QuestionYN, QuestionFindFile, Set, Notice]
+//    List<Class> undoMoreTaskList = [Set, Notice]
 
     def gOpt
     Integer taskResultStatus
+    Map<String, List<TaskSetup>> commandNameTaskListMap = [:]
 
 
 
@@ -116,28 +121,110 @@ class JobUtil extends TaskUtil{
 
     //level by level For Task
     protected void eachTaskWithCommit(String commandName, Closure closure){
-        //1. Try to get task order from property
-        String taskOrderProperty = "${commandName}.order".toString()
-        List<String> taskOrderList = getSpecificLevelList(taskOrderProperty) ?: getTaskLineOrderList(propertiesFile, propertiesFileExtension, commandName, taskOrderProperty)
-        List<String> prefixList = taskOrderList.collect{ "${commandName}.${it}.".toString() }
-        List<Class> taskTypeList = prefixList.collect{ getTaskClass(getTaskName(it)) }
+        eachTaskWithCommit(commandName, 0, closure)
+    }
 
-        //2. Do Each Tasks
-        commit()
-        for (int i=0; i<taskOrderList.size(); i++){
-            String taskName = taskOrderList[i]
-            String propertyPrefix = "${commandName}.${taskName}."
+    protected void eachTaskWithCommit(TaskSetup task, Closure closure){
+        eachTaskWithCommit(task.commandName, task.propertyPrefix, closure)
+    }
 
-            //- Do Task
-            taskResultStatus = closure(propertyPrefix)
-            
-            //- Check Status
-            if (taskResultStatus == TaskUtil.STATUS_UNDO_QUESTION)
-                i = undo(taskTypeList, prefixList, i)
-            else if (taskResultStatus == TaskUtil.STATUS_REDO_QUESTION)
-                i = redo(taskTypeList, prefixList, i)
-            else
-                commit()
+    protected void eachTaskWithCommit(String commandName, String propertyPrefix, Closure closure){
+        List<TaskSetup> taskList = getTaskListByCommandName(commandName)
+        int startIndex = taskList.findIndexOf{ it.propertyPrefix == propertyPrefix }
+        eachTaskWithCommit(commandName, startIndex, closure)
+    }
+
+    protected void eachTaskWithCommit(String commandName, int startIndex, Closure closure){
+        Integer commandDepth = 0
+        Integer commandStep = 0
+        TaskSetup latestTask
+        List<TaskSetup> taskList
+        TaskSetup task
+
+        while(true){
+            taskList = getTaskListByCommandName(commandName)
+            Integer i = startIndex
+
+            /** Run Each Tasks **/
+            while(i < taskList.size()){
+                task = taskList[i]
+                latestTask = (propman.isHeadLast()) ? task : latestTask
+                logger.debug "[(${propman.headIndex}: ${commandDepth}-${commandStep}: ${propman.getCommitId()}] ${task.propertyPrefix}"
+
+                //- Do Task
+                taskResultStatus = closure(task)
+
+                //- Check Status
+                if (taskResultStatus == TaskUtil.STATUS_UNDO_QUESTION){
+                    TaskSetup mvTask = undo(task, latestTask)
+                    commandName = mvTask.commandName
+                    int tempDepth = propman.getCommit()?.customData?.commandDepth ?: 0
+                    commandDepth = (propman.getCommit()?.customData?.task?.taskClazz == Command) ? tempDepth +1 : tempDepth
+                    startIndex = getTaskIndexOnThisCommand(commandName, mvTask.propertyPrefix)
+                    break
+
+                }else if (taskResultStatus == TaskUtil.STATUS_REDO_QUESTION){
+                    TaskSetup mvTask = redo(task, latestTask)
+                    commandName = mvTask.commandName
+                    int tempDepth = propman.getCommit()?.customData?.commandDepth ?: 0
+                    commandDepth = (propman.getCommit()?.customData?.task?.taskClazz == Command) ? tempDepth +1 : tempDepth
+                    startIndex = getTaskIndexOnThisCommand(commandName, mvTask.propertyPrefix)
+                    break
+
+                }else if (taskResultStatus == TaskUtil.STATUS_GOTO_COMMAND){
+                    List<String> commandList =  provider.getList('command').collect{ it.split('\\s+') }.flatten()
+                    commit(task, commandDepth, commandStep)
+
+                    propman.getCommit().customData['commandList'] = commandList
+                    commandDepth++
+                    commandStep = 0
+                    commandName = commandList[0]
+                    startIndex = 0
+                    break
+
+                }else{
+                    commit(task, commandDepth, commandStep)
+                    i++
+                }
+            }
+
+            /** Control **/
+            if (taskResultStatus == TaskUtil.STATUS_GOTO_COMMAND) {
+                continue
+            }else if (taskResultStatus == TaskUtil.STATUS_UNDO_QUESTION){
+                continue
+            }else if (taskResultStatus == TaskUtil.STATUS_REDO_QUESTION){
+                continue
+            }else{
+                //Finish Command All
+                if (commandDepth == 0 && (taskList.size() -1) <= i){
+                    return
+                //Finish This Command Depth
+                }else{
+                    int nowCommandDepth = propman.getCommit().customData['commandDepth']
+                    int nowCommandStep = propman.getCommit().customData['commandStep']
+                    int beforeDepthLastCommitIndex = propman.commitStackList.findLastIndexOf { it.customData['commandDepth'] == (nowCommandDepth -1) }
+                    CommitObject commitTemp = propman.getCommit(beforeDepthLastCommitIndex)
+                    task = commitTemp.customData['task']
+
+                    if (task.taskClazz == Command){
+                        List<String> commandList = commitTemp.customData['commandList']
+                        if (commandList.size() > (nowCommandStep +1)){
+                            commandDepth = commandDepth
+                            commandStep++
+                            commandName = commandList[commandStep]
+                            startIndex = 0
+                        }else{
+                            commandDepth--
+                            commandStep = 0
+                            commandName = task.commandName
+                            startIndex = getTaskIndexOnThisCommand(commandName, commitTemp.id)
+                            startIndex++
+                        }
+                    }
+                }
+            }
+
         }
     }
 
@@ -152,6 +239,30 @@ class JobUtil extends TaskUtil{
             String propertyPrefix = "${commandName}.${taskName}.".toString()
             closure(propertyPrefix)
         }
+    }
+
+    protected List<TaskSetup> getTaskListByCommandName(String commandName){
+        if (!commandNameTaskListMap.containsKey(commandName)){
+            //1. Try to get task order from property
+            String taskOrderProperty = "${commandName}.order".toString()
+            List<String> taskOrderList = getSpecificLevelList(taskOrderProperty) ?: getTaskLineOrderList(propertiesFile, propertiesFileExtension, commandName, taskOrderProperty)
+            List<String> prefixList = taskOrderList.collect{ "${commandName}.${it}.".toString() }
+            List<Class> taskTypeList = prefixList.collect{ getTaskClass(getTaskName(it)) }
+            commandNameTaskListMap[commandName] = prefixList.collect{ generateTaskSetup('', it) }
+        }
+        return commandNameTaskListMap[commandName]
+    }
+
+    protected int getTaskIndexOnThisCommand(List<TaskSetup> taskList){
+        String headCommitId = propman.getCommitId()
+        int taskIndex = taskList.findIndexOf{ it.propertyPrefix == headCommitId }
+        return taskIndex
+    }
+
+    protected int getTaskIndexOnThisCommand(String commandName, String propertyPrefix){
+        List<TaskSetup> taskList = getTaskListByCommandName(commandName)
+        int taskIndex = taskList.findIndexOf{ it.propertyPrefix == propertyPrefix }
+        return taskIndex
     }
 
     protected List<String> getSpecificLevelList(String levelNamesProperty){
@@ -214,61 +325,75 @@ class JobUtil extends TaskUtil{
     /*****
      * UNDO
      *****/
-    int undo(List<Class> taskClassList, List<String> prefixList, int i){
-        //Check the previous task
-        i -= 1
-        if ( isUndoableTask(taskClassList[i]) || !checkCondition(prefixList[i]) ){
-            propman.undo()
+    TaskSetup undo(TaskSetup nowTask, TaskSetup latestTask){
+        //Get Previous Task
+        TaskSetup mvTask = nowTask.clone()
+        TaskSetup commitTask = propman.getCommit()?.customData?.task
 
-            //Check the previous task is @Undoable(modeMore=true)?
-            while ( i > 0 && (isUndoMoreTask(taskClassList[i]) || !checkCondition(prefixList[i])) ){
-                i -= 1
+        //Check NowTask is undoable task?
+        if (!propman.isHeadFirst()
+        && nowTask && (isUndoableTask(nowTask) || !checkCondition(nowTask))
+        && commitTask && (isUndoableTask(commitTask) || !checkCondition(commitTask))
+        ){
+
+            //Check the previous task
+            while ( !propman.isHeadFirst() && (isUndoMoreTask(commitTask) || !checkCondition(commitTask)) ){
                 propman.undo()
+                commitTask = propman.getCommit().customData['task']
+                mvTask = propman.getNextCommit().customData['task']
+            }
+
+            if (commitTask && (isUndoableTask(commitTask) || !checkCondition(commitTask))){
+                propman.undo()
+                commitTask = propman.getCommit().customData['task']
+                mvTask = propman.getNextCommit().customData['task']
             }
 
             //Check It is Last Task?
-            i -= 1
-            if (i <= -1){
-                i = -1
-                propman.checkout(0)
-
-                //If First Task is undoMore, then auto-redo
-                if (isUndoMoreTask(taskClassList[0])){
-                    i += 1
-                    propman.redo()
-                    while ( propman.isNotHeadLast() && isUndoableTask(taskClassList[i+1]) && (isUndoMoreTask(taskClassList[i+1]) || !checkCondition(prefixList[i+1])) ){
-                        i += 1
-                        propman.redo()
-                    }
-                }
+            //If First Task is undoMore, then auto-redo
+            if (!commitTask){
+                mvTask = redo(mvTask, latestTask)
                 logger.error "It can not undo"
             }
 
         }else{
-            if (i == -1)
-                logger.error "No more undo"
-            else
-                logger.error "It can not undo"
+            logger.error ((propman.isHeadFirst()) ?  "No more undo" : "It can not undo")
         }
-        return i
+        return mvTask
     }
 
     /*****
      * REDO
      *****/
-    int redo(List<Class> taskClassList, List<String> prefixList, int i){
-        if (propman.isNotHeadLast()){
+    TaskSetup redo(TaskSetup nowTask, TaskSetup latestTask){
+        //Get Previous Task
+        TaskSetup mvTask = nowTask.clone()
+        TaskSetup commitTask = propman.getCommit()?.customData?.task
+
+        //Check NowTask is undoable task?
+        if (propman.isNotHeadLast()
+        && nowTask && (isUndoableTask(nowTask) || !checkCondition(nowTask))
+        //&& commitTask && (isUndoableTask(commitTask) || !checkCondition(commitTask))
+        ){
             propman.redo()
-            while ( propman.isNotHeadLast() && isUndoableTask(taskClassList[i+1]) && (isUndoMoreTask(taskClassList[i+1]) || !checkCondition(prefixList[i+1])) ){
-                i += 1
+            commitTask = propman.getCommit()?.customData?.task
+            mvTask = propman.getNextCommit()?.customData?.task
+
+            //Check the next task
+            while ( propman.isNotHeadLast() && (isUndoMoreTask(mvTask) || !checkCondition(mvTask)) ){
                 propman.redo()
+                commitTask = propman.getCommit()?.customData?.task
+                mvTask = propman.getNextCommit()?.customData?.task
             }
+
+            if (!mvTask)
+                mvTask = latestTask.clone()
+
         }else{
-            i -= 1
             propman.rollback()
             logger.error "It Can not redo more"
         }
-        return i
+        return mvTask
     }
 
     /*****
@@ -278,8 +403,28 @@ class JobUtil extends TaskUtil{
         propman.commit()
     }
 
+    void commit(String commitId){
+        propman.commit(commitId)
+    }
+
+    void commit(TaskSetup task, int commandDepth, int commandStep){
+        String commitId = task.propertyPrefix
+        propman.commit(commitId)
+        propman.getCommit().customData['task'] = task
+        propman.getCommit().customData['commandDepth'] = commandDepth
+        propman.getCommit().customData['commandStep'] = commandStep
+    }
+
+    boolean isUndoableTask(TaskSetup task){
+        return isUndoableTask(task.taskClazz)
+    }
+
     boolean isUndoableTask(Class task){
         return undoableTaskList.contains(task)
+    }
+
+    boolean isUndoMoreTask(TaskSetup task){
+        return isUndoMoreTask(task.taskClazz)
     }
 
     boolean isUndoMoreTask(Class task){
@@ -304,37 +449,12 @@ class JobUtil extends TaskUtil{
     }
 
     Integer runTask(String taskTypeName, String propertyPrefix){
-        provider.shift( jobName, propertyPrefix )
-        List<String> propertyStructureList = propertyPrefix ? propertyPrefix.split('[.]').toList() : []
-        TaskSetup task = config.injectValue(new TaskSetup(
-                jobName: jobName,
-                commandName: (propertyStructureList.size() >= 2) ? propertyStructureList[0] : '',
-                taskName: (propertyStructureList.size() >= 2) ? propertyStructureList[1] : '',
-                taskTypeName: taskTypeName,
-                propertyPrefix: propertyPrefix
-        ))
-        task.taskClazz = getTaskClass(task.taskTypeName)
-
+        TaskSetup task = generateTaskSetup(taskTypeName, propertyPrefix)
         //(Task) Start
-        return startTask(task)
+        return runTask(task)
     }
 
-    String getTaskName(String propertyPrefix){
-        String taskName = provider.getString("${propertyPrefix}task")?.trim()?.toUpperCase()
-        return taskName
-    }
-
-    Class getTaskClass(String taskName){
-        Class taskClazz = allTaskList.find{ it.getSimpleName().equalsIgnoreCase(taskName) }
-        return taskClazz
-    }
-
-
-
-    /*************************
-     * 2. START TASK
-     *************************/
-    Integer startTask(TaskSetup task){
+    Integer runTask(TaskSetup task){
         /** Validation **/
         if (!task.taskClazz)
             throw new Exception("${task.taskTypeName} Does not exists task. or You Can't")
@@ -356,9 +476,39 @@ class JobUtil extends TaskUtil{
         return status
     }
 
+    TaskSetup generateTaskSetup(String taskTypeName, String propertyPrefix){
+        provider.shift( jobName, propertyPrefix )
+        List<String> propertyStructureList = propertyPrefix ? propertyPrefix.split('[.]').toList() : []
+        TaskSetup task = config.injectValue(new TaskSetup(
+                jobName: jobName,
+                commandName: (propertyStructureList.size() >= 2) ? propertyStructureList[0] : '',
+                taskName: (propertyStructureList.size() >= 2) ? propertyStructureList[1] : '',
+                taskTypeName: taskTypeName,
+                propertyPrefix: propertyPrefix
+        ))
+        task.taskClazz = getTaskClass(task.taskTypeName)
+        return task
+    }
+
+    String getTaskName(String propertyPrefix){
+        String taskName = provider.getString("${propertyPrefix}task")?.trim()?.toUpperCase()
+        return taskName
+    }
+
+    Class getTaskClass(String taskName){
+        Class taskClazz = allTaskList.find{ it.getSimpleName().equalsIgnoreCase(taskName) }
+        return taskClazz
+    }
+
+
+
     /*************************
      * CONDITION
      *************************/
+    protected boolean checkCondition(TaskSetup task){
+        return checkCondition(task.propertyPrefix)
+    }
+
     protected boolean checkCondition(String propertyPrefix){
         return (provider.checkCondition(propertyPrefix) && provider.checkDashDashOption(propertyPrefix) && checkPortCondition(propertyPrefix))
     }
