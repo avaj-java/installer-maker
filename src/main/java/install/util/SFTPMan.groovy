@@ -134,7 +134,7 @@ class SFTPMan{
                     put(sourceFile, serverPath, opt)
                 }else{
                     File destFile = new File(serverPath, sourceFile.getName())
-                    String destFilePath = destFile.path.replaceAll(/[\/\\]+/, "/")
+                    String destFilePath = FileMan.toSlash(destFile.path)
                     put(sourceFile, destFilePath, opt)
                 }
             }else{
@@ -143,7 +143,7 @@ class SFTPMan{
                 entryList.each{ String relPath ->
                     File sourceFile = new File(sourceRootPath, relPath)
                     File destFile = new File(destRootPath, relPath)
-                    String destFilePath = destFile.path.replaceAll(/[\/\\]+/, "/")
+                    String destFilePath = FileMan.toSlash(destFile.path)
                     if (sourceFile.isDirectory()){
                         mkdir(destFilePath)
                     }else {
@@ -186,7 +186,7 @@ class SFTPMan{
                 entryMap.each{ String relPath, ChannelSftp.LsEntry entry ->
                     File sourceFile = new File(sourceRootPath, relPath)
                     File destFile = new File(destRootPath, relPath)
-                    String sourceFilePath = sourceFile.path.replaceAll(/[\/\\]+/, "/")
+                    String sourceFilePath = FileMan.toSlash(sourceFile.path)
                     if (entry.getAttrs().isDir()){
                         FileMan.mkdirs(destFile.path)
                     }else {
@@ -306,7 +306,7 @@ class SFTPMan{
 
     private boolean checkDir(String serverPath, boolean modeAutoMkdir){
 //        File baseDir = new File(path).getParentFile()
-        String baseDirPath = FileMan.getLastDirectoryPath(serverPath).replaceAll(/[\/\\]+/, "/")
+        String baseDirPath = FileMan.toSlash(FileMan.getLastDirectoryPath(serverPath))
         if (modeAutoMkdir && !isExist(baseDirPath)){
             autoMkdirs(baseDirPath)
             if (!isExist(baseDirPath))
@@ -333,7 +333,7 @@ class SFTPMan{
     private boolean checkFiles(List<String> entry, boolean modeAutoOverWrite){
         if (!modeAutoOverWrite){
             entry.each{ String relPath ->
-                checkFile(new File(relPath).path.replaceAll(/[\/\\]+/, "/"))
+                checkFile(FileMan.toSlash(new File(relPath).path))
             }
         }
         return true
@@ -347,7 +347,7 @@ class SFTPMan{
             } else {
                 String rootPath = FileMan.getLastDirectoryPath(destPath)
                 entry.each { String relPath ->
-                    checkFile(new File(rootPath, relPath).path.replaceAll(/[\/\\]+/, "/"))
+                    checkFile(FileMan.toSlash(new File(rootPath, relPath).path))
                 }
             }
         }
@@ -404,14 +404,14 @@ class SFTPMan{
      *************************/
     Map<String, ChannelSftp.LsEntry> getEntryMap(String sourcePath){
         Map<String, ChannelSftp.LsEntry> newEntryMap = [:]
-        sourcePath = new File(sourcePath).getPath().replaceAll(/[\/\\]+/, '/')
+        sourcePath = FileMan.toSlash(new File(sourcePath).getPath())
         //- Get Entry's Root Path Length
         int entryRootStartIndex = 0
         String rootPath = ''
         String ParentPath = ''
         if (!FileMan.isRootPath(sourcePath)){
-            rootPath = new File(sourcePath).getParentFile().getPath().replaceAll(/[\/\\]+/, '/')
-            ParentPath = new File(sourcePath).getParentFile().getPath().replaceAll(/[\/\\]+/, '/')
+            rootPath = FileMan.toSlash(new File(sourcePath).getParentFile().getPath())
+            ParentPath = FileMan.toSlash(new File(sourcePath).getParentFile().getPath())
             if (FileMan.isRootPath(ParentPath)){
                 entryRootStartIndex = rootPath.length()
             }else{
