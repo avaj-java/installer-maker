@@ -1,5 +1,6 @@
 package install
 
+import install.exception.WantToRestartException
 import jaemisseo.man.FileMan
 import jaemisseo.man.configuration.Config
 import install.employee.MacGyver
@@ -7,10 +8,12 @@ import install.job.InstallerMaker
 import install.job.Installer
 import jaemisseo.man.PropMan
 import jaemisseo.man.TimeMan
+import jaemisseo.man.configuration.annotation.type.Bean
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 
+@Bean
 class Commander {
 
     static final String APPLICATION_INSTALLER_MAKER = 'installer-maker'
@@ -26,6 +29,9 @@ class Commander {
             applicationName = APPLICATION_MACGYVER
         }
         return applicationName
+    }
+
+    Commander(){
     }
 
     Commander(Config config, TimeMan timeman){
@@ -135,52 +141,67 @@ class Commander {
 
 
     /*************************
-     * COMMAND
+     * COMMAND START
      *   - Your command from Command Line
      * @param config
      *************************/
     void startCommand(List<String> commandCalledByUserList, String applicationName){
-        commandCalledByUserList.each{
-            if (config.hasCommand(it)){
-                switch (applicationName){
-                    case APPLICATION_INSTALLER_MAKER:
-                        config.command(it)
-                        break
-                    case APPLICATION_INSTALLER:
-                        config.command(it)
-                        break
-                    case APPLICATION_MACGYVER:
-                        config.command(it)
-                        break
-                    default:
-                        throw new Exception("Invalid approch [${it}]")
-                        break
-                }
+        try{
+            switch (applicationName){
+                case APPLICATION_INSTALLER_MAKER:
+                    InstallerMaker builder = config.findInstance(InstallerMaker)
+                    commandCalledByUserList.each{
+                        if (config.hasCommand(it)){
+                            config.command(it)
+                        }else{
+                            builder.commandName = it
+                            config.command(InstallerMaker)
+                        }
+                    }
+                    break
+                case APPLICATION_INSTALLER:
+                    Installer installer = config.findInstance(Installer)
+                    commandCalledByUserList.each{
+                        if (config.hasCommand(it)){
+                            config.command(it)
+                        }else{
+                            installer.commandName = it
+                            config.command(Installer)
+                        }
+                    }
+                    break
+                case APPLICATION_MACGYVER:
+                    MacGyver macgyver = config.findInstance(MacGyver)
+                    commandCalledByUserList.each{
+                        if (config.hasCommand(it)){
+                            config.command(it)
+                        }else{
+                            macgyver.commandName = it
+                            config.command(MacGyver)
+                        }
+                    }
+                    break
+                default:
+                    throw new Exception("Invalid approch")
+                    break
+            }
+        }catch(Exception e){
+            if (e instanceof WantToRestartException
+            || (e.cause && e.cause instanceof WantToRestartException)
+            ){
+                startCommand(commandCalledByUserList, applicationName)
             }else{
-                switch (applicationName){
-                    case APPLICATION_INSTALLER_MAKER:
-                        InstallerMaker builder = config.findInstance(InstallerMaker)
-                        builder.commandName = it
-                        config.command(InstallerMaker)
-                        break
-                    case APPLICATION_INSTALLER:
-                        Installer installer = config.findInstance(Installer)
-                        installer.commandName = it
-                        config.command(Installer)
-                        break
-                    case APPLICATION_MACGYVER:
-                        MacGyver macgyver = config.findInstance(MacGyver)
-                        macgyver.commandName = it
-                        config.command(MacGyver)
-                        break
-                    default:
-                        throw new Exception("Invalid approch [${it}]")
-                        break
-                }
+                throw e
             }
         }
     }
 
+
+
+    /*************************
+     * FINISH START
+     * @param e
+     *************************/
     void finishCommand(List<String> commandCalledByUserList, double elapseTime){
         //Show ElapseTime
         logger.info """
