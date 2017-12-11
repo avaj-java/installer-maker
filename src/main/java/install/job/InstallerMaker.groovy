@@ -2,6 +2,8 @@ package install.job
 
 import install.bean.GlobalOptionForInstallerMaker
 import install.bean.ReportSetup
+import install.bean.TaskSetup
+import install.exception.WantToRestartException
 import jaemisseo.man.configuration.annotation.HelpIgnore
 import jaemisseo.man.configuration.annotation.method.Command
 import jaemisseo.man.configuration.annotation.method.Init
@@ -39,6 +41,7 @@ class InstallerMaker extends JobUtil{
         this.varman = setupVariableMan(propman)
         provider.shift(jobName)
         this.gOpt = config.injectValue(new GlobalOptionForInstallerMaker())
+        commit()
     }
 
     PropMan setupPropMan(PropertyProvider provider){
@@ -80,10 +83,12 @@ class InstallerMaker extends JobUtil{
 
         //Each level by level
         validTaskList = Util.findAllClasses('install', [Task])
-        eachTaskWithCommit(commandName){ String propertyPrefix ->
+        eachTaskWithCommit(commandName){ TaskSetup task ->
             try{
-                return runTaskByPrefix("${propertyPrefix}")
-            }catch(e){
+                return runTask(task)
+            }catch(WantToRestartException wtre){
+                throw wtre
+            }catch(Exception e){
                 //Write Report
                 writeReport(reportMapList, reportSetup)
                 throw e
@@ -282,10 +287,12 @@ class InstallerMaker extends JobUtil{
 
             //2. Each level by level
             validTaskList = Util.findAllClasses('install', [Task])
-            eachTaskWithCommit('build'){ String propertyPrefix ->
+            eachTaskWithCommit('build'){ TaskSetup task ->
                 try{
-                    return runTaskByPrefix("${propertyPrefix}")
-                }catch(e){
+                    return runTask(task)
+                }catch(WantToRestartException wtre){
+                    throw wtre
+                }catch(Exception e){
                     //Write Report
                     writeReport(reportMapList, reportSetup)
                     throw e
@@ -327,7 +334,7 @@ class InstallerMaker extends JobUtil{
         String argsExceptCommand = provider.get('program.args.except.command')
         String argsModeExec = '-mode.exec.self=true'
         String installBinPathForWIn = "${binPath}/installer.bat".replaceAll(/[\/\\]+/, "\\$File.separator")
-        String installBinPathForLin = "${binPath}/installer".replaceAll(/[\/\\]+/, "/")
+        String installBinPathForLin = FileMan.toSlash("${binPath}/installer")
         provider.setRaw('command.win', "${installBinPathForWIn} ask install ${argsExceptCommand} ${argsModeExec}")
         provider.setRaw('command.lin', "${installBinPathForLin} ask install ${argsExceptCommand} ${argsModeExec}")
         //run

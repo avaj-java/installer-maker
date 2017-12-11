@@ -2,6 +2,8 @@ package install.employee
 
 import install.bean.GlobalOptionForMacgyver
 import install.bean.ReportSetup
+import install.bean.TaskSetup
+import install.exception.WantToRestartException
 import jaemisseo.man.configuration.annotation.Alias
 import jaemisseo.man.configuration.annotation.HelpIgnore
 import jaemisseo.man.configuration.annotation.method.Command
@@ -34,6 +36,7 @@ class MacGyver extends EmployeeUtil {
         this.varman = setupVariableMan(propman)
         provider.shift(jobName)
         this.gOpt = config.injectValue(new GlobalOptionForMacgyver())
+        commit()
     }
 
     PropMan setupPropMan(PropertyProvider provider){
@@ -75,10 +78,12 @@ class MacGyver extends EmployeeUtil {
 
         //Each level by level
         validTaskList = Util.findAllClasses('install', [Task])
-        eachTaskWithCommit(commandName){ String propertyPrefix ->
+        eachTaskWithCommit(commandName){ TaskSetup task ->
             try{
-                return runTaskByPrefix("${propertyPrefix}")
-            }catch(e){
+                return runTask(task)
+            }catch(WantToRestartException wtre){
+                throw wtre
+            }catch(Exception e){
                 //Write Report
                 writeReport(reportMapList, reportSetup)
                 throw e
@@ -172,10 +177,12 @@ class MacGyver extends EmployeeUtil {
 
         //Each level by level
         validTaskList = Util.findAllClasses('install', [Task])
-        eachTaskWithCommit('macgyver'){ String propertyPrefix ->
+        eachTaskWithCommit('macgyver'){ TaskSetup task ->
             try{
-                return runTaskByPrefix("${propertyPrefix}")
-            }catch(e){
+                return runTask(task)
+            }catch(WantToRestartException wtre){
+                throw wtre
+            }catch(Exception e){
                 //Write Report
                 writeReport(reportMapList, reportSetup)
                 throw e
