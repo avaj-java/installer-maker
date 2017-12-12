@@ -8,7 +8,7 @@ import jaemisseo.man.util.Option
  * Created by sujkim on 2017-02-19.
  */
 @Bean
-class GlobalOptionForMacgyver extends Option{
+class GlobalOptionForHoya extends Option{
 
     @Value
     FileSetup fileSetup

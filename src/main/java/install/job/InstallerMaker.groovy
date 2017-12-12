@@ -11,7 +11,7 @@ import jaemisseo.man.configuration.annotation.type.Document
 import jaemisseo.man.configuration.annotation.type.Job
 import jaemisseo.man.configuration.annotation.type.Task
 import jaemisseo.man.configuration.data.PropertyProvider
-import install.employee.MacGyver
+import install.employee.Hoya
 import install.util.JobUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
@@ -112,13 +112,13 @@ class InstallerMaker extends JobUtil{
             
         installer-maker init --default
     
-    And you can create custum task manager script (macgver.yml) 
+    And you can create custum task manager script (hoya.yml) 
         
-        macgyver init
+        hoya init
             
-    Default.. (macgver.default.properties)
+    Default.. (hoya.default.properties)
     
-        macgyver init --default
+        hoya init --default
     """)
     void initCommand(){
         //Ready
@@ -137,10 +137,10 @@ class InstallerMaker extends JobUtil{
 
         /** Default Properties **/
         if (dashDashOptionList.contains('default')){
-            if (dashDashOptionList.contains('macgyver')) {
+            if (dashDashOptionList.contains('hoya')) {
                 try{
-                    fileFrom = "defaultProperties/macgyver.default.properties"
-                    fileTo = "${propertiesDir}/macgyver.default.properties"
+                    fileFrom = "defaultProperties/hoya.default.properties"
+                    fileTo = "${propertiesDir}/hoya.default.properties"
                     new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
                 }catch(e){
                     logger.warn "File Aready Exists. ${fileTo}\n"
@@ -165,10 +165,10 @@ class InstallerMaker extends JobUtil{
 
         /** Properties **/
         }else{
-            if (dashDashOptionList.contains('macgyver')){
+            if (dashDashOptionList.contains('hoya')){
                 try{
-                    fileFrom = "macgyver.yml"
-                    fileTo = "${propertiesDir}/macgyver.yml"
+                    fileFrom = "hoya.yml"
+                    fileTo = "${propertiesDir}/hoya.yml"
                     new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
                 }catch(e){
                     logger.warn "File Aready Exists. ${fileTo}\n"
@@ -429,7 +429,7 @@ class InstallerMaker extends JobUtil{
 
         InstallerMaker builder = config.findInstance(InstallerMaker)
         Installer installer = config.findInstance(Installer)
-        MacGyver macgyver = config.findInstance(MacGyver)
+        Hoya hoya = config.findInstance(Hoya)
 
         File builderPropertiesFile = FileMan.find(userSetPropertiesDir, builder.propertiesFileName, ["yml", "yaml", "properties"])
         if (builderPropertiesFile)
@@ -443,9 +443,9 @@ class InstallerMaker extends JobUtil{
         else
             throw Exception("Does not exist script file(${installer.propertiesFileName})")
         
-        File macgyverPropertiesFile = FileMan.find(userSetPropertiesDir, macgyver.propertiesFileName, ["yml", "yaml", "properties"])
-        if (macgyverPropertiesFile)
-            FileMan.copy(macgyverPropertiesFile.path, tempNowDir, opt)
+        File hoyaPropertiesFile = FileMan.find(userSetPropertiesDir, hoya.propertiesFileName, ["yml", "yaml", "properties"])
+        if (hoyaPropertiesFile)
+            FileMan.copy(hoyaPropertiesFile.path, tempNowDir, opt)
 
 
 
@@ -519,35 +519,35 @@ class InstallerMaker extends JobUtil{
         ])
         .write(binInstallerBatDestPath)
 
-        /** 5. Generate Runable Binary File (macgyver) **/
-        String binMacgyverShSourcePath = 'binForInstaller/macgyver'
-        String binMacgyverBatSourcePath = 'binForInstaller/macgyver.bat'
-        String binMacgyverShDestPath = "${binDestPath}/macgyver"
-        String binMacgyverBatDestPath = "${binDestPath}/macgyver.bat"
-        logger.debug """<Installer-Maker> Generate Bin, Macgyver:
-            SH  : ${binMacgyverShDestPath}
-            BAT : ${binMacgyverBatDestPath}
+        /** 5. Generate Runable Binary File (hoya) **/
+        String binHoyaShSourcePath = 'binForInstaller/hoya'
+        String binHoyaBatSourcePath = 'binForInstaller/hoya.bat'
+        String binHoyaShDestPath = "${binDestPath}/hoya"
+        String binHoyaBatDestPath = "${binDestPath}/hoya.bat"
+        logger.debug """<Installer-Maker> Generate Bin, Hoya:
+            SH  : ${binHoyaShDestPath}
+            BAT : ${binHoyaBatDestPath}
         """
 
-        //- Gen bin/macgyver(sh)
+        //- Gen bin/hoya(sh)
         new FileMan()
         .set(fileSetupForLin)
-        .readResource(binMacgyverShSourcePath)
+        .readResource(binHoyaShSourcePath)
         .replaceLine([
             'REL_PATH_BIN_TO_HOME=' : "REL_PATH_BIN_TO_HOME=${binToHomeRelPath}",
             'REL_PATH_HOME_TO_LIB=' : "REL_PATH_HOME_TO_LIB=${homeToLibRelPath}"
         ])
-        .write(binMacgyverShDestPath)
+        .write(binHoyaShDestPath)
 
-        //- Gen bin/macgyver.bat
+        //- Gen bin/hoya.bat
         new FileMan()
         .set(fileSetup)
-        .readResource(binMacgyverBatSourcePath)
+        .readResource(binHoyaBatSourcePath)
         .replaceLine([
             'set REL_PATH_BIN_TO_HOME=' : "set REL_PATH_BIN_TO_HOME=${binToHomeRelPathForWin}",
             'set REL_PATH_HOME_TO_LIB=' : "set REL_PATH_HOME_TO_LIB=${homeToLibRelPathForWin}"
         ])
-        .write(binMacgyverBatDestPath)
+        .write(binHoyaBatDestPath)
 
         /** 6. Generate Runable Binary File (check) **/
         String binCheckShSourcePath = 'binForInstaller/check'
@@ -556,7 +556,7 @@ class InstallerMaker extends JobUtil{
             SH  : ${binCheckShDestPath}
         """
 
-        //- Gen bin/macgyver(sh)
+        //- Gen bin/hoya(sh)
         new FileMan()
         .set(fileSetupForLin)
         .readResource(binCheckShSourcePath)

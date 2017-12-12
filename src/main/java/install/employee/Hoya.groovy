@@ -1,6 +1,6 @@
 package install.employee
 
-import install.bean.GlobalOptionForMacgyver
+import install.bean.GlobalOptionForHoya
 import install.bean.ReportSetup
 import install.bean.TaskSetup
 import install.exception.WantToRestartException
@@ -23,11 +23,11 @@ import jaemisseo.man.util.Util
  * Created by sujkim on 2017-02-17.
  */
 @Employee
-class MacGyver extends EmployeeUtil {
+class Hoya extends EmployeeUtil {
 
-    MacGyver(){
-        propertiesFileName = 'macgyver'
-        jobName = 'macgyver'
+    Hoya(){
+        propertiesFileName = 'hoya'
+        jobName = 'hoya'
     }
 
     @Init(lately=true)
@@ -35,12 +35,12 @@ class MacGyver extends EmployeeUtil {
         this.propman = setupPropMan(provider)
         this.varman = setupVariableMan(propman)
         provider.shift(jobName)
-        this.gOpt = config.injectValue(new GlobalOptionForMacgyver())
+        this.gOpt = config.injectValue(new GlobalOptionForHoya())
         commit()
     }
 
     PropMan setupPropMan(PropertyProvider provider){
-        PropMan propmanForMacgyver = provider.propGen.get('macgyver')
+        PropMan propmanForHoya = provider.propGen.get('hoya')
         PropMan propmanDefault = provider.propGen.getDefaultProperties()
         PropMan propmanProgram = provider.propGen.getProgramProperties()
         PropMan propmanExternal = provider.propGen.getExternalProperties()
@@ -58,13 +58,13 @@ class MacGyver extends EmployeeUtil {
         if (propertiesFile && propertiesFile.exists()){
             propertiesFileExtension = FileMan.getExtension(propertiesFile)
             Map propertiesMap = generateMapFromPropertiesFile(propertiesFile)
-            propmanForMacgyver.merge(propertiesMap)
+            propmanForHoya.merge(propertiesMap)
                             .merge(propmanExternal)
                             .mergeNew(propmanDefault)
                             .mergeNew(propmanProgram)
         }
 
-        return propmanForMacgyver
+        return propmanForHoya
     }
 
 
@@ -165,11 +165,11 @@ class MacGyver extends EmployeeUtil {
 
 
     @Alias('m')
-    @Command('macgyver')
+    @Command('hoya')
     @Document("""
-    You can use 'macgyver' to use a task on Terminal       
+    You can use 'hoya' to use a task on Terminal       
     """)
-    void macgyver(){
+    void hoya(){
         //Setup Log
         setuptLog(gOpt.logSetup)
 
@@ -177,7 +177,7 @@ class MacGyver extends EmployeeUtil {
 
         //Each level by level
         validTaskList = Util.findAllClasses('install', [Task])
-        eachTaskWithCommit('macgyver'){ TaskSetup task ->
+        eachTaskWithCommit('hoya'){ TaskSetup task ->
             try{
                 return runTask(task)
             }catch(WantToRestartException wtre){
