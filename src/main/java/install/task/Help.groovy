@@ -103,7 +103,7 @@ class Help extends TaskUtil{
     }
 
     boolean isTaskRunable(String applicationName){
-        return [Commander.APPLICATION_INSTALLER_MAKER, Commander.APPLICATION_MACGYVER].contains(applicationName)
+        return [Commander.APPLICATION_INSTALLER_MAKER, Commander.APPLICATION_HOYA].contains(applicationName)
     }
 
 

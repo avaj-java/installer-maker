@@ -283,8 +283,8 @@ jar {
 distributions{
     main.contents.into("bin"){
         from([
-                "src/main/resources/binForBuilder/macgyver",
-                "src/main/resources/binForBuilder/macgyver.bat",
+                "src/main/resources/binForBuilder/hoya",
+                "src/main/resources/binForBuilder/hoya.bat",
         ])
         fileMode 0755
     }

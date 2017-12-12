@@ -3,7 +3,7 @@ package install
 import install.exception.WantToRestartException
 import jaemisseo.man.FileMan
 import jaemisseo.man.configuration.Config
-import install.employee.MacGyver
+import install.employee.Hoya
 import install.job.InstallerMaker
 import install.job.Installer
 import jaemisseo.man.PropMan
@@ -18,15 +18,15 @@ class Commander {
 
     static final String APPLICATION_INSTALLER_MAKER = 'installer-maker'
     static final String APPLICATION_INSTALLER = 'installer'
-    static final String APPLICATION_MACGYVER = 'macgyver'
+    static final String APPLICATION_HOYA = 'hoya'
 
     static String getApplicationName(PropMan propmanExternal){
         List<String> specialValueList = propmanExternal.get('--')
         String applicationName = 'installer-maker'
         if (specialValueList.contains(APPLICATION_INSTALLER)){
             applicationName = APPLICATION_INSTALLER
-        }else if (specialValueList.contains(APPLICATION_MACGYVER)){
-            applicationName = APPLICATION_MACGYVER
+        }else if (specialValueList.contains(APPLICATION_HOYA)){
+            applicationName = APPLICATION_HOYA
         }
         return applicationName
     }
@@ -50,7 +50,7 @@ class Commander {
         //- Try to get from User's FileSystem
         generatePropMan('installer-maker')
         generatePropMan('installer')
-        generatePropMan('macgyver')
+        generatePropMan('hoya')
     }
 
     void generatePropMan(String fileName){
@@ -108,8 +108,8 @@ class Commander {
                 config.command(['help'])
             if ([APPLICATION_INSTALLER].contains(applicationName))
                 config.command(['ask', 'install'])
-            if ([APPLICATION_MACGYVER].contains(applicationName))
-                config.command(['macgyver'])
+            if ([APPLICATION_HOYA].contains(applicationName))
+                config.command(['hoya'])
 
         /** [Command] **/
         }else if (hasCommand && !modeHelp){
@@ -125,7 +125,7 @@ class Commander {
         /** [Task / Help] **/
         }else if ((!hasCommand && hasTask) || (hasCommand && modeHelp)){
 
-            if ([APPLICATION_INSTALLER_MAKER, APPLICATION_MACGYVER].contains(applicationName)){
+            if ([APPLICATION_INSTALLER_MAKER, APPLICATION_HOYA].contains(applicationName)){
                 config.command('doSomething')
             }
             if ([APPLICATION_INSTALLER].contains(applicationName)){
@@ -170,14 +170,14 @@ class Commander {
                         }
                     }
                     break
-                case APPLICATION_MACGYVER:
-                    MacGyver macgyver = config.findInstance(MacGyver)
+                case APPLICATION_HOYA:
+                    Hoya hoya = config.findInstance(Hoya)
                     commandCalledByUserList.each{
                         if (config.hasCommand(it)){
                             config.command(it)
                         }else{
-                            macgyver.commandName = it
-                            config.command(MacGyver)
+                            hoya.commandName = it
+                            config.command(Hoya)
                         }
                     }
                     break
