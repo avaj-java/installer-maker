@@ -219,7 +219,7 @@ class Help extends TaskUtil{
             if (documentString){
 //                logger.info ''
 //                logger.info ' [ Detail ]'
-                logger.info multiTrim(documentString)
+                logger.info Util.multiTrim(documentString)
             }
         }
     }
@@ -272,49 +272,6 @@ class Help extends TaskUtil{
             }
         }
         return resultPropertyMap
-    }
-
-
-
-
-
-
-
-
-
-    String multiTrim(String content){
-        //- Remove Shortest Left Indent
-        Integer shortestIndentIndex = 0
-        List<String> stringList = content.split('\n').toList()
-        List<String> resultStringList = stringList.findAll{
-            List charList = it.toList()
-            int indentIndex = 0
-            for (int i=0; i<charList.size(); i++){
-                if (charList[i] != " "){
-                    indentIndex = i
-                    break
-                }
-            }
-            if (indentIndex >= 0){
-                if (shortestIndentIndex == 0 || shortestIndentIndex > indentIndex){
-                    shortestIndentIndex =  indentIndex
-                }
-            }
-            return true
-        }
-        //- Remove Empty Top and Bottom
-        Integer startRowIndex
-        Integer endRowIndex
-        resultStringList.eachWithIndex{ String row, int index ->
-            String line = row.trim()
-            if (line && startRowIndex == null)
-                startRowIndex = index
-            if (line)
-                endRowIndex = index
-        }
-        resultStringList = resultStringList[startRowIndex..endRowIndex]
-        String resultString = resultStringList.collect{ it.substring(shortestIndentIndex) }.join('\n')
-        return resultString
     }
 
 }
