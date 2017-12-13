@@ -18,6 +18,8 @@ import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.ReportMan
 import jaemisseo.man.util.Util
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Created by sujkim on 2017-02-17.
@@ -25,9 +27,27 @@ import jaemisseo.man.util.Util
 @Employee
 class Hoya extends EmployeeUtil {
 
+    final Logger logger = LoggerFactory.getLogger(this.getClass());
+    int jobCallingCount = 0
+
     Hoya(){
         propertiesFileName = 'hoya'
         jobName = 'hoya'
+    }
+
+    void logo(){
+        logger.info Util.multiTrim("""
+        88                                                     /^-^\\
+        88                                                    / o o \\
+        88                                                   /   Y   \\
+        88,dPPYba,   ,adPPYba,  8b       d8 ,adPPYYba,       V \\ v / V
+        88P'    "8a a8"     "8a `8b     d8' ""     `Y8         / - \\
+        88       88 8b       d8  `8b   d8'  ,adPPPPP88        /    |
+        88       88 "8a,   ,a8"   `8b,d8'   88,    ,88  (    /     |
+        88       88  `"YbbdP"'      Y88'    `"8bbdP"Y8   ===/___) ||
+                                    d8'                 
+                                   d8'                  
+        """)
     }
 
     @Init(lately=true)
@@ -73,6 +93,9 @@ class Hoya extends EmployeeUtil {
     void customCommand(){
         //Setup Log
         setuptLog(gOpt.logSetup)
+
+        if (!jobCallingCount++)
+            logo()
 
         ReportSetup reportSetup = config.injectValue(new ReportSetup())
 
@@ -172,6 +195,9 @@ class Hoya extends EmployeeUtil {
     void hoya(){
         //Setup Log
         setuptLog(gOpt.logSetup)
+
+        if (!jobCallingCount++)
+            logo()
 
         ReportSetup reportSetup = config.injectValue(new ReportSetup())
 

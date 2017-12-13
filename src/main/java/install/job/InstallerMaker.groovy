@@ -28,11 +28,33 @@ import org.slf4j.LoggerFactory
 class InstallerMaker extends JobUtil{
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
-    int buildCallCount = 0
+    int jobCallingCount = 0
 
     InstallerMaker(){
         propertiesFileName = 'installer-maker'
         jobName = 'installer-maker'
+    }
+
+    void logo(){
+        logger.info Util.multiTrim("""
+        88                                          88 88                                       
+        ''                         ,d               88 88                                       
+                                   88               88 88                                       
+        88 8b,dPPYba,  ,adPPYba, MM88MMM ,adPPYYba, 88 88  ,adPPYba, 8b,dPPYba,                 
+        88 88P'   ''8a I8[    ''   88    ''     'Y8 88 88 a8P_____88 88P'   'Y8                 
+        88 88       88  ''Y8ba,    88    ,adPPPPP88 88 88 8PP''''''' 88                         
+        88 88       88 aa    ]8I   88,   88,    ,88 88 88 '8b,   ,aa 88                         
+        88 88       88 ''YbbdP''   'Y888 ''8bbdP'Y8 88 88  ''Ybbd8'' 88                         
+                                                                                                
+                                      88                                                        
+                                      88                                                        
+                                      88                                                        
+        88,dPYba,,adPYba,  ,adPPYYba, 88   ,d8  ,adPPYba, 8b,dPPYba,                            
+        88P'   '88'    '8a ''     'Y8 88 ,a8'  a8P_____88 88P'   'Y8                            
+        88      88      88 ,adPPPPP88 8888[    8PP''''''' 88                                    
+        88      88      88 88,    ,88 88''Yba, '8b,   ,aa 88                                    
+        88      88      88 ''8bbdP'Y8 88   'Y8a ''Ybbd8'' 88                                    
+        """)
     }
 
     @Init(lately=true)
@@ -73,11 +95,14 @@ class InstallerMaker extends JobUtil{
 
     @Command
     void customCommand(){
-        if (!propertiesFile)
-            throw new Exception('Does not exists script file [ installer-maker.yml ]')
-
         //Setup Log
         setuptLog(gOpt.logSetup)
+
+        if (!jobCallingCount++)
+            logo()
+
+        if (!propertiesFile)
+            throw new Exception('Does not exists script file [ installer-maker.yml ]')
 
         ReportSetup reportSetup = config.injectValue(new ReportSetup())
 
@@ -219,8 +244,8 @@ class InstallerMaker extends JobUtil{
         //Setup Log
         setuptLog(gOpt.logSetup)
 
-        if (!buildCallCount++)
-            logBigTitle "Installer-Maker"
+        if (!jobCallingCount++)
+            logo()
 
         logTaskDescription('clean')
 
@@ -268,8 +293,8 @@ class InstallerMaker extends JobUtil{
         //Setup Log
         setuptLog(gOpt.logSetup)
 
-        if (!buildCallCount++)
-            logBigTitle "Installer-Maker"
+        if (!jobCallingCount++)
+            logo()
 
         logTaskDescription('build')
 

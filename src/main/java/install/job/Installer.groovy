@@ -29,10 +29,24 @@ import org.slf4j.LoggerFactory
 class Installer extends JobUtil{
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
+    int jobCallingCount = 0
 
     Installer(){
         propertiesFileName = 'installer'
         jobName = 'installer'
+    }
+
+    void logo(){
+        logger.info Util.multiTrim("""
+        88                                          88 88                        
+        ''                         ,d               88 88                        
+                                   88               88 88                        
+        88 8b,dPPYba,  ,adPPYba, MM88MMM ,adPPYYba, 88 88  ,adPPYba, 8b,dPPYba,  
+        88 88P'   ''8a I8[    ''   88    ''     'Y8 88 88 a8P_____88 88P'   'Y8  
+        88 88       88  ''Y8ba,    88    ,adPPPPP88 88 88 8PP''''''' 88
+        88 88       88 aa    ]8I   88,   88,    ,88 88 88 '8b,   ,aa 88
+        88 88       88 ''YbbdP''   'Y888 ''8bbdP'Y8 88 88  ''Ybbd8'' 88
+        """)
     }
 
     @Init(lately=true)
@@ -99,6 +113,9 @@ class Installer extends JobUtil{
 
     @Command
     void customCommand(){
+        if (!jobCallingCount++)
+            logo()
+
         //Setup Log
         setuptLog(gOpt.logSetup)
 
@@ -130,6 +147,9 @@ class Installer extends JobUtil{
     No User's Command 
     ''')
     void ask(){
+        if (!jobCallingCount++)
+            logo()
+
         //Setup Log
         setuptLog(gOpt.logSetup)
 
@@ -170,6 +190,9 @@ class Installer extends JobUtil{
     No User's Command 
     ''')
     void install(){
+        if (!jobCallingCount++)
+            logo()
+
         //Setup Log
         setuptLog(gOpt.logSetup)
 
