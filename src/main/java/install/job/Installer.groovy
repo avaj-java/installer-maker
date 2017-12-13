@@ -2,6 +2,8 @@ package install.job
 
 import install.bean.FileSetup
 import install.bean.GlobalOptionForInstaller
+import install.bean.TaskSetup
+import install.exception.WantToRestartException
 import jaemisseo.man.configuration.annotation.HelpIgnore
 import jaemisseo.man.configuration.annotation.method.Command
 import jaemisseo.man.configuration.annotation.method.Init
@@ -27,10 +29,24 @@ import org.slf4j.LoggerFactory
 class Installer extends JobUtil{
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
+    int jobCallingCount = 0
 
     Installer(){
         propertiesFileName = 'installer'
         jobName = 'installer'
+    }
+
+    void logo(){
+        logger.info Util.multiTrim("""
+        88                                          88 88                        
+        ''                         ,d               88 88                        
+                                   88               88 88                        
+        88 8b,dPPYba,  ,adPPYba, MM88MMM ,adPPYYba, 88 88  ,adPPYba, 8b,dPPYba,  
+        88 88P'   ''8a I8[    ''   88    ''     'Y8 88 88 a8P_____88 88P'   'Y8  
+        88 88       88  ''Y8ba,    88    ,adPPPPP88 88 88 8PP''''''' 88
+        88 88       88 aa    ]8I   88,   88,    ,88 88 88 '8b,   ,aa 88
+        88 88       88 ''YbbdP''   'Y888 ''8bbdP'Y8 88 88  ''Ybbd8'' 88
+        """)
     }
 
     @Init(lately=true)
@@ -39,6 +55,7 @@ class Installer extends JobUtil{
         this.varman = setupVariableMan(propman)
         provider.shift(jobName)
         this.gOpt = config.injectValue(new GlobalOptionForInstaller())
+        commit()
     }
 
     PropMan setupPropMan(PropertyProvider provider){
@@ -96,6 +113,9 @@ class Installer extends JobUtil{
 
     @Command
     void customCommand(){
+        if (!jobCallingCount++)
+            logo()
+
         //Setup Log
         setuptLog(gOpt.logSetup)
 
@@ -103,10 +123,12 @@ class Installer extends JobUtil{
 
         //Each level by level
         validTaskList = Util.findAllClasses('install', [Task])
-        eachTaskWithCommit(commandName){ String propertyPrefix ->
+        eachTaskWithCommit(commandName){ TaskSetup task ->
             try{
-                return runTaskByPrefix("${propertyPrefix}")
-            }catch(e){
+                return runTask(task)
+            }catch(WantToRestartException wtre){
+                throw wtre
+            }catch(Exception e){
                 //Write Report
                 writeReport(reportMapList, reportSetup)
                 throw e
@@ -125,10 +147,11 @@ class Installer extends JobUtil{
     No User's Command 
     ''')
     void ask(){
+        if (!jobCallingCount++)
+            logo()
+
         //Setup Log
         setuptLog(gOpt.logSetup)
-
-        logBigTitle "Installer"
 
         logTaskDescription('ask')
 
@@ -149,8 +172,8 @@ class Installer extends JobUtil{
         readRememberAnswer()
         //2. Each level by level
         validTaskList = Util.findAllClasses('install', [Task])
-        eachTaskWithCommit('ask'){ String propertyPrefix ->
-            return runTaskByPrefix("${propertyPrefix}")
+        eachTaskWithCommit('ask'){ TaskSetup task ->
+            return runTask(task)
         }
         //3. WRITE REMEMBERED ANSWER
         writeRememberAnswer()
@@ -165,10 +188,11 @@ class Installer extends JobUtil{
     No User's Command 
     ''')
     void install(){
+        if (!jobCallingCount++)
+            logo()
+
         //Setup Log
         setuptLog(gOpt.logSetup)
-
-        logBigTitle "Installer"
 
         logTaskDescription('install')
 
@@ -179,10 +203,12 @@ class Installer extends JobUtil{
 
         //Each level by level
         validTaskList = Util.findAllClasses('install', [Task])
-        eachTaskWithCommit('install'){ String propertyPrefix ->
+        eachTaskWithCommit('install'){ TaskSetup task ->
             try{
-                return runTaskByPrefix("${propertyPrefix}")
-            }catch(e){
+                return runTask(task)
+            }catch(WantToRestartException wtre){
+                throw wtre
+            }catch(Exception e){
                 //Write Report
                 writeReport(reportMapList, reportSetup)
                 throw e

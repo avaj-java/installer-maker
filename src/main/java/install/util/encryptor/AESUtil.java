@@ -14,10 +14,52 @@ import java.util.Arrays;
 
 public class AESUtil {
 
+    /*************************
+     * Let's Test
+     *  - 32byte key only
+     *************************/
+    public static void main(String[] args) throws Exception {
+        String plainText = "haha$hoho%di2git$spe^cial@cha6r$#~~meta~~stream~~";
+        String password = "12345678901234561234567890123456";
+
+        String encryptedText = doEncrypt(plainText, password);
+        String decryptedText = doDecrypt(encryptedText, password);
+        System.out.println ( "01. PLAINTEXT : " +plainText );
+        System.out.println ( "01. ENCRYPT   : " +encryptedText );
+        System.out.println ( "01. DECRYPT   : " +decryptedText );
+
+        assert plainText == decryptedText;
+    }
+
+    /*************************
+     * Static - encrypt
+     *************************/
+    public static String doEncrypt(String content) throws Exception{
+        return new AESUtil().encrypt(content);
+    }
+
+    public static String doEncrypt(String content, String key) throws Exception{
+        return new AESUtil(key).encrypt(content);
+    }
+
+    /*************************
+     * Static - decrypt
+     *************************/
+    public static String doDecrypt(String content) throws Exception{
+        return new AESUtil().decrypt(content);
+    }
+
+    public static String doDecrypt(String content, String key) throws Exception{
+        return new AESUtil(key).decrypt(content);
+    }
+
+
+
+    /*************************
+     * Implement
+     *************************/
     private static final String ALGORITHM = "AES";
-
     private static final String defaultSecretKey = "ThisIsAVeryVerySecretKey";
-
     private Key secretKeySpec;
 
     public AESUtil() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException,
@@ -45,6 +87,8 @@ public class AESUtil {
         byte[] original = cipher.doFinal(toByteArray(encryptedString));
         return new String(original);
     }
+
+
 
     private Key generateKey(String secretKey) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         if (secretKey == null) {
@@ -82,23 +126,6 @@ public class AESUtil {
             buf[ii] = (byte) Integer.parseInt(l_digit, 16);
         }
         return buf;
-    }
-
-    public static void main(String[] args) throws Exception {
-        if (args.length == 1 || args.length == 2) {
-            String plainText = args[0];
-            String secretKey = args.length == 2 ? args[1] : null;
-            AESUtil aes = null;
-            if (secretKey == null) {
-                aes = new AESUtil();
-            } else {
-                aes = new AESUtil(secretKey);
-            }
-            String encryptedString = aes.encrypt(plainText);
-            System.out.println(plainText + ":" + encryptedString);
-        } else {
-            System.out.println("USAGE: java AES string-to-encrypt [secretKey]");
-        }
     }
 
 }

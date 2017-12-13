@@ -94,7 +94,9 @@ class TestJDBC extends TaskUtil{
 
         //RETURN DATA
         logger.debug "<RETURNED DATA(Count:${list.size()})> - CHECK"
-        list.each{ logger.debug it }
+        list.each{
+            logger.debug it.toString()
+        }
 
         //FINISH
         logMiddleTitle 'FINISHED TESTJDBC'

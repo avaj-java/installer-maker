@@ -9,7 +9,7 @@ import jaemisseo.man.configuration.annotation.type.Bean
 @Bean
 class QuestionSetup extends jaemisseo.man.bean.QuestionSetup {
 
-    @Value(name='question', required=true, modeRenderJansi=true)
+    @Value(name='desc', required=true, modeRenderJansi=true)
     String question
     @Value('color.question')
     String questionColor
@@ -20,9 +20,9 @@ class QuestionSetup extends jaemisseo.man.bean.QuestionSetup {
     String recommandAnswer
     @Value('answer.validation')
     String validation       //Not Supported Yet
-    @Value('answer.description.map')
+    @Value('answer.options')
     Map descriptionMap
-    @Value('answer.value.map')
+    @Value('answer.values')
     Map valueMap
     @Value('answer.repeat.limit')
     Integer repeatLimit = 1

@@ -1,36 +1,43 @@
 package install
 
+import install.exception.WantToRestartException
+import jaemisseo.man.FileMan
 import jaemisseo.man.configuration.Config
-import install.employee.MacGyver
+import install.employee.Hoya
 import install.job.InstallerMaker
 import install.job.Installer
 import jaemisseo.man.PropMan
 import jaemisseo.man.TimeMan
+import jaemisseo.man.configuration.annotation.type.Bean
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 
+@Bean
 class Commander {
 
     static final String APPLICATION_INSTALLER_MAKER = 'installer-maker'
     static final String APPLICATION_INSTALLER = 'installer'
-    static final String APPLICATION_MACGYVER = 'macgyver'
+    static final String APPLICATION_HOYA = 'hoya'
 
     static String getApplicationName(PropMan propmanExternal){
         List<String> specialValueList = propmanExternal.get('--')
         String applicationName = 'installer-maker'
         if (specialValueList.contains(APPLICATION_INSTALLER)){
             applicationName = APPLICATION_INSTALLER
-        }else if (specialValueList.contains(APPLICATION_MACGYVER)){
-            applicationName = APPLICATION_MACGYVER
+        }else if (specialValueList.contains(APPLICATION_HOYA)){
+            applicationName = APPLICATION_HOYA
         }
         return applicationName
+    }
+
+    Commander(){
     }
 
     Commander(Config config, TimeMan timeman){
         this.config = config
         this.timeman = timeman
-        init(config)
+        init()
     }
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -39,11 +46,27 @@ class Commander {
 
 
 
-    void init(Config config){
-        config.propGen.genSingletonPropManFromResource('installer-maker', 'defaultProperties/installer-maker.default.properties')
-        config.propGen.genSingletonPropManFromResource('installer', 'defaultProperties/installer.default.properties')
-        config.propGen.genSingletonPropManFromResource('macgyver', 'defaultProperties/macgyver.default.properties')
+    void init(){
+        //- Try to get from User's FileSystem
+        generatePropMan('installer-maker')
+        generatePropMan('installer')
+        generatePropMan('hoya')
     }
+
+    void generatePropMan(String fileName){
+        PropMan propmanExternal = config.propGen.getExternalProperties()
+        PropMan propmanDefault = config.propGen.getDefaultProperties()
+        File propertiesFile
+        String propertiesDir = propmanExternal.get('properties.dir') ?: propmanDefault.get('user.dir')
+        if (propertiesDir)
+            propertiesFile = FileMan.find(propertiesDir, "${fileName}.default", ["properties"])
+        if (propertiesFile)
+            config.propGen.genSingletonPropManFromFileSystem(fileName, propertiesFile.path)
+        else
+            config.propGen.genSingletonPropManFromResource(fileName, "defaultProperties/${fileName}.default.properties")
+    }
+
+
 
     void run(){
         //- Properties
@@ -85,8 +108,8 @@ class Commander {
                 config.command(['help'])
             if ([APPLICATION_INSTALLER].contains(applicationName))
                 config.command(['ask', 'install'])
-            if ([APPLICATION_MACGYVER].contains(applicationName))
-                config.command(['macgyver'])
+            if ([APPLICATION_HOYA].contains(applicationName))
+                config.command(['hoya'])
 
         /** [Command] **/
         }else if (hasCommand && !modeHelp){
@@ -102,7 +125,7 @@ class Commander {
         /** [Task / Help] **/
         }else if ((!hasCommand && hasTask) || (hasCommand && modeHelp)){
 
-            if ([APPLICATION_INSTALLER_MAKER, APPLICATION_MACGYVER].contains(applicationName)){
+            if ([APPLICATION_INSTALLER_MAKER, APPLICATION_HOYA].contains(applicationName)){
                 config.command('doSomething')
             }
             if ([APPLICATION_INSTALLER].contains(applicationName)){
@@ -118,52 +141,67 @@ class Commander {
 
 
     /*************************
-     * COMMAND
+     * COMMAND START
      *   - Your command from Command Line
      * @param config
      *************************/
     void startCommand(List<String> commandCalledByUserList, String applicationName){
-        commandCalledByUserList.each{
-            if (config.hasCommand(it)){
-                switch (applicationName){
-                    case APPLICATION_INSTALLER_MAKER:
-                        config.command(it)
-                        break
-                    case APPLICATION_INSTALLER:
-                        config.command(it)
-                        break
-                    case APPLICATION_MACGYVER:
-                        config.command(it)
-                        break
-                    default:
-                        throw new Exception("Invalid approch [${it}]")
-                        break
-                }
+        try{
+            switch (applicationName){
+                case APPLICATION_INSTALLER_MAKER:
+                    InstallerMaker builder = config.findInstance(InstallerMaker)
+                    commandCalledByUserList.each{
+                        if (config.hasCommand(it)){
+                            config.command(it)
+                        }else{
+                            builder.commandName = it
+                            config.command(InstallerMaker)
+                        }
+                    }
+                    break
+                case APPLICATION_INSTALLER:
+                    Installer installer = config.findInstance(Installer)
+                    commandCalledByUserList.each{
+                        if (config.hasCommand(it)){
+                            config.command(it)
+                        }else{
+                            installer.commandName = it
+                            config.command(Installer)
+                        }
+                    }
+                    break
+                case APPLICATION_HOYA:
+                    Hoya hoya = config.findInstance(Hoya)
+                    commandCalledByUserList.each{
+                        if (config.hasCommand(it)){
+                            config.command(it)
+                        }else{
+                            hoya.commandName = it
+                            config.command(Hoya)
+                        }
+                    }
+                    break
+                default:
+                    throw new Exception("Invalid approch")
+                    break
+            }
+        }catch(Exception e){
+            if (e instanceof WantToRestartException
+            || (e.cause && e.cause instanceof WantToRestartException)
+            ){
+                startCommand(commandCalledByUserList, applicationName)
             }else{
-                switch (applicationName){
-                    case APPLICATION_INSTALLER_MAKER:
-                        InstallerMaker builder = config.findInstance(InstallerMaker)
-                        builder.commandName = it
-                        config.command(InstallerMaker)
-                        break
-                    case APPLICATION_INSTALLER:
-                        Installer installer = config.findInstance(Installer)
-                        installer.commandName = it
-                        config.command(Installer)
-                        break
-                    case APPLICATION_MACGYVER:
-                        MacGyver macgyver = config.findInstance(MacGyver)
-                        macgyver.commandName = it
-                        config.command(MacGyver)
-                        break
-                    default:
-                        throw new Exception("Invalid approch [${it}]")
-                        break
-                }
+                throw e
             }
         }
     }
 
+
+
+    /*************************
+     * FINISH START
+     * @param e
+     *************************/
     void finishCommand(List<String> commandCalledByUserList, double elapseTime){
         //Show ElapseTime
         logger.info """

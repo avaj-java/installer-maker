@@ -2,7 +2,7 @@
 #
 # INSTALLER
 #
-#   - 'installer-maker help --default' to see more default variables.
+#   - 'installer-maker init --default' to see more default variables.
 #   - You can change it or use it as a variable.
 #   - You can also create a variable. (However, avoid reserved words.)
 #
@@ -56,11 +56,11 @@ ask:
 
   ask1:
     task: question
-    question: Hi! What your name?
+    desc: Hi! What your name?
 
   ask2:
     task: questionYN
-    question: Do you like banana?
+    desc: Do you like banana?
 
 ##################################################
 #####

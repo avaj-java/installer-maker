@@ -123,12 +123,12 @@ install     | `installer.yml`을 참조하여 설치합니다. (구성된 Instal
 
 
 
-### 4. ***Macgyver***         
+### 4. ***Hoya***         
 
 **Command**|**JOB의 내용** 
 ---|---
 test        | Builder에게 `clean`, `build`를 명령하고, `구성된 Installer를 실행`시킵니다.
-macgyver    | `TAR(.tar) File Path` on Your File System
+hoya    | `TAR(.tar) File Path` on Your File System
 help        | 터미널에서 Command와 Task를 목록을 일람
    
 
@@ -148,13 +148,13 @@ help        | 터미널에서 Command와 Task를 목록을 일람
         installer-maker test -response.file.path=./installer-data/test.rsp
         ```  
     
-2. ***MACGYVER***
+2. ***HOYA***
 
-    - 맥가이버를 이용하면, 하나의 작업(TASK)을 단독으로 실행할 수 있습니다.
+    - 호야를 이용하면, 하나의 작업(TASK)을 단독으로 실행할 수 있습니다.
     - 예)
         
         ```
-        installer-maker macgyver
+        installer-maker hoya
         ```
 
 3. ***HELP*** 

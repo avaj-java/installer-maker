@@ -25,7 +25,6 @@ class Starter {
 
         /** Commander **/
         Commander commander
-
         try{
             commander = new Commander(config, timeman)
             commander.run()

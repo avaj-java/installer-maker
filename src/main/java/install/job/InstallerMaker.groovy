@@ -2,6 +2,8 @@ package install.job
 
 import install.bean.GlobalOptionForInstallerMaker
 import install.bean.ReportSetup
+import install.bean.TaskSetup
+import install.exception.WantToRestartException
 import jaemisseo.man.configuration.annotation.HelpIgnore
 import jaemisseo.man.configuration.annotation.method.Command
 import jaemisseo.man.configuration.annotation.method.Init
@@ -9,7 +11,7 @@ import jaemisseo.man.configuration.annotation.type.Document
 import jaemisseo.man.configuration.annotation.type.Job
 import jaemisseo.man.configuration.annotation.type.Task
 import jaemisseo.man.configuration.data.PropertyProvider
-import install.employee.MacGyver
+import install.employee.Hoya
 import install.util.JobUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
@@ -26,11 +28,33 @@ import org.slf4j.LoggerFactory
 class InstallerMaker extends JobUtil{
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
-    int buildCallCount = 0
+    int jobCallingCount = 0
 
     InstallerMaker(){
         propertiesFileName = 'installer-maker'
         jobName = 'installer-maker'
+    }
+
+    void logo(){
+        logger.info Util.multiTrim("""
+        88                                          88 88                                       
+        ''                         ,d               88 88                                       
+                                   88               88 88                                       
+        88 8b,dPPYba,  ,adPPYba, MM88MMM ,adPPYYba, 88 88  ,adPPYba, 8b,dPPYba,                 
+        88 88P'   ''8a I8[    ''   88    ''     'Y8 88 88 a8P_____88 88P'   'Y8                 
+        88 88       88  ''Y8ba,    88    ,adPPPPP88 88 88 8PP''''''' 88                         
+        88 88       88 aa    ]8I   88,   88,    ,88 88 88 '8b,   ,aa 88                         
+        88 88       88 ''YbbdP''   'Y888 ''8bbdP'Y8 88 88  ''Ybbd8'' 88                         
+                                                                                                
+                                      88                                                        
+                                      88                                                        
+                                      88                                                        
+        88,dPYba,,adPYba,  ,adPPYYba, 88   ,d8  ,adPPYba, 8b,dPPYba,                            
+        88P'   '88'    '8a ''     'Y8 88 ,a8'  a8P_____88 88P'   'Y8                            
+        88      88      88 ,adPPPPP88 8888[    8PP''''''' 88                                    
+        88      88      88 88,    ,88 88''Yba, '8b,   ,aa 88                                    
+        88      88      88 ''8bbdP'Y8 88   'Y8a ''Ybbd8'' 88                                    
+        """)
     }
 
     @Init(lately=true)
@@ -39,6 +63,7 @@ class InstallerMaker extends JobUtil{
         this.varman = setupVariableMan(propman)
         provider.shift(jobName)
         this.gOpt = config.injectValue(new GlobalOptionForInstallerMaker())
+        commit()
     }
 
     PropMan setupPropMan(PropertyProvider provider){
@@ -70,20 +95,25 @@ class InstallerMaker extends JobUtil{
 
     @Command
     void customCommand(){
-        if (!propertiesFile)
-            throw new Exception('Does not exists script file [ installer-maker.yml ]')
-
         //Setup Log
         setuptLog(gOpt.logSetup)
+
+        if (!jobCallingCount++)
+            logo()
+
+        if (!propertiesFile)
+            throw new Exception('Does not exists script file [ installer-maker.yml ]')
 
         ReportSetup reportSetup = config.injectValue(new ReportSetup())
 
         //Each level by level
         validTaskList = Util.findAllClasses('install', [Task])
-        eachTaskWithCommit(commandName){ String propertyPrefix ->
+        eachTaskWithCommit(commandName){ TaskSetup task ->
             try{
-                return runTaskByPrefix("${propertyPrefix}")
-            }catch(e){
+                return runTask(task)
+            }catch(WantToRestartException wtre){
+                throw wtre
+            }catch(Exception e){
                 //Write Report
                 writeReport(reportMapList, reportSetup)
                 throw e
@@ -98,12 +128,22 @@ class InstallerMaker extends JobUtil{
 
     @Command('init')
     @Document("""
-    Init 3 Installer-Maker script files
-
-        You can generate Sample Properties Files to build installer 
+    Init 2 Installer-Maker script files
+    You can generate Sample Properties Files to build installer (installer-maker.yml, installer.yml)
     
-        1. installer-maker.yml        
-        2. installer.yml        
+        installer-maker init    
+    
+    You can generate Default Properties Files (installer-maker.default.properties, installer.default.properties) 
+            
+        installer-maker init --default
+    
+    And you can create custum task manager script (hoya.yml) 
+        
+        hoya init
+            
+    Default.. (hoya.default.properties)
+    
+        hoya init --default
     """)
     void initCommand(){
         //Ready
@@ -120,30 +160,61 @@ class InstallerMaker extends JobUtil{
         PropMan externalPropMan = config.propGen.getExternalProperties()
         List<String> dashDashOptionList = externalPropMan.get('--')
 
-        if (dashDashOptionList.contains('macgyver')){
-            try{
-                fileFrom = "macgyver.yml"
-                fileTo = "${propertiesDir}/macgyver.yml"
-                new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
-            }catch(e){
-                logger.warn "File Aready Exists. ${fileTo}\n"
+        /** Default Properties **/
+        if (dashDashOptionList.contains('default')){
+            if (dashDashOptionList.contains('hoya')) {
+                try{
+                    fileFrom = "defaultProperties/hoya.default.properties"
+                    fileTo = "${propertiesDir}/hoya.default.properties"
+                    new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
+                }catch(e){
+                    logger.warn "File Aready Exists. ${fileTo}\n"
+                }
+            }else{
+                try{
+                    fileFrom = "defaultProperties/installer-maker.default.properties"
+                    fileTo = "${propertiesDir}/installer-maker.default.properties"
+                    new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
+                }catch(e){
+                    logger.warn "File Aready Exists. ${fileTo}\n"
+                }
+
+                try{
+                    fileFrom = "defaultProperties/installer.default.properties"
+                    fileTo = "${propertiesDir}/installer.default.properties"
+                    new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
+                }catch(e){
+                    logger.warn "File Aready Exists. ${fileTo}\n"
+                }
             }
 
+        /** Properties **/
         }else{
-            try{
-                fileFrom = "sampleProperties/installer-maker.sample.yml"
-                fileTo = "${propertiesDir}/installer-maker.yml"
-                new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
-            }catch(e){
-                logger.warn "File Aready Exists. ${fileTo}\n"
-            }
+            if (dashDashOptionList.contains('hoya')){
+                try{
+                    fileFrom = "hoya.yml"
+                    fileTo = "${propertiesDir}/hoya.yml"
+                    new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
+                }catch(e){
+                    logger.warn "File Aready Exists. ${fileTo}\n"
+                }
 
-            try{
-                fileFrom = "sampleProperties/installer.sample.yml"
-                fileTo = "${propertiesDir}/installer.yml"
-                new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
-            }catch(e){
-                logger.warn "File Aready Exists. ${fileTo}\n"
+            }else{
+                try{
+                    fileFrom = "sampleProperties/installer-maker.sample.yml"
+                    fileTo = "${propertiesDir}/installer-maker.yml"
+                    new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
+                }catch(e){
+                    logger.warn "File Aready Exists. ${fileTo}\n"
+                }
+
+                try{
+                    fileFrom = "sampleProperties/installer.sample.yml"
+                    fileTo = "${propertiesDir}/installer.yml"
+                    new FileMan().readResource(fileFrom).write(fileTo, fileSetup)
+                }catch(e){
+                    logger.warn "File Aready Exists. ${fileTo}\n"
+                }
             }
         }
     }
@@ -173,8 +244,8 @@ class InstallerMaker extends JobUtil{
         //Setup Log
         setuptLog(gOpt.logSetup)
 
-        if (!buildCallCount++)
-            logBigTitle "Installer-Maker"
+        if (!jobCallingCount++)
+            logo()
 
         logTaskDescription('clean')
 
@@ -222,8 +293,8 @@ class InstallerMaker extends JobUtil{
         //Setup Log
         setuptLog(gOpt.logSetup)
 
-        if (!buildCallCount++)
-            logBigTitle "Installer-Maker"
+        if (!jobCallingCount++)
+            logo()
 
         logTaskDescription('build')
 
@@ -241,10 +312,12 @@ class InstallerMaker extends JobUtil{
 
             //2. Each level by level
             validTaskList = Util.findAllClasses('install', [Task])
-            eachTaskWithCommit('build'){ String propertyPrefix ->
+            eachTaskWithCommit('build'){ TaskSetup task ->
                 try{
-                    return runTaskByPrefix("${propertyPrefix}")
-                }catch(e){
+                    return runTask(task)
+                }catch(WantToRestartException wtre){
+                    throw wtre
+                }catch(Exception e){
                     //Write Report
                     writeReport(reportMapList, reportSetup)
                     throw e
@@ -286,7 +359,7 @@ class InstallerMaker extends JobUtil{
         String argsExceptCommand = provider.get('program.args.except.command')
         String argsModeExec = '-mode.exec.self=true'
         String installBinPathForWIn = "${binPath}/installer.bat".replaceAll(/[\/\\]+/, "\\$File.separator")
-        String installBinPathForLin = "${binPath}/installer".replaceAll(/[\/\\]+/, "/")
+        String installBinPathForLin = FileMan.toSlash("${binPath}/installer")
         provider.setRaw('command.win', "${installBinPathForWIn} ask install ${argsExceptCommand} ${argsModeExec}")
         provider.setRaw('command.lin', "${installBinPathForLin} ask install ${argsExceptCommand} ${argsModeExec}")
         //run
@@ -381,7 +454,7 @@ class InstallerMaker extends JobUtil{
 
         InstallerMaker builder = config.findInstance(InstallerMaker)
         Installer installer = config.findInstance(Installer)
-        MacGyver macgyver = config.findInstance(MacGyver)
+        Hoya hoya = config.findInstance(Hoya)
 
         File builderPropertiesFile = FileMan.find(userSetPropertiesDir, builder.propertiesFileName, ["yml", "yaml", "properties"])
         if (builderPropertiesFile)
@@ -395,9 +468,9 @@ class InstallerMaker extends JobUtil{
         else
             throw Exception("Does not exist script file(${installer.propertiesFileName})")
         
-        File macgyverPropertiesFile = FileMan.find(userSetPropertiesDir, macgyver.propertiesFileName, ["yml", "yaml", "properties"])
-        if (macgyverPropertiesFile)
-            FileMan.copy(macgyverPropertiesFile.path, tempNowDir, opt)
+        File hoyaPropertiesFile = FileMan.find(userSetPropertiesDir, hoya.propertiesFileName, ["yml", "yaml", "properties"])
+        if (hoyaPropertiesFile)
+            FileMan.copy(hoyaPropertiesFile.path, tempNowDir, opt)
 
 
 
@@ -471,35 +544,35 @@ class InstallerMaker extends JobUtil{
         ])
         .write(binInstallerBatDestPath)
 
-        /** 5. Generate Runable Binary File (macgyver) **/
-        String binMacgyverShSourcePath = 'binForInstaller/macgyver'
-        String binMacgyverBatSourcePath = 'binForInstaller/macgyver.bat'
-        String binMacgyverShDestPath = "${binDestPath}/macgyver"
-        String binMacgyverBatDestPath = "${binDestPath}/macgyver.bat"
-        logger.debug """<Installer-Maker> Generate Bin, Macgyver:
-            SH  : ${binMacgyverShDestPath}
-            BAT : ${binMacgyverBatDestPath}
+        /** 5. Generate Runable Binary File (hoya) **/
+        String binHoyaShSourcePath = 'binForInstaller/hoya'
+        String binHoyaBatSourcePath = 'binForInstaller/hoya.bat'
+        String binHoyaShDestPath = "${binDestPath}/hoya"
+        String binHoyaBatDestPath = "${binDestPath}/hoya.bat"
+        logger.debug """<Installer-Maker> Generate Bin, Hoya:
+            SH  : ${binHoyaShDestPath}
+            BAT : ${binHoyaBatDestPath}
         """
 
-        //- Gen bin/macgyver(sh)
+        //- Gen bin/hoya(sh)
         new FileMan()
         .set(fileSetupForLin)
-        .readResource(binMacgyverShSourcePath)
+        .readResource(binHoyaShSourcePath)
         .replaceLine([
             'REL_PATH_BIN_TO_HOME=' : "REL_PATH_BIN_TO_HOME=${binToHomeRelPath}",
             'REL_PATH_HOME_TO_LIB=' : "REL_PATH_HOME_TO_LIB=${homeToLibRelPath}"
         ])
-        .write(binMacgyverShDestPath)
+        .write(binHoyaShDestPath)
 
-        //- Gen bin/macgyver.bat
+        //- Gen bin/hoya.bat
         new FileMan()
         .set(fileSetup)
-        .readResource(binMacgyverBatSourcePath)
+        .readResource(binHoyaBatSourcePath)
         .replaceLine([
             'set REL_PATH_BIN_TO_HOME=' : "set REL_PATH_BIN_TO_HOME=${binToHomeRelPathForWin}",
             'set REL_PATH_HOME_TO_LIB=' : "set REL_PATH_HOME_TO_LIB=${homeToLibRelPathForWin}"
         ])
-        .write(binMacgyverBatDestPath)
+        .write(binHoyaBatDestPath)
 
         /** 6. Generate Runable Binary File (check) **/
         String binCheckShSourcePath = 'binForInstaller/check'
@@ -508,7 +581,7 @@ class InstallerMaker extends JobUtil{
             SH  : ${binCheckShDestPath}
         """
 
-        //- Gen bin/macgyver(sh)
+        //- Gen bin/hoya(sh)
         new FileMan()
         .set(fileSetupForLin)
         .readResource(binCheckShSourcePath)

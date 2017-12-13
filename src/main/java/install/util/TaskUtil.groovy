@@ -20,6 +20,7 @@ class TaskUtil{
     public static final Integer STATUS_TASK_RUN_FAILED = 2
     public static final Integer STATUS_UNDO_QUESTION = 3
     public static final Integer STATUS_REDO_QUESTION = 4
+    public static final Integer STATUS_GOTO_COMMAND = 100
 
 
     PropMan propman
@@ -89,8 +90,9 @@ class TaskUtil{
     }
 
     protected void logTaskDescription(String title){
+        logger.debug ''
         logger.debug '=================================================='
-        logger.info ":${title}"
+        logger.info " ${title}"
         logger.debug '=================================================='
     }
 

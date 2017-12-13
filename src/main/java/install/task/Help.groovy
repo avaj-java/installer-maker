@@ -54,6 +54,11 @@ class Help extends TaskUtil{
         //All Command and Task (No Detail)
         if (!specificCommandName && !specificTaskName){
 
+            //- Print Help Task Document
+            List<Annotation> allClassAnnotationList = config.findAllAnnotationFromClass(Help)
+            Document documentAnt = allClassAnnotationList.find { it.annotationType() == Document }
+            printDocument(documentAnt)
+
             if (isCommandable(applicationName)){
                 logger.info ' [ Commands ]'
                 printHelpCommand()
@@ -63,10 +68,6 @@ class Help extends TaskUtil{
             if (isTaskRunable(applicationName)){
                 logger.info ' [ Tasks ]'
                 printHelpTask()
-                //- Print Help Task Document
-                List<Annotation> allClassAnnotationList = config.findAllAnnotationFromClass(Help)
-                Document documentAnt = allClassAnnotationList.find { it.annotationType() == Document }
-                printDocument(documentAnt)
             }
 
         }else{
@@ -102,7 +103,7 @@ class Help extends TaskUtil{
     }
 
     boolean isTaskRunable(String applicationName){
-        return [Commander.APPLICATION_INSTALLER_MAKER, Commander.APPLICATION_MACGYVER].contains(applicationName)
+        return [Commander.APPLICATION_INSTALLER_MAKER, Commander.APPLICATION_HOYA].contains(applicationName)
     }
 
 
@@ -144,14 +145,12 @@ class Help extends TaskUtil{
         HelpIgnore helpIgnoreAnt = info.findAnnotation(HelpIgnore)
         Document documentAnt = info.findAnnotation(Document)
 
-        //-Print
+        if (isDetail)
+            printDocument(documentAnt)
+
+        /** Print Help **/
         if (!helpIgnoreAnt)
             logger.info "${this.applicationName} ${commandName}"
-
-        //-Detail
-        if (isDetail){
-            printDocument(documentAnt)
-        }
 
     }
 
@@ -165,48 +164,62 @@ class Help extends TaskUtil{
         String taskName = clazz.getSimpleName().toLowerCase()
 
         if (!Util.findAllClasses('install', TerminalIgnore).contains(clazz)){
-            String documentString = ''
-            List<String> terminalValueRule = []
-            List<String> propertyList = []
-
             //-Collect
             List<Annotation> allClassAnnotationList = config.findAllAnnotationFromClass(clazz)
-            Task taskAnt = allClassAnnotationList.find { it.annotationType() == Task }
-            TerminalValueProtocol terminalValueRuleAnt = allClassAnnotationList.find { it.annotationType() == TerminalValueProtocol }
             Document documentAnt = allClassAnnotationList.find { it.annotationType() == Document }
-            if (taskAnt && terminalValueRuleAnt)
-                terminalValueRule = terminalValueRuleAnt.value().toList()
 
-            //-Collect Value Names (Properties)
-            propertyList = collectValueNames(clazz)
-
-            //-Print Non Property
-            List nonPropertyPrintItemList = []
-            terminalValueRule.each {
-                nonPropertyPrintItemList << "<${it}>"
-            }
-            logger.info "${this.applicationName} -${taskName} ${nonPropertyPrintItemList.join(' ')}"
-
-            //-Print with Property
-            if (isDetail){
-                if (propertyList){
-                    List propertyPrintItemList = []
-                    propertyList.each {
-                        propertyPrintItemList << "-${it}=<value>"
-                    }
-
-                    //
-//                    logger.info "${this.applicationName} -${taskName} ${propertyPrintItemList.join(' ')}"
-
-                    //
-                    logger.info('')
-                    logger.info(' [ Properties ] ')
-                    propertyPrintItemList.each{
-                        logger.info("${it}")
-                    }
-                }
-
+            /** Print Help **/
+            if (isDetail)
                 printDocument(documentAnt)
+
+            if (isDetail){
+                logger.info ''
+                logger.info ' [ Simple Execution ]'
+            }
+            printNonProperty(taskName, allClassAnnotationList)
+
+            if (isDetail)
+                printWithProperty(clazz)
+        }
+    }
+
+    void printNonProperty(String taskName, List<Class> allClassAnnotationList){
+        Task taskAnt = allClassAnnotationList.find { it.annotationType() == Task }
+        TerminalValueProtocol terminalValueRuleAnt = allClassAnnotationList.find { it.annotationType() == TerminalValueProtocol }
+        List<String> terminalValueRule = []
+        if (taskAnt && terminalValueRuleAnt)
+            terminalValueRule = terminalValueRuleAnt.value().toList()
+        List nonPropertyPrintItemList = []
+        terminalValueRule.each {
+            nonPropertyPrintItemList << "<${it}>"
+        }
+        logger.info "${this.applicationName} -${taskName} ${nonPropertyPrintItemList.join(' ')}"
+    }
+
+    void printWithProperty(Class clazz){
+        //-Collect Value Names (Properties)
+        Map<String, String> propertyItemMap = collectValueNames(clazz)
+        if (propertyItemMap){
+            List propertyPrintItemList = []
+            propertyItemMap.each {
+                propertyPrintItemList << "-${it.key}=<${it.value}>"
+            }
+
+            logger.info('')
+            logger.info(' [ Options ] ')
+            propertyPrintItemList.each{
+                logger.info("${it}")
+            }
+        }
+    }
+
+    void printDocument(Document documentAnt){
+        if (documentAnt){
+            String documentString = documentAnt.value()
+            if (documentString){
+//                logger.info ''
+//                logger.info ' [ Detail ]'
+                logger.info Util.multiTrim(documentString)
             }
         }
     }
@@ -218,25 +231,25 @@ class Help extends TaskUtil{
      * Collect Value Annotation's Name on Class
      *
      *************************/
-    List<String> collectValueNames(Class clazz){
-        List resultPropertyList = []
-        return collectValueNames(clazz, '', resultPropertyList)
+    Map<String, String> collectValueNames(Class clazz){
+        Map<String, String> resultPropertyMap = [:]
+        return collectValueNames(clazz, '', resultPropertyMap)
     }
 
-    List<String> collectValueNames(Class clazz, String propertyPrefixFirstName, List resultPropertyList){
+    Map<String, String> collectValueNames(Class clazz, String propertyPrefixFirstName, Map<String, String> resultPropertyMap){
         ReflectInfomation reflectInfo = config.reflectionMap[clazz]
         if (reflectInfo){
             reflectInfo.valueFieldNameMap.each{ String fieldName, FieldInfomation fieldInfo ->
-                resultPropertyList = collectValueNames(propertyPrefixFirstName, fieldInfo.annotationList, fieldInfo.fieldType, resultPropertyList)
+                resultPropertyMap = collectValueNames(propertyPrefixFirstName, fieldInfo.annotationList, fieldInfo.fieldType, resultPropertyMap)
             }
             reflectInfo.valueMethodNameMap.each{ String methodName, MethodInfomation methodInfo ->
-                resultPropertyList = collectValueNames(propertyPrefixFirstName, methodInfo.annotationList, methodInfo.parameterTypes[0], resultPropertyList)
+                resultPropertyMap = collectValueNames(propertyPrefixFirstName, methodInfo.annotationList, methodInfo.parameterTypes[0], resultPropertyMap)
             }
         }
-        return resultPropertyList
+        return resultPropertyMap
     }
 
-    List<String> collectValueNames(String propertyPrefixFirstName, List<Annotation> annotationList, Class valueType, List resultPropertyList){
+    Map<String, String> collectValueNames(String propertyPrefixFirstName, List<Annotation> annotationList, Class valueType, Map<String, String> resultPropertyMap){
         Value valueAnt = annotationList.find { it.annotationType() == Value }
         HelpIgnore helpIgnoreAnt = annotationList.find { it.annotationType() == HelpIgnore }
         if (valueAnt && !helpIgnoreAnt) {
@@ -244,65 +257,21 @@ class Help extends TaskUtil{
             String propertyPrefixName = valueAnt.prefix()
             String fullPropertyPrefixName = "${propertyPrefixFirstName}${propertyPrefixName}"
             String fullPropertyName = "${propertyPrefixFirstName}${propertyPrefixName}${propertyName}"
-            if (propertyName)
-                resultPropertyList << fullPropertyName
-            else
-                collectValueNames(valueType, fullPropertyPrefixName, resultPropertyList)
-//                    boolean isRequired = valueAnt.required()
-//                    String[] validList = valueAnt.validList()
-        }
-    }
 
+            String value = 'value'
+            List<String> validList = (valueAnt.validList() ?: valueAnt.caseIgnoreValidList())?.toList()
+            boolean isRequired = valueAnt.required()
 
+            if (validList)
+                value = validList.join('|')
 
-    /*************************
-     *
-     * Print Document Annotation Information
-     *
-     *************************/
-    void printDocument(Document documentAnt){
-        if (documentAnt){
-            String documentString = documentAnt.value()
-            if (documentString){
-                logger.info ''
-                logger.info multiTrim(documentString)
+            if (propertyName){
+                resultPropertyMap[fullPropertyName] = value
+            }else{
+                collectValueNames(valueType, fullPropertyPrefixName, resultPropertyMap)
             }
         }
-    }
-
-    String multiTrim(String content){
-        //- Remove Shortest Left Indent
-        Integer shortestIndentIndex = 0
-        List<String> stringList = content.split('\n').toList()
-        List<String> resultStringList = stringList.findAll{
-            List charList = it.toList()
-            int indentIndex = 0
-            for (int i=0; i<charList.size(); i++){
-                if (charList[i] != " "){
-                    indentIndex = i
-                    break
-                }
-            }
-            if (indentIndex > 0){
-                if (shortestIndentIndex == 0 || shortestIndentIndex > indentIndex){
-                    shortestIndentIndex =  indentIndex
-                }
-            }
-            return true
-        }
-        //- Remove Empty Top and Bottom
-        Integer startRowIndex
-        Integer endRowIndex
-        resultStringList.eachWithIndex{ String row, int index ->
-            String line = row.trim()
-            if (line && startRowIndex == null)
-                startRowIndex = index
-            if (line)
-                endRowIndex = index
-        }
-        resultStringList = resultStringList[startRowIndex..endRowIndex]
-        String resultString = resultStringList.collect{ it.substring(shortestIndentIndex) }.join('\n')
-        return resultString
+        return resultPropertyMap
     }
 
 }

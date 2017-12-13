@@ -2,8 +2,8 @@ package install.util.encryptor
 
 interface EncryptionUtil {
 
-    String encrypt(String content)
+    String encrypt(String content) throws Exception
 
-    String decrypt(String encryptedContent)
+    String decrypt(String encryptedContent) throws Exception
 
 }
