@@ -153,8 +153,6 @@ class Installer extends JobUtil{
         //Setup Log
         setuptLog(gOpt.logSetup)
 
-        logBigTitle "Installer"
-
         logTaskDescription('ask')
 
         if (!propertiesFile)
@@ -195,8 +193,6 @@ class Installer extends JobUtil{
 
         //Setup Log
         setuptLog(gOpt.logSetup)
-
-        logBigTitle "Installer"
 
         logTaskDescription('install')
 
