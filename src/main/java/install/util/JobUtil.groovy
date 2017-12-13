@@ -351,7 +351,7 @@ class JobUtil extends TaskUtil{
 
             //Check It is Last Task?
             //If First Task is undoMore, then auto-redo
-            if (!commitTask){
+            if (!commitTask && isUndoMoreTask(mvTask)){
                 mvTask = redo(mvTask, latestTask)
                 logger.error "It can not undo"
             }
@@ -536,7 +536,8 @@ class JobUtil extends TaskUtil{
      * DESCRIPT
      *************************/
     protected void descript(TaskSetup task){
-        String description = task.desc ? "$task.jobName:$task.desc" : "$task.jobName:$task.taskName:$task.taskTypeName"
+//        String description = task.desc ? "$task.jobName:$task.desc" : "$task.jobName:$task.taskName:$task.taskTypeName"
+        String description = task.desc ?: "$task.jobName:$task.taskName:$task.taskTypeName"
         if (description && !task.commandName.equalsIgnoreCase('ask')){
             if (task.descColor)
                 config.logGen.setupConsoleLoggerColorPattern(task.descColor)
@@ -563,8 +564,10 @@ class JobUtil extends TaskUtil{
                 config.logGen.setupConsoleLoggerColorPattern(task.color)
 
             //Description
-            if ( !(task.jobName.equalsIgnoreCase('hoya') && [Version, System, Help].contains(task.taskClazz)) )
-                descript(task)
+            if ( !(task.jobName.equalsIgnoreCase('hoya') && [Version, System, Help].contains(task.taskClazz)) ){
+                if ( ![Question, QuestionYN, QuestionChoice, QuestionFindFile, Set, Notice].contains(task.taskClazz) )
+                    descript(task)
+            }
 
             /** Start Task **/
             status = task.taskInstance.run()

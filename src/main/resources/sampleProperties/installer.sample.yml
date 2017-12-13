@@ -56,11 +56,11 @@ ask:
 
   ask1:
     task: question
-    question: Hi! What your name?
+    desc: Hi! What your name?
 
   ask2:
     task: questionYN
-    question: Do you like banana?
+    desc: Do you like banana?
 
 ##################################################
 #####

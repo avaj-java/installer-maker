@@ -90,8 +90,9 @@ class TaskUtil{
     }
 
     protected void logTaskDescription(String title){
+        logger.info ''
         logger.debug '=================================================='
-        logger.info ":${title}"
+        logger.info " ${title}"
         logger.debug '=================================================='
     }
 
