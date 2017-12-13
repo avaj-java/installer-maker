@@ -6,6 +6,7 @@ import jaemisseo.man.configuration.annotation.Value
 import jaemisseo.man.configuration.annotation.type.Task
 import jaemisseo.man.configuration.annotation.type.Undoable
 
+@HelpIgnore
 @Undoable(modeMore=true)
 @Task
 class Command extends TaskUtil{
