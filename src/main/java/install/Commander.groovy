@@ -1,5 +1,6 @@
 package install
 
+import ch.qos.logback.classic.Level
 import install.exception.WantToRestartException
 import jaemisseo.man.FileMan
 import jaemisseo.man.configuration.Config
@@ -11,7 +12,6 @@ import jaemisseo.man.TimeMan
 import jaemisseo.man.configuration.annotation.type.Bean
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.slf4j.event.Level
 
 @Bean
 class Commander {
@@ -246,14 +246,14 @@ class Commander {
         }
 
         if ([Level.DEBUG, Level.TRACE].contains( config.logGen.getConsoleLogLevel() )){
-            rootLogger.debug('Error', e)
+            rootLogger.error('Error', e)
+            //Finish Color Log Pattern
+            config.logGen.setupBeforeConsoleLoggerPattern()
         }else{
             rootLogger.detachAppender('CONSOLE')
             rootLogger.debug('Error', e)
         }
 
-        //Finish Color Log Pattern
-        config.logGen.setupBeforeConsoleLoggerPattern()
     }
 
     /*************************
