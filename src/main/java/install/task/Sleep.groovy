@@ -7,22 +7,19 @@ import jaemisseo.man.configuration.annotation.type.Task
 import jaemisseo.man.configuration.annotation.type.Undoable
 import jaemisseo.man.configuration.annotation.type.Undomore
 
-@HelpIgnore
-@Undoable
 @Undomore
+@Undoable
 @Task
-class Command extends TaskUtil{
+class Sleep extends TaskUtil{
 
-    @Value('command')
-    List<String> commandList
-
-    @HelpIgnore
-    @Value('job')
-    String jobName
+    @Value('second')
+    Integer second
 
     @Override
     Integer run(){
-        return STATUS_GOTO_COMMAND
+        Long ms = second *1000
+        sleep(ms)
+        return STATUS_TASK_DONE
     }
 
 }

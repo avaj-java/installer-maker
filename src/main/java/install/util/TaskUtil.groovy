@@ -21,9 +21,16 @@ class TaskUtil{
     public static final Integer STATUS_UNDO_QUESTION = 3
     public static final Integer STATUS_REDO_QUESTION = 4
     public static final Integer STATUS_GOTO_COMMAND = 100
+    public static final Integer STATUS_RESET = 101
+    public static final Integer STATUS_EXIT = 102
+    public static final Integer STATUS_BACK = 103
+
+
+
 
 
     PropMan propman
+    PropMan virtualPropman
     VariableMan varman
 
     Integer status
@@ -92,7 +99,7 @@ class TaskUtil{
     protected void logTaskDescription(String title){
         logger.debug ''
         logger.debug '=================================================='
-        logger.info " ${title}"
+        logger.info ":${title}"
         logger.debug '=================================================='
     }
 
@@ -133,12 +140,12 @@ class TaskUtil{
         if (property){
             //- Set Some Value to Some Property
             if (value && property instanceof String){
-                provider.setRaw(property, value)
+                provider.setToRawProperty(property, value)
 
             //- Set Some Property with JSON Object
             }else if (property instanceof Map){
                 (property as Map).each{ String propertyName, def propertyValue ->
-                    provider.setRaw(propertyName, propertyValue)
+                    provider.setToRawProperty(propertyName, propertyValue)
                 }
             }
         }

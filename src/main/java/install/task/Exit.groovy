@@ -11,18 +11,11 @@ import jaemisseo.man.configuration.annotation.type.Undomore
 @Undoable
 @Undomore
 @Task
-class Command extends TaskUtil{
-
-    @Value('command')
-    List<String> commandList
-
-    @HelpIgnore
-    @Value('job')
-    String jobName
+class Exit extends TaskUtil{
 
     @Override
     Integer run(){
-        return STATUS_GOTO_COMMAND
+        return STATUS_EXIT
     }
 
 }

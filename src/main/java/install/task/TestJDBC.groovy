@@ -6,6 +6,7 @@ import jaemisseo.man.configuration.annotation.Value
 import jaemisseo.man.configuration.annotation.type.TerminalValueProtocol
 import install.util.TaskUtil
 import jaemisseo.man.util.ConnectionGenerator
+import jaemisseo.man.util.Util
 
 /**
  * Created by sujkim on 2017-01-25.
@@ -41,12 +42,15 @@ class TestJDBC extends TaskUtil{
     @Value('query')
     String query
 
+    @Value('try.second')
+    Integer second
 
+    @Value('mode.progress.bar')
+    Boolean modeProgressBar
 
     @Override
     Integer run(){
         Map previewMap
-        Sql sql
         List list
 
         //READY
@@ -63,62 +67,81 @@ class TestJDBC extends TaskUtil{
         previewMap = connGen.generateDataBaseInfoMap()
         previewMap.query = query ?: "select 'Try To Check Your Query' as TEST from dual"
 
-        //START
+        /** LOG **/
         logger.debug '<REQUEST> - CHECK'
         logInfo(previewMap)
 
-        //RUN
+        /** RUN **/
         logger.debug "<JDBC>"
-        try{
-            printStep '1. Connect to DB'
-            sql = new Sql(connGen.generate())
-            printOk()
+        Long startDate = new Date().getTime()
 
-            printStep '2. Run SQL'
-            list = sql.rows(previewMap.query)
-            printOk()
+        if (!second){
+            try{
+                list = runSql(connGen, previewMap.query)
+            }catch(e){
+                logger.error "Could not connect"
+                throw e
+            }
 
-        }catch(Exception e){
-            printFailed()
-            throw e
-
-        }finally{
-            printStep '3. Disconnect from DB'
-            if (sql){
-                sql.close()
-                printOk()
+        }else{
+            Integer elapsedSecond = Util.whileWithTimeProgressBar(second, 30, (modeProgressBar==null)?true:modeProgressBar){
+                try{
+                    list = runSql(connGen, previewMap.query, false)
+                    return true
+                }catch(e){
+                    sleep(700)
+                }
+            }
+            if (list != null){
+                logger.info "Connected in ${elapsedSecond} seconds."
             }else{
-                printError 'Tester is not connected'
+                throw new Exception("The connection failed within ${elapsedSecond} seconds.")
             }
         }
 
-        //RETURN DATA
+        /** LOG RETURN DATA **/
         logger.debug "<RETURNED DATA(Count:${list.size()})> - CHECK"
         list.each{
             logger.debug it.toString()
         }
 
-        //FINISH
+        /** FINISH **/
         logMiddleTitle 'FINISHED TESTJDBC'
         return STATUS_TASK_DONE
     }
 
 
 
-    void printStep(String title){
-        print "${title} - "
+    List runSql(ConnectionGenerator connGen, String query){
+        runSql(connGen, query, true)
     }
 
-    void printError(String errorMessage){
-        logger.error "!! ${errorMessage} !!\n"
-    }
+    List runSql(ConnectionGenerator connGen, String query, boolean modeLog){
+        Sql sql
+        List resultList
+        try{
+            if (modeLog) logger.info 'Connect to DB'
+            sql = new Sql(connGen.generate())
+            if (modeLog) logger.info 'OK\n'
 
-    void printOk(){
-        logger.debug 'OK\n'
-    }
+            if (modeLog) logger.info 'Run SQL'
+            resultList = sql.rows(query)
+            if (modeLog) logger.info 'OK\n'
 
-    void printFailed(){
-        logger.error '!!! FAILED\n'
+        }catch(Exception e){
+            if (modeLog) logger.error '!!! FAILED\n'
+            throw e
+
+        }finally{
+            if (modeLog) logger.info 'Disconnect from DB'
+            if (sql){
+                sql.close()
+                if (modeLog) logger.info 'OK\n'
+            }else{
+                if (modeLog) logger.error "!! Tester is not connected !!\n"
+            }
+        }
+        return resultList
     }
 
     void logInfo(Map previewMap){

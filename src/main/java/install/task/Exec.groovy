@@ -65,7 +65,7 @@ class Exec extends TaskUtil{
     void commandWIthStyleA(String userCommand){
         //Data
         String command = (isWindows) ? "cmd.exe /c ${userCommand}" : "sh -c ${userCommand}"
-        logger.debug "Command> ${command}"
+        logger.info "Command> ${command}"
 
         //Execute Command
         Process process = Runtime.getRuntime().exec("${command} ${userDir}")
@@ -74,9 +74,9 @@ class Exec extends TaskUtil{
 
     void commandWIthStyleB(String userCommand){
         //Data
-        String command = (isWindows) ? "cmd.exe /c ${userCommand}" : "sh -c ${userCommand}"
+        String command = (isWindows) ? "cmd.exe /c ${userCommand}" : "${userCommand}"
         String[] commandArray = command.split(/\s+/)
-        logger.debug "Command> ${command}"
+        logger.info "Command> ${command}"
 
         //Execute Command
         ProcessBuilder builder = new ProcessBuilder().command(commandArray).directory( new File(userDir) )

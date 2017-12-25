@@ -83,19 +83,24 @@ class Commander {
         boolean hasCommand = !!commandCalledByUserList
         boolean hasTask = !!taskCalledByUserList
 
+        /** --OPTION **/
+        List<String> specialValueList = propmanExternal.get('--')
         //- Set Application Identity
         String applicationName = getApplicationName(propmanExternal)
         propmanDefault.set('application.name', applicationName)
-
         //- Set Log
-        List<String> specialValueList = propmanExternal.get('--')
         if (specialValueList.contains('error')){
             propmanExternal.set('log.level.console', 'error')
+            if (specialValueList.contains('log.file'))
+                propmanExternal.set('log.level.file', 'error')
         }else if (specialValueList.contains('debug')){
             propmanExternal.set('log.level.console', 'debug')
+            if (specialValueList.contains('log.file'))
+                propmanExternal.set('log.level.file', 'debug')
         }else if (specialValueList.contains('trace')){
             propmanExternal.set('log.level.console', 'trace')
-            propmanExternal.set('log.level.file', 'trace')
+            if (specialValueList.contains('log.file'))
+                propmanExternal.set('log.level.file', 'trace')
         }
 
 
@@ -216,6 +221,9 @@ class Commander {
      * @param e
      *************************/
     void logError(Exception e){
+        //Start Color Log Pattern
+        config.logGen.setupConsoleLoggerColorPattern('red')
+
         Throwable cause = e.getCause()
         String indent = '\t- '
         ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME)
@@ -243,6 +251,9 @@ class Commander {
             rootLogger.detachAppender('CONSOLE')
             rootLogger.debug('Error', e)
         }
+
+        //Finish Color Log Pattern
+        config.logGen.setupBeforeConsoleLoggerPattern()
     }
 
     /*************************

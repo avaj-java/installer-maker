@@ -59,10 +59,19 @@ class InstallerMaker extends JobUtil{
 
     @Init(lately=true)
     void init(){
+        //Parse Global Property's variable
         this.propman = setupPropMan(provider)
         this.varman = setupVariableMan(propman)
+
+        //Inject default value to GlobalOption
         provider.shift(jobName)
         this.gOpt = config.injectValue(new GlobalOptionForInstallerMaker())
+
+        //Make Virtual Command
+        this.virtualPropman = new PropMan()
+        cacheAllCommitTaskListOnAllCommand()
+
+        //First Commit
         commit()
     }
 
@@ -96,7 +105,7 @@ class InstallerMaker extends JobUtil{
     @Command
     void customCommand(){
         //Setup Log
-        setuptLog(gOpt.logSetup)
+        setupLog(gOpt.logSetup)
 
         if (!jobCallingCount++)
             logo()
@@ -108,9 +117,9 @@ class InstallerMaker extends JobUtil{
 
         //Each level by level
         validTaskList = Util.findAllClasses('install', [Task])
-        eachTaskWithCommit(commandName){ TaskSetup task ->
+        eachTaskWithCommit(commandName){ TaskSetup commitTask ->
             try{
-                return runTask(task)
+                return runTaskByCommitTask(commitTask)
             }catch(WantToRestartException wtre){
                 throw wtre
             }catch(Exception e){
@@ -242,7 +251,7 @@ class InstallerMaker extends JobUtil{
     ''')
     void clean(){
         //Setup Log
-        setuptLog(gOpt.logSetup)
+        setupLog(gOpt.logSetup)
 
         if (!jobCallingCount++)
             logo()
@@ -291,7 +300,7 @@ class InstallerMaker extends JobUtil{
     ''')
     void build(){
         //Setup Log
-        setuptLog(gOpt.logSetup)
+        setupLog(gOpt.logSetup)
 
         if (!jobCallingCount++)
             logo()
@@ -308,13 +317,13 @@ class InstallerMaker extends JobUtil{
             String binPath = generateLibAndBin(gOpt)
 
             //- set bin path on builded installer
-            provider.setRaw('build.installer.bin.path', binPath)
+            provider.setToRawProperty('build.installer.bin.path', binPath)
 
             //2. Each level by level
             validTaskList = Util.findAllClasses('install', [Task])
-            eachTaskWithCommit('build'){ TaskSetup task ->
+            eachTaskWithCommit('build'){ TaskSetup commitTask ->
                 try{
-                    return runTask(task)
+                    return runTaskByCommitTask(commitTask)
                 }catch(WantToRestartException wtre){
                     throw wtre
                 }catch(Exception e){
@@ -360,13 +369,13 @@ class InstallerMaker extends JobUtil{
         String argsModeExec = '-mode.exec.self=true'
         String installBinPathForWIn = "${binPath}/installer.bat".replaceAll(/[\/\\]+/, "\\$File.separator")
         String installBinPathForLin = FileMan.toSlash("${binPath}/installer")
-        provider.setRaw('command.win', "${installBinPathForWIn} ask install ${argsExceptCommand} ${argsModeExec}")
-        provider.setRaw('command.lin', "${installBinPathForLin} ask install ${argsExceptCommand} ${argsModeExec}")
+        provider.setToRawProperty('command.win', "${installBinPathForWIn} ask install ${argsExceptCommand} ${argsModeExec}")
+        provider.setToRawProperty('command.lin', "${installBinPathForLin} ask install ${argsExceptCommand} ${argsModeExec}")
         //run
         runTaskByType('exec')
         //clear
-        provider.setRaw('command.win', "")
-        provider.setRaw('command.lin', "")
+        provider.setToRawProperty('command.win', "")
+        provider.setToRawProperty('command.lin', "")
     }
 
     void buildForm(){

@@ -6,13 +6,15 @@ import jaemisseo.man.configuration.annotation.type.TerminalIgnore
 import jaemisseo.man.configuration.annotation.type.Undoable
 import install.util.TaskUtil
 import jaemisseo.man.PropMan
+import jaemisseo.man.configuration.annotation.type.Undomore
 
 /**
  * Created by sujkim on 2017-03-18.
  */
-@Undoable(modeMore=true)
-@Task
 @TerminalIgnore
+@Undoable
+@Undomore
+@Task
 class Set extends TaskUtil{
 
     @Value(name='properties.file', filter="getFilePathList")
