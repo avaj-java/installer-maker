@@ -12,7 +12,6 @@ import jaemisseo.man.configuration.annotation.type.Job
 import jaemisseo.man.configuration.annotation.type.Task
 import install.bean.ReportSetup
 import jaemisseo.man.configuration.data.PropertyProvider
-import install.task.System
 import install.util.JobUtil
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
@@ -51,10 +50,19 @@ class Installer extends JobUtil{
 
     @Init(lately=true)
     void init(){
+        //Parse Global Property's variable
         this.propman = setupPropMan(provider)
         this.varman = setupVariableMan(propman)
+
+        //Inject default value to GlobalOption
         provider.shift(jobName)
         this.gOpt = config.injectValue(new GlobalOptionForInstaller())
+
+        //Make Virtual Command
+        this.virtualPropman = new PropMan()
+        cacheAllCommitTaskListOnAllCommand()
+
+        //First Commit
         commit()
     }
 
@@ -117,15 +125,15 @@ class Installer extends JobUtil{
             logo()
 
         //Setup Log
-        setuptLog(gOpt.logSetup)
+        setupLog(gOpt.logSetup)
 
         ReportSetup reportSetup = config.injectValue(new ReportSetup())
 
         //Each level by level
         validTaskList = Util.findAllClasses('install', [Task])
-        eachTaskWithCommit(commandName){ TaskSetup task ->
+        eachTaskWithCommit(commandName){ TaskSetup commitTask ->
             try{
-                return runTask(task)
+                return runTaskByCommitTask(commitTask)
             }catch(WantToRestartException wtre){
                 throw wtre
             }catch(Exception e){
@@ -151,7 +159,7 @@ class Installer extends JobUtil{
             logo()
 
         //Setup Log
-        setuptLog(gOpt.logSetup)
+        setupLog(gOpt.logSetup)
 
         logTaskDescription('ask')
 
@@ -160,10 +168,10 @@ class Installer extends JobUtil{
 
         //0. Check Response File
         if (checkResponseFile(gOpt.responseFilePath)){
-            PropMan responsePropMan = generatePropMan((gOpt.responseFilePath as String), 'ask')
-            PropMan propmanExternal = provider.propGen.getExternalProperties()
-            propman.merge(responsePropMan)
-                   .merge(propmanExternal)
+            PropMan propmanResponse = new PropMan(gOpt.responseFilePath as String).merge(provider.propGen.getExternalProperties())
+            propmanResponse = generatePropMan(propmanResponse, ['ask'])
+
+            propman.merge(propmanResponse)
             propman.set('mode.load.rsp', true)
             propman.set('answer.repeat.limit', 0)
             logTaskDescription('added response file answer')
@@ -172,8 +180,8 @@ class Installer extends JobUtil{
         readRememberAnswer()
         //2. Each level by level
         validTaskList = Util.findAllClasses('install', [Task])
-        eachTaskWithCommit('ask'){ TaskSetup task ->
-            return runTask(task)
+        eachTaskWithCommit('ask'){ TaskSetup commitTask ->
+            return runTaskByCommitTask(commitTask)
         }
         //3. WRITE REMEMBERED ANSWER
         writeRememberAnswer()
@@ -192,7 +200,7 @@ class Installer extends JobUtil{
             logo()
 
         //Setup Log
-        setuptLog(gOpt.logSetup)
+        setupLog(gOpt.logSetup)
 
         logTaskDescription('install')
 
@@ -203,9 +211,9 @@ class Installer extends JobUtil{
 
         //Each level by level
         validTaskList = Util.findAllClasses('install', [Task])
-        eachTaskWithCommit('install'){ TaskSetup task ->
+        eachTaskWithCommit('install'){ TaskSetup commitTask ->
             try{
-                return runTask(task)
+                return runTaskByCommitTask(commitTask)
             }catch(WantToRestartException wtre){
                 throw wtre
             }catch(Exception e){

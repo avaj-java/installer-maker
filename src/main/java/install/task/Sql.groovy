@@ -46,7 +46,7 @@ class Sql extends TaskUtil{
 
         // -Mode No Progress Bar
         if ([Level.WARN, Level.ERROR, Level.OFF].contains(config.logGen.getConsoleLogLevel()))
-            sqlSetup.modeSqlProgressBar = false
+            sqlSetup.modeProgressBar = false
 
         //2. Execute All SQL
         filePathList.each{ String filePath ->

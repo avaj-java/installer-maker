@@ -31,6 +31,7 @@ class Starter {
 
         }catch(Exception e){
             commander.logError(e)
+            System.exit(-1)
         }
     }
 

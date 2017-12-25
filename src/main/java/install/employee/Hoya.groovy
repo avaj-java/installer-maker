@@ -52,10 +52,19 @@ class Hoya extends EmployeeUtil {
 
     @Init(lately=true)
     void init(){
+        //Parse Global Property's variable
         this.propman = setupPropMan(provider)
         this.varman = setupVariableMan(propman)
+
+        //Inject default value to GlobalOption
         provider.shift(jobName)
         this.gOpt = config.injectValue(new GlobalOptionForHoya())
+
+        //Make Virtual Command
+        this.virtualPropman = new PropMan()
+        cacheAllCommitTaskListOnAllCommand()
+
+        //First Commit
         commit()
     }
 
@@ -92,7 +101,7 @@ class Hoya extends EmployeeUtil {
     @Command
     void customCommand(){
         //Setup Log
-        setuptLog(gOpt.logSetup)
+        setupLog(gOpt.logSetup)
 
         if (!jobCallingCount++)
             logo()
@@ -101,9 +110,9 @@ class Hoya extends EmployeeUtil {
 
         //Each level by level
         validTaskList = Util.findAllClasses('install', [Task])
-        eachTaskWithCommit(commandName){ TaskSetup task ->
+        eachTaskWithCommit(commandName){ TaskSetup commitTask ->
             try{
-                return runTask(task)
+                return runTaskByCommitTask(commitTask)
             }catch(WantToRestartException wtre){
                 throw wtre
             }catch(Exception e){
@@ -126,7 +135,7 @@ class Hoya extends EmployeeUtil {
     """)
     Integer doSomething(){
         //Setup Log
-        setuptLog(gOpt.logSetup)
+        setupLog(gOpt.logSetup)
 
         validTaskList = Util.findAllClasses('install', [Task])
         boolean modeHelp = propman.getBoolean(['help', 'h'])
@@ -194,7 +203,7 @@ class Hoya extends EmployeeUtil {
     """)
     void hoya(){
         //Setup Log
-        setuptLog(gOpt.logSetup)
+        setupLog(gOpt.logSetup)
 
         if (!jobCallingCount++)
             logo()
@@ -203,9 +212,9 @@ class Hoya extends EmployeeUtil {
 
         //Each level by level
         validTaskList = Util.findAllClasses('install', [Task])
-        eachTaskWithCommit('hoya'){ TaskSetup task ->
+        eachTaskWithCommit('hoya'){ TaskSetup commitTask ->
             try{
-                return runTask(task)
+                return runTaskByCommitTask(commitTask)
             }catch(WantToRestartException wtre){
                 throw wtre
             }catch(Exception e){

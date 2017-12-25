@@ -5,13 +5,15 @@ import jaemisseo.man.configuration.annotation.type.TerminalIgnore
 import jaemisseo.man.configuration.annotation.type.Undoable
 import jaemisseo.man.configuration.annotation.Value
 import install.util.TaskUtil
+import jaemisseo.man.configuration.annotation.type.Undomore
 
 /**
  * Created by sujkim on 2017-03-18.
  */
-@Undoable(modeMore=true)
-@Task
 @TerminalIgnore
+@Undoable
+@Undomore
+@Task
 class Notice extends TaskUtil{
 
     @Value(name='msg', required=true)
