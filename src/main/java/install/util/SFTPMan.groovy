@@ -8,6 +8,7 @@ import com.jcraft.jsch.SftpATTRS
 import com.jcraft.jsch.SftpException
 import jaemisseo.man.FileMan
 import jaemisseo.man.bean.FileSetup
+import jaemisseo.man.util.Util
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory;
 
@@ -25,10 +26,21 @@ class SFTPMan{
     static final String RENMAE = "RENAME"
     static final String LS = "LS"
 
+    Boolean modeProgressBar = true
+
     Session session = null;
     Channel channel = null;
     ChannelSftp sftp = null;
 
+    /*************************
+     *
+     * Option
+     *
+     *************************/
+    SFTPMan setModeProgressBar(Boolean modeProgressBar) {
+        this.modeProgressBar = modeProgressBar
+        return this
+    }
     /*************************
      *
      * Connect
@@ -130,17 +142,21 @@ class SFTPMan{
             FileMan.startLogPath('UPLOAD', localPath, serverPath)
             if (FileMan.isFile(localPath)){
                 File sourceFile = new File(localPath)
-                if (FileMan.isFile(serverPath) || !isDirectory(serverPath)){
-                    put(sourceFile, serverPath, opt)
-                }else{
-                    File destFile = new File(serverPath, sourceFile.getName())
-                    String destFilePath = FileMan.toSlash(destFile.path)
-                    put(sourceFile, destFilePath, opt)
+                Util.eachWithTimeProgressBar([sourceFile], 30, modeProgressBar){ Map data ->
+                    if (FileMan.isFile(serverPath) || !isDirectory(serverPath)){
+                        put(sourceFile, serverPath, opt)
+                    }else{
+                        File destFile = new File(serverPath, sourceFile.getName())
+                        String destFilePath = FileMan.toSlash(destFile.path)
+                        put(sourceFile, destFilePath, opt)
+                    }
                 }
             }else{
                 String sourceRootPath = new File(localPath).getParentFile().getPath()
                 String destRootPath = FileMan.getLastDirectoryPath(serverPath)
-                entryList.each{ String relPath ->
+//                entryList.each{ String relPath ->
+                Util.eachWithTimeProgressBar(entryList, 30, modeProgressBar){ Map data ->
+                    String relPath = data.item
                     File sourceFile = new File(sourceRootPath, relPath)
                     File destFile = new File(destRootPath, relPath)
                     String destFilePath = FileMan.toSlash(destFile.path)
@@ -179,11 +195,16 @@ class SFTPMan{
             /** DOWNLOAD **/
             FileMan.startLogPath('DOWNLOAD', serverPath, localPath)
             if (FileMan.isFile(localPath)){
-                get(serverPath, new File(localPath), opt)
+                Util.eachWithTimeProgressBar([localPath], 30, modeProgressBar) { Map data ->
+                    get(serverPath, new File(localPath), opt)
+                }
             }else{
                 String sourceRootPath = new File(serverPath).getParentFile().getPath()
                 String destRootPath = FileMan.getLastDirectoryPath(localPath)
-                entryMap.each{ String relPath, ChannelSftp.LsEntry entry ->
+//                entryMap.each{ String relPath, ChannelSftp.LsEntry entry ->
+                Util.eachWithTimeProgressBar(entryMap.keySet().toList(), 30, modeProgressBar) { Map data ->
+                    String relPath = data.item
+                    ChannelSftp.LsEntry entry = entryMap[relPath]
                     File sourceFile = new File(sourceRootPath, relPath)
                     File destFile = new File(destRootPath, relPath)
                     String sourceFilePath = FileMan.toSlash(sourceFile.path)
