@@ -148,10 +148,11 @@ class Help extends TaskUtil{
         if (isDetail)
             printDocument(documentAnt)
 
-        /** Print Help **/
-        if (!helpIgnoreAnt)
-            logger.info "${this.applicationName} ${commandName}"
+        if (helpIgnoreAnt)
+            return
 
+        /** Print Help **/
+        logger.info "${this.applicationName} ${commandName}"
     }
 
     /*************************
@@ -166,11 +167,15 @@ class Help extends TaskUtil{
         if (!Util.findAllClasses('install', TerminalIgnore).contains(clazz)){
             //-Collect
             List<Annotation> allClassAnnotationList = config.findAllAnnotationFromClass(clazz)
+            HelpIgnore helpIgnoreAnt = allClassAnnotationList.find{ it.annotationType() == HelpIgnore }
             Document documentAnt = allClassAnnotationList.find { it.annotationType() == Document }
 
             /** Print Help **/
             if (isDetail)
                 printDocument(documentAnt)
+
+            if (helpIgnoreAnt)
+                return
 
             if (isDetail){
                 logger.info ''

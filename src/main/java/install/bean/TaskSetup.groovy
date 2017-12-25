@@ -35,6 +35,12 @@ class TaskSetup extends Option {
     @Value('variable.sign')
     String variableSign
 
+    @Value('mode.variable.question.before.task')
+    Boolean modeVariableQuestionBeforeTask
+
+    @Value('mode.variable.question.before.command')
+    Boolean modeVariableQuestionBeforeCommand
+
     String jobName
     String commandName
     String taskName

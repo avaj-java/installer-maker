@@ -3,12 +3,14 @@ package install.util
 import install.bean.LogSetup
 import install.bean.ReportSetup
 import install.bean.TaskSetup
+import install.exception.WantToRestartException
 import jaemisseo.man.configuration.Config
 import jaemisseo.man.configuration.annotation.Inject
 import jaemisseo.man.configuration.annotation.method.After
 import jaemisseo.man.configuration.annotation.method.Before
 import jaemisseo.man.configuration.annotation.type.Task
 import jaemisseo.man.configuration.annotation.type.Undoable
+import jaemisseo.man.configuration.annotation.type.Undomore
 import jaemisseo.man.configuration.data.PropertyProvider
 import install.task.*
 import jaemisseo.man.PropMan
@@ -36,13 +38,12 @@ class JobUtil extends TaskUtil{
     List<Class> invalidTaskList = []
     List<Class> allTaskList = Util.findAllClasses('install', [Task])
     List<Class> undoableTaskList = Util.findAllClasses('install', [Undoable])
-    List<Class> undoMoreTaskList = [Set, Notice, Command]
-//    List<Class> undoableTaskList = [Question, QuestionChoice, QuestionYN, QuestionFindFile, Set, Notice]
-//    List<Class> undoMoreTaskList = [Set, Notice]
+    List<Class> undoMoreTaskList = Util.findAllClasses('install', [Undomore])
 
     def gOpt
     Integer taskResultStatus
     Map<String, List<TaskSetup>> commandNameTaskListMap = [:]
+    Map<String, List<TaskSetup>> virtualCommandNameTaskListMap = [:]
 
 
 
@@ -119,7 +120,12 @@ class JobUtil extends TaskUtil{
 
 
 
-    //level by level For Task
+
+    /*************************
+     *
+     * Each Task with Commit
+     *
+     *************************/
     protected void eachTaskWithCommit(String commandName, Closure closure){
         eachTaskWithCommit(commandName, 0, closure)
     }
@@ -129,98 +135,122 @@ class JobUtil extends TaskUtil{
     }
 
     protected void eachTaskWithCommit(String commandName, String propertyPrefix, Closure closure){
-        List<TaskSetup> taskList = getTaskListByCommandName(commandName)
+        List<TaskSetup> taskList = setupTaskListFromFileByCommandName(commandName)
         int startIndex = taskList.findIndexOf{ it.propertyPrefix == propertyPrefix }
         eachTaskWithCommit(commandName, startIndex, closure)
     }
 
-    protected void eachTaskWithCommit(String commandName, int startIndex, Closure closure){
+    protected void eachTaskWithCommit(String startCommandName, int startIndex, Closure closure){
+        String commandName = startCommandName
         Integer commandDepth = 0
         Integer commandStep = 0
-        TaskSetup latestTask
-        List<TaskSetup> taskList
-        TaskSetup task
+        TaskSetup latestCommitTask
+        List<TaskSetup> commitTaskList
+        TaskSetup workingTask
 
         while(true){
-            taskList = getTaskListByCommandName(commandName)
+            commitTaskList = setupTaskListFromFileByCommandName(commandName)
+            if (!commitTaskList)
+                break
             Integer i = startIndex
 
             /** Run Each Tasks **/
-            while(i < taskList.size()){
-                task = taskList[i]
-                latestTask = (propman.isHeadLast()) ? task : latestTask
-                logger.trace "[${propman.headIndex}:${commandDepth}-${commandStep}] ${task.propertyPrefix}  (${propman.getCommitId()})"
+            while(i < commitTaskList.size()){
+                workingTask = commitTaskList[i]
+                latestCommitTask = (propman.isHeadLast()) ? workingTask : latestCommitTask
+                logger.trace "[${propman.headIndex}:${commandDepth}-${commandStep}] ${workingTask.propertyPrefix}  (${propman.getCommitId()})"
 
                 //- Do Task
-                taskResultStatus = closure(task)
+                taskResultStatus = closure(workingTask)
 
                 //- Check Status
                 if (taskResultStatus == TaskUtil.STATUS_UNDO_QUESTION){
-                    TaskSetup mvTask = undo(task, latestTask)
-                    commandName = mvTask.commandName
-                    int tempDepth = propman.getCommit()?.customData?.commandDepth ?: 0
-                    commandDepth = (propman.getCommit()?.customData?.task?.taskClazz == Command) ? tempDepth +1 : tempDepth
-                    startIndex = getTaskIndexOnThisCommand(commandName, mvTask.propertyPrefix)
+                    TaskSetup mvTask = undo(workingTask, latestCommitTask)
                     break
 
                 }else if (taskResultStatus == TaskUtil.STATUS_REDO_QUESTION){
-                    TaskSetup mvTask = redo(task, latestTask)
-                    commandName = mvTask.commandName
-                    int tempDepth = propman.getCommit()?.customData?.commandDepth ?: 0
-                    commandDepth = (propman.getCommit()?.customData?.task?.taskClazz == Command) ? tempDepth +1 : tempDepth
-                    startIndex = getTaskIndexOnThisCommand(commandName, mvTask.propertyPrefix)
+                    TaskSetup mvTask = redo(workingTask, latestCommitTask)
                     break
 
-                }else if (taskResultStatus == TaskUtil.STATUS_GOTO_COMMAND){
-                    List<String> commandList =  provider.getList('command').collect{ it.split('\\s+') }.flatten()
-                    commit(task, commandDepth, commandStep)
+                }else if (taskResultStatus == TaskUtil.STATUS_BACK){
+                    String destPrefix =  provider.getString('to') + '.'
+                    TaskSetup mvTask = undoForce(workingTask, latestCommitTask, destPrefix)
+                    break
 
+                }else if (taskResultStatus == TaskUtil.STATUS_GOTO_COMMAND) {
+                    List<String> commandList = provider.getList('command').collect { it.split('\\s+') }.flatten()
+                    commit(workingTask, commandDepth, commandStep)
                     propman.getCommit().customData['commandList'] = commandList
-                    commandDepth++
-                    commandStep = 0
-                    commandName = commandList[0]
-                    startIndex = 0
                     break
+
+                }else if (taskResultStatus == TaskUtil.STATUS_EXIT) {
+                    break
+
+                }else if (taskResultStatus == TaskUtil.STATUS_RESET){
+                    provider.propman.checkout(0)
+                    throw new WantToRestartException()
 
                 }else{
-                    commit(task, commandDepth, commandStep)
+                    commit(workingTask, commandDepth, commandStep)
                     i++
                 }
             }
 
-            /** Control **/
-            if (taskResultStatus == TaskUtil.STATUS_GOTO_COMMAND) {
-                continue
-            }else if (taskResultStatus == TaskUtil.STATUS_UNDO_QUESTION){
-                continue
-            }else if (taskResultStatus == TaskUtil.STATUS_REDO_QUESTION){
-                continue
-            }else{
-                //Finish Command All
-                if (commandDepth == 0 && (taskList.size() -1) <= i){
-                    return
-                //Finish This Command Depth
-                }else{
-                    int nowCommandDepth = propman.getCommit().customData['commandDepth']
-                    int nowCommandStep = propman.getCommit().customData['commandStep']
-                    int beforeDepthLastCommitIndex = propman.commitStackList.findLastIndexOf { it.customData['commandDepth'] == (nowCommandDepth -1) }
-                    CommitObject commitTemp = propman.getCommit(beforeDepthLastCommitIndex)
-                    task = commitTemp.customData['task']
+            /** EXIT **/
+            if (taskResultStatus == TaskUtil.STATUS_EXIT) {
+                return
 
-                    if (task.taskClazz == Command){
-                        List<String> commandList = commitTemp.customData['commandList']
-                        if (commandList.size() > (nowCommandStep +1)){
-                            commandDepth = commandDepth
-                            commandStep++
-                            commandName = commandList[commandStep]
-                            startIndex = 0
-                        }else{
-                            commandDepth--
-                            commandStep = 0
-                            commandName = task.commandName
-                            startIndex = getTaskIndexOnThisCommand(commandName, commitTemp.id)
-                            startIndex++
-                        }
+            /** CHANGE **/
+            }else if ([TaskUtil.STATUS_UNDO_QUESTION, TaskUtil.STATUS_REDO_QUESTION, TaskUtil.STATUS_BACK, TaskUtil.STATUS_GOTO_COMMAND].contains(taskResultStatus)) {
+                TaskSetup checkCommitTask = propman.getCommit().customData['task']
+                if (!checkCommitTask){
+                    commandDepth = 0
+                    commandStep = 0
+                    commandName = startCommandName
+                    startIndex = 0
+                    continue
+                }else if (checkCommitTask.taskClazz == Command){
+                    List<String> commandList = propman.getCommit().customData['commandList']
+                    commandDepth++
+                    commandStep = 0
+                    commandName = commandList[commandStep]
+                    startIndex = 0
+                    continue
+                }else{
+                    commandDepth = propman.getCommit()?.customData?.commandDepth
+                    commandStep = propman.getCommit()?.customData?.commandStep
+                    commandName = checkCommitTask?.commandName
+                    i = getTaskIndexOnThisCommand(commandName, checkCommitTask?.propertyPrefix)
+                    startIndex = i + 1
+                    if (startIndex < setupTaskListFromFileByCommandName(commandName).size())
+                        continue
+                }
+            }
+
+            /** NEXT **/
+            //Finish Command All
+            if (commandDepth == 0 && (commitTaskList.size() -1) <= i){
+                return
+            //Finish This Command Depth
+            }else{
+                int nowCommandDepth = propman.getCommit().customData['commandDepth']
+                int nowCommandStep = propman.getCommit().customData['commandStep']
+                int beforeDepthLastCommitIndex = propman.commitStackList[0..propman.headIndex].findLastIndexOf { it.customData['commandDepth'] == (nowCommandDepth -1) }
+                CommitObject commitTemp = propman.getCommit(beforeDepthLastCommitIndex)
+                TaskSetup beforeDepthCommandTask = commitTemp.customData['task']
+
+                if (beforeDepthCommandTask.taskClazz == Command){
+                    List<String> commandList = commitTemp.customData['commandList']
+                    if (commandList.size() > (nowCommandStep +1)){
+                        commandDepth = commandDepth
+                        commandStep++
+                        commandName = commandList[commandStep]
+                        startIndex = 0
+                    }else{
+                        commandDepth--
+                        commandStep = 0
+                        commandName = beforeDepthCommandTask.commandName
+                        startIndex = getTaskIndexOnThisCommand(commandName, commitTemp.id) +1
                     }
                 }
             }
@@ -228,7 +258,11 @@ class JobUtil extends TaskUtil{
         }
     }
 
-    //level by level
+    /*************************
+     *
+     * Each Task
+     *
+     *************************/
     protected void eachTask(String commandName, Closure closure){
         //1. Try to get levels from level property
         String taskOrderProperty = "${commandName}.order".toString()
@@ -241,18 +275,155 @@ class JobUtil extends TaskUtil{
         }
     }
 
-    protected List<TaskSetup> getTaskListByCommandName(String commandName){
+    /*************************
+     *
+     * Cache Task
+     *
+     *************************/
+    protected void cacheAllCommitTaskListOnAllCommand(){
+        //Cache All Command
+        getAllCommandList().each{ String commandName ->
+            setupTaskListFromFileByCommandName(commandName)
+        }
+    }
+
+    protected List<String> getAllCommandList(){
+        //Extract All Command
+        Map<String, Object> extractedTaskProperty = propman.properties.findAll{ String key, value ->
+            String[] keyItems = key.split('[.]')
+            return keyItems.size() == 3 && keyItems[2].equals('task')
+        }
+        List<String> allCommandList = extractedTaskProperty.collect{ it.key.split('[.]')[0] }.unique()
+        return allCommandList
+    }
+
+    protected List<TaskSetup> setupTaskListFromFileByCommandName(String commandName){
+        propman.setModeIgnoreBeforeGetClosure(true)
         if (!commandNameTaskListMap.containsKey(commandName)){
             //1. Try to get task order from property
             String taskOrderProperty = "${commandName}.order".toString()
             List<String> taskOrderList = getSpecificLevelList(taskOrderProperty) ?: getTaskLineOrderList(propertiesFile, propertiesFileExtension, commandName, taskOrderProperty)
-            List<String> prefixList = taskOrderList.collect{ "${commandName}.${it}.".toString() }
-            List<Class> taskTypeList = prefixList.collect{ getTaskClass(getTaskName(it)) }
-            commandNameTaskListMap[commandName] = prefixList.collect{ generateTaskSetup('', it) }
+            // Add Task Setup List
+            if (taskOrderList){
+                List<TaskSetup> taskSetupList = taskOrderList.collect{ generateTaskSetup('', "${commandName}.${it}.".toString()) }
+                commandNameTaskListMap[commandName] = taskSetupList
+                /** Make Vitual Command **/
+                makeVirtualCommand(commandName)
+            }
         }
-        return commandNameTaskListMap[commandName]
+        propman.setModeIgnoreBeforeGetClosure(false)
+        return (commandNameTaskListMap[commandName] ?: virtualCommandNameTaskListMap[commandName])
     }
 
+    /*************************
+     * Make Vitual Command
+     * - mode.variable.question.before.task
+     * - mode.variable.question.before.command
+     *************************/
+    protected void makeVirtualCommand(String commandName){
+        //Find Task to need to add virtual command
+        List<TaskSetup> taskSetupList = commandNameTaskListMap[commandName]
+        List<String> allVariableNameList = []
+
+        /** (modeVariableQuestionBeforeTask) **/
+        for (int i=0; i<taskSetupList.size(); i++){
+            TaskSetup task = taskSetupList[i]
+            if (task.modeVariableQuestionBeforeTask || task.modeVariableQuestionBeforeCommand){
+                String tempVirtualCommandName = "cmd_tmp_${new Date().getTime()}"
+                String tempVirtualCommandsTaskTypeName = 'question'
+
+                //Extract Variable Name
+                List<String> variableNameList
+                List<String> tempPropertyList = propman.getPropertyList().findAll{ it.startsWith(task.propertyPrefix) }
+                variableNameList = tempPropertyList.collect{ String property ->
+                    def value = propman.getRaw(property)
+                    if (value instanceof List){
+                        return value.collect{ String v -> new VariableMan().parsedDataList(v).collect{ it.originalCode } }.flatten()
+                    }else{
+                        return new VariableMan().parsedDataList(value).collect{ it.originalCode }
+                    }
+                }.flatten().unique() - [""]
+
+                if (variableNameList){
+                    //(modeVariableQuestionBeforeCommand) Collecting
+                    if (task.modeVariableQuestionBeforeCommand){
+                        allVariableNameList << variableNameList
+                    }
+
+                    //(modeVariableQuestionBeforeTask)
+                    if (task.modeVariableQuestionBeforeTask){
+                        //Generate Task (Command to Virtual Command)
+                        String commandTaskPropertyPrefix = "${commandName}.${task.taskName}_${tempVirtualCommandName}."
+                        String conditionString = propman.getRaw("${task.propertyPrefix}if") ?: ''
+                        virtualPropman["${commandTaskPropertyPrefix}if"] = conditionString
+                        virtualPropman["${commandTaskPropertyPrefix}task"] = 'command'
+                        virtualPropman["${commandTaskPropertyPrefix}command"] = tempVirtualCommandName
+                        propman["${commandTaskPropertyPrefix}if"] = conditionString
+                        propman["${commandTaskPropertyPrefix}task"] = 'command'
+                        propman["${commandTaskPropertyPrefix}command"] = tempVirtualCommandName
+                        //Add Task (Command to Virtual Command)
+                        TaskSetup virtualCommandTask = generateTaskSetup('', commandTaskPropertyPrefix)
+                        taskSetupList.add(i, virtualCommandTask)
+                        i++
+                        //Generate Command (Virtual Command to Questions)
+                        List<TaskSetup> tempTaskSetupList = []
+                        variableNameList.eachWithIndex{ String variableName, int varIndex ->
+                            String taskName = varIndex
+                            String tempPropertyPrefix = "${tempVirtualCommandName}.${taskName}."
+                            virtualPropman["${tempPropertyPrefix}task"] = tempVirtualCommandsTaskTypeName
+                            virtualPropman["${tempPropertyPrefix}desc"] = variableName
+                            virtualPropman["${tempPropertyPrefix}answer.default"] = ('${' +"${variableName}"+ '}')
+                            virtualPropman["${tempPropertyPrefix}property"] = variableName
+                            propman["${tempPropertyPrefix}task"] = tempVirtualCommandsTaskTypeName
+                            propman["${tempPropertyPrefix}desc"] = variableName
+                            propman["${tempPropertyPrefix}answer.default"] = ('${' +"${variableName}"+ '}')
+                            propman["${tempPropertyPrefix}property"] = variableName
+                            tempTaskSetupList << generateTaskSetup('', tempPropertyPrefix)
+                        }
+                        //Add Command (Virtual Command to Questions)
+                        virtualCommandNameTaskListMap[tempVirtualCommandName] = tempTaskSetupList
+                    }
+                }
+            }
+        }
+
+        /** (modeVariableQuestionBeforeCommand) **/
+        if (allVariableNameList){
+            String tempVirtualCommandName = "cmd_tmp_${new Date().getTime()}"
+            String tempVirtualCommandsTaskTypeName = 'question'
+            //Extract Variable Name
+            allVariableNameList = allVariableNameList.flatten().unique() - [""]
+            //Generate Task(Command to Virtual Command)
+            String commandTaskPropertyPrefix = "${commandName}.question_before_command_${tempVirtualCommandName}."
+            virtualPropman["${commandTaskPropertyPrefix}task"] = 'command'
+            virtualPropman["${commandTaskPropertyPrefix}command"] = tempVirtualCommandName
+            propman["${commandTaskPropertyPrefix}task"] = 'command'
+            propman["${commandTaskPropertyPrefix}command"] = tempVirtualCommandName
+            //Add Task(Command to Virtual Command)
+            TaskSetup virtualCommandTask = generateTaskSetup('', commandTaskPropertyPrefix)
+            taskSetupList.add(0, virtualCommandTask)
+            //Generate Command (Virtual Command to Questions)
+            List<TaskSetup> tempTaskSetupList = []
+            allVariableNameList.eachWithIndex{ String variableName, int varIndex ->
+                String taskName = varIndex
+                String tempPropertyPrefix = "${tempVirtualCommandName}.${taskName}."
+                virtualPropman["${tempPropertyPrefix}task"] = tempVirtualCommandsTaskTypeName
+                virtualPropman["${tempPropertyPrefix}desc"] = variableName
+                virtualPropman["${tempPropertyPrefix}answer.default"] = ('${' +"${variableName}"+ '}')
+                virtualPropman["${tempPropertyPrefix}property"] = variableName
+                propman["${tempPropertyPrefix}task"] = tempVirtualCommandsTaskTypeName
+                propman["${tempPropertyPrefix}desc"] = variableName
+                propman["${tempPropertyPrefix}answer.default"] = ('${' +"${variableName}"+ '}')
+                propman["${tempPropertyPrefix}property"] = variableName
+                tempTaskSetupList << generateTaskSetup('', tempPropertyPrefix)
+            }
+            //Add Command (Virtual Command to Questions)
+            virtualCommandNameTaskListMap[tempVirtualCommandName] = tempTaskSetupList
+        }
+    }
+
+
+    
     protected int getTaskIndexOnThisCommand(List<TaskSetup> taskList){
         String headCommitId = propman.getCommitId()
         int taskIndex = taskList.findIndexOf{ it.propertyPrefix == headCommitId }
@@ -260,7 +431,7 @@ class JobUtil extends TaskUtil{
     }
 
     protected int getTaskIndexOnThisCommand(String commandName, String propertyPrefix){
-        List<TaskSetup> taskList = getTaskListByCommandName(commandName)
+        List<TaskSetup> taskList = setupTaskListFromFileByCommandName(commandName)
         int taskIndex = taskList.findIndexOf{ it.propertyPrefix == propertyPrefix }
         return taskIndex
     }
@@ -294,9 +465,7 @@ class JobUtil extends TaskUtil{
                 if (propElementList && propElementList.size() > 2){
                     String commandName = propElementList[0]
                     String taskName = propElementList[1]
-                    if (commandName.equals(executorName)
-                            && !propertyName.equals(taskOrderProperty)
-                            && !taskNameMap[taskName]){
+                    if (commandName.equals(executorName) && !propertyName.equals(taskOrderProperty) && !taskNameMap[taskName]){
                         taskNameMap[taskName] = true
                     }
                 }
@@ -309,9 +478,7 @@ class JobUtil extends TaskUtil{
                 if (propElementList && propElementList.size() > 2){
                     String commandName = propElementList[0]
                     String taskName = propElementList[1]
-                    if (commandName.equals(executorName)
-                            && !propertyName.equals(taskOrderProperty)
-                            && !taskNameMap[taskName]){
+                    if (commandName.equals(executorName) && !propertyName.equals(taskOrderProperty) && !taskNameMap[taskName]){
                         taskNameMap[taskName] = true
                     }
                 }
@@ -397,6 +564,33 @@ class JobUtil extends TaskUtil{
     }
 
     /*****
+     * FORCE UNDO TO
+     *****/
+    TaskSetup undoForce(TaskSetup nowTask, TaskSetup latestTask, String destPrefix){
+        //Find specific commit index in commit history
+        int destCommitIndex = propman.commitStackList[0..propman.headIndex].findLastIndexOf{ CommitObject commitObj ->
+            TaskSetup task = commitObj.customData?.task
+            return task && task.propertyPrefix == destPrefix
+        }
+        return undoForce(nowTask, latestTask, destCommitIndex)
+    }
+
+    TaskSetup undoForce(TaskSetup nowTask, TaskSetup latestTask, int destCommitIndex){
+        //Get Previous Task
+        TaskSetup mvTask = nowTask.clone()
+        TaskSetup commitTask = propman.getCommit()?.customData?.task
+
+        if (destCommitIndex != -1){
+            propman.checkout(destCommitIndex-1)
+            commitTask = propman.getCommit()?.customData?.task
+            mvTask = propman.getNextCommit()?.customData?.task
+        }else{
+            throw new Exception("Nothing to back [${destPrefix}]")
+        }
+        return mvTask
+    }
+
+    /*****
      * COMMIT
      *****/
     void commit(){
@@ -446,6 +640,10 @@ class JobUtil extends TaskUtil{
 
     Integer runTaskByType(Class clazz){
         return runTask(clazz.getSimpleName(), '')
+    }
+
+    Integer runTaskByCommitTask(TaskSetup commitTask){
+        return runTask(commitTask.taskTypeName, commitTask.propertyPrefix)
     }
 
     Integer runTask(String taskTypeName, String propertyPrefix){
@@ -513,14 +711,18 @@ class JobUtil extends TaskUtil{
         return (provider.checkCondition(propertyPrefix) && provider.checkDashDashOption(propertyPrefix) && checkPortCondition(propertyPrefix))
     }
 
-    protected boolean checkPortCondition(propertyPrefix){
+    protected boolean checkPortCondition(String propertyPrefix){
         boolean isTrue
         def conditionIfObj = propman.parse("${propertyPrefix}ifport")
         if (conditionIfObj){
             logger.info("!Checking Port")
             Map optionMap = [:]
             conditionIfObj.each{ String optionName, def value ->
-                optionMap[optionName] = new TestPort().testPort(optionName)
+                if (optionName){
+                    optionMap[optionName] = new TestPort().testPort(optionName)
+                }else{
+                    logger.warn "Empty port value"
+                }
             }
             def foundItem = Util.find(optionMap, conditionIfObj)
             isTrue = !!foundItem
@@ -598,7 +800,7 @@ class JobUtil extends TaskUtil{
         return taskInstance
     }
 
-    protected void setuptLog(LogSetup logOpt){
+    protected void setupLog(LogSetup logOpt){
         config.logGen.setupConsoleLogger(logOpt.logLevelConsole)
         config.logGen.setupFileLogger(jobName, logOpt.logLevelFile, logOpt.logDir, logOpt.logFileName)
     }

@@ -1,5 +1,6 @@
 package install
 
+import ch.qos.logback.classic.Level
 import install.exception.WantToRestartException
 import jaemisseo.man.FileMan
 import jaemisseo.man.configuration.Config
@@ -11,7 +12,6 @@ import jaemisseo.man.TimeMan
 import jaemisseo.man.configuration.annotation.type.Bean
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.slf4j.event.Level
 
 @Bean
 class Commander {
@@ -83,19 +83,24 @@ class Commander {
         boolean hasCommand = !!commandCalledByUserList
         boolean hasTask = !!taskCalledByUserList
 
+        /** --OPTION **/
+        List<String> specialValueList = propmanExternal.get('--')
         //- Set Application Identity
         String applicationName = getApplicationName(propmanExternal)
         propmanDefault.set('application.name', applicationName)
-
         //- Set Log
-        List<String> specialValueList = propmanExternal.get('--')
         if (specialValueList.contains('error')){
             propmanExternal.set('log.level.console', 'error')
+            if (specialValueList.contains('log.file'))
+                propmanExternal.set('log.level.file', 'error')
         }else if (specialValueList.contains('debug')){
             propmanExternal.set('log.level.console', 'debug')
+            if (specialValueList.contains('log.file'))
+                propmanExternal.set('log.level.file', 'debug')
         }else if (specialValueList.contains('trace')){
             propmanExternal.set('log.level.console', 'trace')
-            propmanExternal.set('log.level.file', 'trace')
+            if (specialValueList.contains('log.file'))
+                propmanExternal.set('log.level.file', 'trace')
         }
 
 
@@ -216,6 +221,9 @@ class Commander {
      * @param e
      *************************/
     void logError(Exception e){
+        //Start Color Log Pattern
+        config.logGen.setupConsoleLoggerColorPattern('red')
+
         Throwable cause = e.getCause()
         String indent = '\t- '
         ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME)
@@ -238,11 +246,14 @@ class Commander {
         }
 
         if ([Level.DEBUG, Level.TRACE].contains( config.logGen.getConsoleLogLevel() )){
-            rootLogger.debug('Error', e)
+            rootLogger.error('Error', e)
+            //Finish Color Log Pattern
+            config.logGen.setupBeforeConsoleLoggerPattern()
         }else{
             rootLogger.detachAppender('CONSOLE')
             rootLogger.debug('Error', e)
         }
+
     }
 
     /*************************
