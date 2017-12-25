@@ -22,10 +22,10 @@ Upload and Download with SFTP
   ex) username/password@127.0.0.1:22:~/path/to/do/something
 
 <usage>
-ex) hoya -sftp upload username/password@127.0.0.1:22:/server/path/to/file /local/path/to/file        
-ex) hoya -sftp download username/password@127.0.0.1:22:/server/path/to/file /local/path/to/file
-ex) hoya -sftp -method=list -url=username/password@127.0.0.1:22:/server/path/to/file
-ex) hoya -sftp -method=entrylist -url=username/password@127.0.0.1:22:/server/path/to/file
+  ex) hoya -sftp upload username/password@127.0.0.1:22:/server/path/to/file /local/path/to/file        
+  ex) hoya -sftp download username/password@127.0.0.1:22:/server/path/to/file /local/path/to/file
+  ex) hoya -sftp -method=list -url=username/password@127.0.0.1:22:/server/path/to/file
+  ex) hoya -sftp -method=entrylist -url=username/password@127.0.0.1:22:/server/path/to/file
 """)
 @Task
 @TerminalValueProtocol(['method', 'url', 'param'])
@@ -43,12 +43,15 @@ class SFTP extends TaskUtil{
     @Value
     FileSetup fileSetup
 
+    @Value('mode.progress.bar')
+    Boolean modeProgressBar
+
 
 
 
     @Override
     Integer run(){
-        SFTPMan sftpman = new SFTPMan()
+        SFTPMan sftpman = new SFTPMan().setModeProgressBar(modeProgressBar)
         String id
         String pw
         String host
