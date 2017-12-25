@@ -7,7 +7,7 @@ import jaemisseo.man.configuration.annotation.type.Task
 import jaemisseo.man.configuration.annotation.type.Undoable
 import jaemisseo.man.configuration.annotation.type.Undomore
 
-@HelpIgnore
+
 @Undoable
 @Undomore
 @Task
