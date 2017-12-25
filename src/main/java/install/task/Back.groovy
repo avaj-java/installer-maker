@@ -6,11 +6,11 @@ import jaemisseo.man.configuration.annotation.type.Task
 
 @HelpIgnore
 @Task
-class Restart extends TaskUtil{
+class Back extends TaskUtil{
 
     @Override
     Integer run(){
-        return STATUS_RESET
+        return STATUS_BACK
     }
 
 }
