@@ -33,6 +33,8 @@ class Starter {
             commander.logError(e)
             System.exit(-1)
         }
+
+        System.exit(0)
     }
 
 }
