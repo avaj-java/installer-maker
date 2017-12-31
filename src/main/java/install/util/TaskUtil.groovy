@@ -218,6 +218,9 @@ class TaskUtil{
         varman.putFuncs([
                 fullpath: { VariableMan.OnePartObject it ->
                     it.substitutes = (it.substitutes) ? FileMan.getFullPath(it.substitutes) : ""
+                },
+                winpath: { VariableMan.OnePartObject it ->
+                    it.substitutes = (it.substitutes) ? FileMan.toBlackslash(it.substitutes) : ""
                 }
         ])
         /** Parse ${Variable} Exclude Levels **/
