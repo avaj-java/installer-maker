@@ -1,9 +1,11 @@
 package install.util
 
+import groovy.json.JsonSlurper
 import install.bean.LogSetup
 import install.bean.ReportSetup
 import install.bean.TaskSetup
 import install.exception.WantToRestartException
+import jaemisseo.man.FileMan
 import jaemisseo.man.configuration.Config
 import jaemisseo.man.configuration.annotation.Inject
 import jaemisseo.man.configuration.annotation.method.After
@@ -338,9 +340,9 @@ class JobUtil extends TaskUtil{
                 variableNameList = tempPropertyList.collect{ String property ->
                     def value = propman.getRaw(property)
                     if (value instanceof List){
-                        return value.collect{ String v -> new VariableMan().parsedDataList(v).collect{ it.originalCode } }.flatten()
+                        return value.collect{ String v -> varman.parsedDataList(v).collect{ it.originalCode } }.flatten()
                     }else{
-                        return new VariableMan().parsedDataList(value).collect{ it.originalCode }
+                        return varman.parsedDataList(value).collect{ it.originalCode }
                     }
                 }.flatten().unique() - [""]
 
@@ -708,7 +710,66 @@ class JobUtil extends TaskUtil{
     }
 
     protected boolean checkCondition(String propertyPrefix){
-        return (provider.checkCondition(propertyPrefix) && provider.checkDashDashOption(propertyPrefix) && checkPortCondition(propertyPrefix))
+        return (provider.checkCondition(propertyPrefix)
+                && checkDashDashOptionCondition(propertyPrefix)
+                && checkPropertyExistsCondition(propertyPrefix)
+                && checkFileCondition(propertyPrefix)
+                && checkPortCondition(propertyPrefix))
+    }
+
+    protected boolean checkDashDashOptionCondition(String propertyPrefix){
+        boolean isTrue
+        def conditionIfObj = propman.parse("${propertyPrefix}ifoption")
+        if (conditionIfObj){
+            logger.debug("!Checking DashDashOption")
+            List dashDashOptionList = propman.get('--')
+            def portConditionObj = generateConditionObj(conditionIfObj){ String optionName, boolean flag -> return flag }
+            def resultCheckPortObj = generateConditionObj(conditionIfObj){ String optionName, boolean flag -> return dashDashOptionList.contains(optionName) }
+            logger.debug " - CONDITION: $portConditionObj"
+            logger.debug " - RESULT   : $resultCheckPortObj"
+            isTrue = !!Util.find(resultCheckPortObj, portConditionObj)
+        }else{
+            isTrue = true
+        }
+//        if (!isTrue)
+//            logger.warn "The dashdash-option conditions do not match."
+        return isTrue
+    }
+
+    protected boolean checkPropertyExistsCondition(String propertyPrefix){
+        boolean isTrue
+        def conditionIfObj = propman.parse("${propertyPrefix}ifproperty")
+        if (conditionIfObj){
+            logger.debug("!Checking Property")
+            def portConditionObj = generateConditionObj(conditionIfObj){ String optionName, boolean flag -> return flag }
+            def resultCheckPortObj = generateConditionObj(conditionIfObj){ String optionName, boolean flag -> return propman.has(optionName) }
+            logger.debug " - CONDITION: $portConditionObj"
+            logger.debug " - RESULT   : $resultCheckPortObj"
+            isTrue = !!Util.find(resultCheckPortObj, portConditionObj)
+        }else{
+            isTrue = true
+        }
+//        if (!isTrue)
+//            logger.warn "The property-exists conditions do not match."
+        return isTrue
+    }
+
+    protected boolean checkFileCondition(String propertyPrefix){
+        boolean isTrue
+        def conditionIfObj = propman.parse("${propertyPrefix}iffile")
+        if (conditionIfObj){
+            logger.info("!Checking File")
+            def portConditionObj = generateConditionObj(conditionIfObj){ String optionName, boolean flag -> return flag }
+            def resultCheckPortObj = generateConditionObj(conditionIfObj){ String optionName, boolean flag -> return new File(optionName).exists() }
+            logger.debug " - CONDITION: $portConditionObj"
+            logger.debug " - RESULT   : $resultCheckPortObj"
+            isTrue = !!Util.find(resultCheckPortObj, portConditionObj)
+        }else{
+            isTrue = true
+        }
+        if (!isTrue)
+            logger.warn "The file conditions do not match."
+        return isTrue
     }
 
     protected boolean checkPortCondition(String propertyPrefix){
@@ -716,22 +777,51 @@ class JobUtil extends TaskUtil{
         def conditionIfObj = propman.parse("${propertyPrefix}ifport")
         if (conditionIfObj){
             logger.info("!Checking Port")
-            Map optionMap = [:]
-            conditionIfObj.each{ String optionName, def value ->
-                if (optionName){
-                    optionMap[optionName] = new TestPort().testPort(optionName)
-                }else{
-                    logger.warn "Empty port value"
-                }
-            }
-            def foundItem = Util.find(optionMap, conditionIfObj)
-            isTrue = !!foundItem
+            def portConditionObj = generateConditionObj(conditionIfObj){ String optionName, boolean flag -> return flag }
+            def resultCheckPortObj = generateConditionObj(conditionIfObj){ String optionName, boolean flag -> return new TestPort().testPort(optionName) }
+            logger.debug " - CONDITION: $portConditionObj"
+            logger.debug " - RESULT   : $resultCheckPortObj"
+            isTrue = !!Util.find(resultCheckPortObj, portConditionObj)
         }else{
             isTrue = true
         }
         if (!isTrue)
             logger.warn "The port conditions do not match."
         return isTrue
+    }
+
+    protected def generateConditionObj(def conditionIfObj, Closure judgeBooleanClosure){
+        //Integer
+        if (conditionIfObj instanceof Integer){
+            conditionIfObj = String.valueOf(conditionIfObj)
+        }
+        //String
+        if (conditionIfObj instanceof String){
+            String key = varman.parse(conditionIfObj as String)
+            String valToCompare = key.toString().trim()
+            int lastIdx = valToCompare.length() -1
+            if ( (valToCompare.indexOf('[') == 0 && valToCompare.lastIndexOf(']') == lastIdx) || (valToCompare.indexOf('{') == 0 && valToCompare.lastIndexOf('}') == lastIdx) ){
+//                val = val.toString().replace('\\', '\\\\')
+                conditionIfObj = new JsonSlurper().parseText(key)
+            }else{
+                conditionIfObj = [:]
+                conditionIfObj[key] = true
+            }
+        }
+        //List
+        if (conditionIfObj instanceof List){
+            def optionCheckingObj = conditionIfObj.collect{ def conditionItem -> generateConditionObj(conditionItem, judgeBooleanClosure) }
+            return optionCheckingObj
+        }
+        //Map
+        if (conditionIfObj instanceof Map){
+            def optionCheckingObj = [:]
+            conditionIfObj.each { String portNumber, def flag ->
+                optionCheckingObj[portNumber] = judgeBooleanClosure(portNumber, flag)
+            }
+            return optionCheckingObj
+        }
+        return null
     }
     
     /*************************
