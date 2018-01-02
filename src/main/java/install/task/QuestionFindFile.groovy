@@ -25,6 +25,9 @@ class QuestionFindFile extends TaskUtil{
     @Value(name="find.file.name", required=true)
     String searchFileName
 
+    @Value("find.result.default")
+    List<String> resultDefaultList
+
     @Value("find.result.edit.relpath")
     String editResultPath
 
@@ -51,21 +54,29 @@ class QuestionFindFile extends TaskUtil{
 
         //Thread-Searcher - START
         logger.info " <Searching>"
-        logger.info "Root Path: $searchRootPath"
-        logger.info "File Name: $searchFileName"
-        logger.info "Condition: $searchIf"
+        logger.info "  - Root Path   : $searchRootPath"
+        logger.info "  - File Name   : $searchFileName"
+        logger.info "  - Condition   : $searchIf"
+        logger.info "  - Result Path : $editResultPath"
         logger.info ""
 
         Thread threadSearcher = Util.newThread(' <Stoped Searching>      '){
+            int defaultCount = 0
             List<File> foundFileList = FileMan.findAllWithProgressBar(searchRootPath, searchFileName, searchIf) { data ->
                 File foundFile = data.item
-                int count = data.count
+                if (!data.stringList && resultDefaultList){
+                    resultDefaultList.each{ String defaultPath ->
+                        data.stringList << "  ${++defaultCount}) ${defaultPath}"
+                        itemList << new File(defaultPath)
+                    }
+                }
+                int count = data.count + defaultCount
                 String editedPath = (editResultPath) ? FileMan.getFullPath(foundFile.path, editResultPath) : foundFile.path
                 data.stringList << "  ${count}) ${editedPath}"
                 itemList << new File(editedPath)
                 return true
             }
-            logger.info "${foundFileList.size()} was founded."
+            logger.info "${foundFileList.size() + defaultCount} was founded."
             logger.info " <Finished Searching>"
         }
 

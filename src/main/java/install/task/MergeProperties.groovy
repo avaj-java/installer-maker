@@ -28,7 +28,7 @@ class MergeProperties extends TaskUtil{
 
     @Override
     Integer run() {
-        fileSetup.put([modeAutoBackup:true])
+        fileSetup.put([modeAutoBackup:true, modeAutoOverWrite: true])
 
         logMiddleTitle('START MERGE PROPERTIES')
 
@@ -45,7 +45,7 @@ class MergeProperties extends TaskUtil{
 
         //Log
         if (differentValuePropMap)
-            differentValuePropMap.each{ logger.debug it }
+            differentValuePropMap.each{ logger.info "${it.key}=${it.value}" }
         logger.debug "<GET-VALUE-FROM (${propmanSource.filePath})> - CHECK"
         logger.debug " - All Properties Size         : ${propmanSource.size()}"
         logger.debug " - Matching Properties Size    : ${matchingPropMap.size()} <<"

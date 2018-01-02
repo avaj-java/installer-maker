@@ -36,6 +36,11 @@ class TestPort extends TaskUtil{
 
 
     boolean testPort(String ipport){
+        if (!ipport){
+            logger.warn "Empty port number"
+            return false
+        }
+
         boolean result
         List<Integer> testPortList = []
         //Analysis IP
