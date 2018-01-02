@@ -196,8 +196,8 @@ class Hoya extends EmployeeUtil {
 
 
 
-    @Alias('m')
     @Command('hoya')
+    @HelpIgnore
     @Document("""
     You can use 'hoya' to use a task on Terminal       
     """)

@@ -99,7 +99,7 @@ class Help extends TaskUtil{
 
 
     boolean isCommandable(String applicationName){
-        return [Commander.APPLICATION_INSTALLER_MAKER].contains(applicationName)
+        return [Commander.APPLICATION_INSTALLER_MAKER, Commander.APPLICATION_HOYA].contains(applicationName)
     }
 
     boolean isTaskRunable(String applicationName){
