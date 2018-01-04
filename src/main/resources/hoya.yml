@@ -34,7 +34,11 @@ hoya:
     task: QuestionChoice
     desc: INSTALL PROGRAM
     answer.default: f
-    answer.options: '{"f":"FILE", "t":"TEST", "s":"SQL", "c":"CRYPT"}'
+    answer.options:
+      - f) FILE
+      - t) TEST
+      - s) SQL
+      - c) CRYPT
 
 
 ####################
@@ -45,21 +49,35 @@ hoya:
     if: '{"hoya.chk1.answer":["f"]}'
     desc: FILE MANAGER
     answer.default: z
-    answer.options: '{"z":"ZIP", "j":"JAR", "t":"TAR", "xz":"UNZIP", "xj":"UNJAR", "xt":"UNTAR", "m":"MERGE PROPERTIES"}'
+    answer.options:
+      - z) ZIP
+      - j) JAR
+      - t) TAR
+      - xz) UNZIP
+      - xj) UNJAR
+      - xt) UNTAR
+      - m) MERGE PROPERTIES
 
   chk3:
     task: QuestionChoice
     if: '{"hoya.chk1.answer":["t"]}'
     desc: TEST MANAGER
     answer.default: j
-    answer.options: '{"j":"JDBC", "r":"REST", "s":"SOCKET", "e":"EMAIL", "p":"PORT"}'
+    answer.options:
+      - j) JDBC
+      - r) REST
+      - s) SOCKET
+      - e) EMAIL
+      - p) PORT
 
   chk4:
     task: QuestionChoice
     if: '{"hoya.chk1.answer":["c"]}'
     desc: CRYPT MANAGER
     answer.default: e
-    answer.options: '{"e":"ENCRYPT", "d":"DECRYPT"}'
+    answer.options:
+      - e) ENCRYPT
+      - d) DECRYPT
 
 
 ####################
@@ -91,8 +109,12 @@ hoya:
     if: '[ {"hoya.chk1.answer":["s"]}, {"hoya.chk3.answer":["j"]} ]'
     desc: Vendor
     answer.default: 1
-    answer.options: '{"1":"Oracle", "2":"Tibero"}'
-    answer.values: '{"1":"oracle", "2":"tibero"}'
+    answer.options:
+      - 1) Oracle
+      - 2) Tibero
+    answer.values:
+      - 1) oracle
+      - 2) tibero
     property: vendor
 
   sql5:
@@ -449,26 +471,24 @@ hoya:
     task: QuestionChoice
     if: '{"hoya.chk1.answer":["c"]}'
     desc: crypt method?
-    answer.options: '{
-      "aes":"AES",
-      "aes256":"AES256",
-      "des128":"DES128",
-      "seed128":"SEED128",
-      "base64":"BASE64",
-      "md5":"MD5",
-      "sha1":"SHA1",
-      "sha256":"SHA256"
-    }'
-    answer.values: '{
-      "aes":"AES",
-      "aes256":"AES256",
-      "des128":"DES128",
-      "seed128":"SEED128",
-      "base64":"BASE64",
-      "md5":"MD5",
-      "sha1":"SHA1",
-      "sha256":"SHA256"
-    }'
+    answer.options:
+      - aes) AES
+      - aes256) AES256
+      - des128) DES128
+      - seed128) SEED128
+      - base64) BASE64
+      - md5) MD5
+      - sha1) SHA1
+      - sha256) SHA256
+    answer.values:
+      - aes) AES
+      - aes256) AES256
+      - des128) DES128
+      - seed128) SEED128
+      - base64) BASE64
+      - md5) MD5
+      - sha1) SHA1
+      - sha256) SHA256
     answer.default: aes
     property: method
 
