@@ -11,7 +11,6 @@ import jaemisseo.man.configuration.annotation.type.Document
 import jaemisseo.man.configuration.annotation.type.Job
 import jaemisseo.man.configuration.annotation.type.Task
 import jaemisseo.man.configuration.data.PropertyProvider
-import install.employee.Hoya
 import install.util.JobUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
@@ -377,6 +376,24 @@ class InstallerMaker extends JobUtil{
         provider.setToRawProperty('command.win', "")
         provider.setToRawProperty('command.lin', "")
     }
+
+    @Command('test')
+    @Document("""
+    - Test Command do 'clean' 'build' 'run'.
+
+    - You can use 'test' command to test or build CI Environment.
+    
+    - Response File(.rsp) can help your test.
+         
+      installer-maker test -rsp=<File>  
+    """)
+    void test(){
+        config.command( 'clean')
+        config.command('build')
+        config.command('run')
+    }
+
+
 
     void buildForm(){
         provider.propGen.getDefaultProperties().set('mode.build.form', true)

@@ -1,18 +1,19 @@
-package install.employee
+package install.job
 
 import install.bean.GlobalOptionForHoya
 import install.bean.ReportSetup
 import install.bean.TaskSetup
 import install.exception.WantToRestartException
+import install.util.JobUtil
 import jaemisseo.man.configuration.annotation.Alias
 import jaemisseo.man.configuration.annotation.HelpIgnore
 import jaemisseo.man.configuration.annotation.method.Command
 import jaemisseo.man.configuration.annotation.method.Init
 import jaemisseo.man.configuration.annotation.type.Document
-import jaemisseo.man.configuration.annotation.type.Employee
+import jaemisseo.man.configuration.annotation.type.Job
 import jaemisseo.man.configuration.annotation.type.Task
 import jaemisseo.man.configuration.data.PropertyProvider
-import install.util.EmployeeUtil
+
 import install.util.TaskUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
@@ -24,8 +25,8 @@ import org.slf4j.LoggerFactory
 /**
  * Created by sujkim on 2017-02-17.
  */
-@Employee
-class Hoya extends EmployeeUtil {
+@Job
+class Hoya extends JobUtil {
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
     int jobCallingCount = 0
@@ -140,36 +141,40 @@ class Hoya extends EmployeeUtil {
         validTaskList = Util.findAllClasses('install', [Task])
         boolean modeHelp = propman.getBoolean(['help', 'h'])
         String applicationName = propman.getString('application.name')
+        // -Collect Command
+        PropMan propmanExternal = config.propGen.getExternalProperties()
+        List<String> commandCalledByUserList = propmanExternal.get('') ?: []
         List<String> taskCalledByUserList = config.taskCalledByUserList
 
-        /** Run Help - Command **/
-        if (helpCommand(modeHelp))
-            return TaskUtil.STATUS_TASK_DONE
+        /** Run Help **/
+        if (modeHelp){
+            //Command
+            if (helpCommand(commandCalledByUserList))
+                return TaskUtil.STATUS_TASK_DONE
 
+            //Task
+            if (helpTask(taskCalledByUserList))
+                return TaskUtil.STATUS_TASK_DONE
+
+            //Main Help
+            if (helpMain())
+                return TaskUtil.STATUS_TASK_DONE
+        }
+
+        /** Run Task **/
         if (taskCalledByUserList){
             String taskName = taskCalledByUserList[0]
-            /** Run Help - Task **/
-            if (helpTask(modeHelp, taskCalledByUserList))
-                return TaskUtil.STATUS_TASK_DONE
-            /** Run Task **/
-//            if (applicationName == Commander.APPLICATION_INSTALLER && taskTypeName != 'version')
-//                return TaskUtil.STATUS_TASK_RUN_FAILED
             propman.set('help.command.name', '')
             propman.set('help.task.name', '')
             runTaskByType(taskName)
         }
-
         return TaskUtil.STATUS_TASK_DONE
     }
 
-    boolean helpCommand(boolean modeHelp){
-        // -Collect Command
-        PropMan propmanExternal = config.propGen.getExternalProperties()
-        List installerCommandCalledByUserList = propmanExternal.get('') ?: []
-
+    boolean helpCommand(List<String> commandCalledByUserList){
         // -Print Help Command
-        if (modeHelp && installerCommandCalledByUserList){
-            installerCommandCalledByUserList.each{ commandNameCalledByUser ->
+        if (commandCalledByUserList){
+            commandCalledByUserList.each{ commandNameCalledByUser ->
                 propman.set('help.task.name', '')
                 propman.set('help.command.name', commandNameCalledByUser)
                 runTaskByType('help')
@@ -179,21 +184,27 @@ class Hoya extends EmployeeUtil {
         return false
     }
 
-    boolean helpTask(boolean modeHelp, List<String> taskNameCalledByUserList){
-        if (taskNameCalledByUserList && taskNameCalledByUserList.size() > 1 && taskNameCalledByUserList.contains('help')){
+    boolean helpTask(List<String> taskNameCalledByUserList){
+        if (taskNameCalledByUserList){
             for (String taskNameCalledByUser : taskNameCalledByUserList) {
-                if (modeHelp && taskNameCalledByUser != 'help'){
+                if (taskNameCalledByUser != 'help'){
                     propman.set('help.command.name', '')
                     propman.set('help.task.name', taskNameCalledByUser)
                     runTaskByType('help')
                 }
             }
             return true
-        }else{
-            return false
         }
+        return false
     }
 
+    boolean helpMain(){
+        // -Print Help Command
+        propman.set('help.task.name', '')
+        propman.set('help.command.name', '')
+        runTaskByType('help')
+        return true
+    }
 
 
     @Command('hoya')
@@ -237,21 +248,7 @@ class Hoya extends EmployeeUtil {
         runTaskByType('help')
     }
 
-    @Command('test')
-    @Document("""
-    - Test Command do 'clean' 'build' 'run'.
 
-    - You can use 'test' command to test or build CI Environment.
-    
-    - Response File(.rsp) can help your test.
-         
-      installer-maker test -rsp=<File>  
-    """)
-    void test(){
-        config.command( 'clean')
-        config.command('build')
-        config.command('run')
-    }
 
 
 

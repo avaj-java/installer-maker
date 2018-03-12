@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Test</title>
+        <script src="https://rawgit.com/sj-js/crossman/master/dist/js/crossman.min.js"></script>
+        <script src="https://rawgit.com/sj-js/boxman/master/dist/js/boxman.min.js"></script>
+        <style>
+            div {border: 1px solid black; width:100px; height:px;  display:block;}
+        </style>
+        <script>
+            var boxman = new BoxMan({modeBoxToBox:true} ).detect(function(){
+                boxman.newObj({parent:'box2', class:'quiz-choice', content:'hahaha'});
+                console.log(boxman);
+            });
+
+            function newObj(){
+                boxman.newObj({parent:'box2', class:'quiz-choice', content:'haha    ha'});
+            }
+        </script>
+    </head>
+
+    <body>
+
+        <button id="btn" onclick="newObj()" ></button>
+
+        <div data-box id="box" >
+            <div data-obj>
+                obj1
+            </div>
+            <div data-obj>
+                obj2
+            </div>
+        </div>
+
+        <br/><br/><br/>
+
+        <div data-box id="box2" >
+
+        </div>
+
+    </body>
+
+</html>

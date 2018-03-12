@@ -7,6 +7,18 @@
 *Read this in other languages: [English](README.md), [한국어](README.ko.md), [日本語](README.ja.md), [中文](README.ch.md)
 
 -----
+# Installer-Maker / Hoya
+
+인스톨러메이커는 설치프로그램을 만드는 도구입니다.
+
+먼저 JAVA 1.6+가 필요합니다.  
+
+[![Release](https://img.shields.io/github/release/avaj-java/installer-maker.svg)](https://github.com/avaj-java/installer-maker/releases)
+에서 최신버전으로 다운로드 받은 후, 압축을 풀어 환경변수를 지정합니다.
+ 
+
+
+-----
 ## 목차
 1. 환경
 2. Installer-Maker 설치하기

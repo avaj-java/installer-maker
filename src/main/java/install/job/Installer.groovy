@@ -95,13 +95,7 @@ class Installer extends JobUtil{
             String libtohomeRelPath = FileMan.getFileFromResource('.libtohome')?.text.replaceAll('\\s*', '') ?: '../'
             String installerHome = FileMan.getFullPath(propmanDefault.get('lib.dir'), libtohomeRelPath)
 
-            //From User's FileSystem or Resource
-//            String userSetPropertiesDir = propmanExternal['properties.dir']
-//            if (userSetPropertiesDir){
-//                propertiesFile = FileMan.find(userSetPropertiesDir, propertiesFileName, ["yml", "yaml", "properties"])
-//            }else{
-                propertiesFile = FileMan.findResource(null, propertiesFileName, ["yml", "yaml", "properties"])
-//            }
+            propertiesFile = FileMan.findResource(null, propertiesFileName, ["yml", "yaml", "properties"])
             propertiesFileExtension = FileMan.getExtension(propertiesFile)
             if (propertiesFile && propertiesFile.exists()){
                 Map propertiesMap = generateMapFromPropertiesFile(propertiesFile)
@@ -187,9 +181,6 @@ class Installer extends JobUtil{
         writeRememberAnswer()
     }
 
-    /*************************
-     * INSTALL
-     *************************/
     @Command('install')
     @HelpIgnore
     @Document('''

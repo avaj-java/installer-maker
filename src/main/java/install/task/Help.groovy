@@ -1,6 +1,12 @@
 package install.task
 
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 import install.Commander
+import install.bean.HelpDataForCommand
+import install.bean.HelpDataForTask
+import jaemisseo.man.FileMan
+import jaemisseo.man.bean.FileSetup
 import jaemisseo.man.configuration.annotation.Alias
 import jaemisseo.man.configuration.annotation.HelpIgnore
 import jaemisseo.man.configuration.annotation.Value
@@ -8,6 +14,8 @@ import jaemisseo.man.configuration.annotation.type.Document
 import jaemisseo.man.configuration.annotation.type.Task
 import jaemisseo.man.configuration.annotation.type.TerminalIgnore
 import jaemisseo.man.configuration.annotation.type.TerminalValueProtocol
+import jaemisseo.man.configuration.annotation.type.Undoable
+import jaemisseo.man.configuration.annotation.type.Undomore
 import jaemisseo.man.configuration.reflection.FieldInfomation
 import jaemisseo.man.configuration.reflection.MethodInfomation
 import jaemisseo.man.configuration.reflection.ReflectInfomation
@@ -39,6 +47,10 @@ class Help extends TaskUtil{
     String applicationName = 'installer-maker'
 
     @HelpIgnore
+    @Value('mode.generate')
+    Boolean modeGenerate
+
+    @HelpIgnore
     @Value('force')
     Boolean isForce
 
@@ -47,9 +59,10 @@ class Help extends TaskUtil{
     @Override
     Integer run(){
 
-//        println "asdf $applicationName"
-//        println isCommandable(applicationName)
-//        println isTaskRunable(applicationName)
+        if (modeGenerate){
+            generate()
+            return STATUS_TASK_DONE
+        }
 
         //All Command and Task (No Detail)
         if (!specificCommandName && !specificTaskName){
@@ -61,13 +74,13 @@ class Help extends TaskUtil{
 
             if (isCommandable(applicationName)){
                 logger.info ' [ Commands ]'
-                printHelpCommand()
+                printHelpAllCommand()
                 logger.info '-------------------------'
             }
 
             if (isTaskRunable(applicationName)){
                 logger.info ' [ Tasks ]'
-                printHelpTask()
+                printHelpAllTask()
             }
 
         }else{
@@ -112,7 +125,7 @@ class Help extends TaskUtil{
      * All Command (no detail)
      *
      *************************/
-    void printHelpCommand(){
+    void printHelpAllCommand(){
         //Command
         config.methodCommandNameMap.each{ commandName, info ->
             printHelpSpecificCommand(commandName, info, false)
@@ -124,7 +137,7 @@ class Help extends TaskUtil{
      * All Task (no detail)
      *
      *************************/
-    void printHelpTask(){
+    void printHelpAllTask(){
         //Task
         config.findAllInstances(Task).each{ def instance ->
             printHelpSpecificTask(instance, false)
@@ -152,7 +165,7 @@ class Help extends TaskUtil{
             return
 
         /** Print Help **/
-        logger.info "${this.applicationName} ${commandName}"
+        printHelp("${this.applicationName} ${commandName}")
     }
 
     /*************************
@@ -161,14 +174,15 @@ class Help extends TaskUtil{
      *
      *************************/
     void printHelpSpecificTask(def instance, boolean isDetail){
-        Class clazz = instance.getClass()
-        String taskName = clazz.getSimpleName().toLowerCase()
+        Class taskType = instance.getClass()
+        String taskTypeName = taskType.getSimpleName().toLowerCase()
 
-        if (!Util.findAllClasses('install', TerminalIgnore).contains(clazz)){
-            //-Collect
-            List<Annotation> allClassAnnotationList = config.findAllAnnotationFromClass(clazz)
-            HelpIgnore helpIgnoreAnt = allClassAnnotationList.find{ it.annotationType() == HelpIgnore }
-            Document documentAnt = allClassAnnotationList.find { it.annotationType() == Document }
+        //-Collect
+        List<Annotation> allClassAnnotationList = config.findAllAnnotationFromClass(taskType)
+        TerminalIgnore terminalIgnoreAnt = allClassAnnotationList.find { it.annotationType() == TerminalIgnore }
+        HelpIgnore helpIgnoreAnt = allClassAnnotationList.find{ it.annotationType() == HelpIgnore }
+        Document documentAnt = allClassAnnotationList.find { it.annotationType() == Document }
+        if (!terminalIgnoreAnt){
 
             /** Print Help **/
             if (isDetail)
@@ -181,10 +195,10 @@ class Help extends TaskUtil{
                 logger.info ''
                 logger.info ' [ Simple Execution ]'
             }
-            printNonProperty(taskName, allClassAnnotationList)
+            printNonProperty(taskTypeName, allClassAnnotationList)
 
             if (isDetail)
-                printWithProperty(clazz)
+                printWithProperty(taskType)
         }
     }
 
@@ -198,7 +212,7 @@ class Help extends TaskUtil{
         terminalValueRule.each {
             nonPropertyPrintItemList << "<${it}>"
         }
-        logger.info "${this.applicationName} -${taskName} ${nonPropertyPrintItemList.join(' ')}"
+        printHelp("${this.applicationName} -${taskName} ${nonPropertyPrintItemList.join(' ')}")
     }
 
     void printWithProperty(Class clazz){
@@ -212,9 +226,7 @@ class Help extends TaskUtil{
 
             logger.info('')
             logger.info(' [ Options ] ')
-            propertyPrintItemList.each{
-                logger.info("${it}")
-            }
+            printHelp(propertyPrintItemList.join('\n'))
         }
     }
 
@@ -222,11 +234,13 @@ class Help extends TaskUtil{
         if (documentAnt){
             String documentString = documentAnt.value()
             if (documentString){
-//                logger.info ''
-//                logger.info ' [ Detail ]'
-                logger.info Util.multiTrim(documentString)
+                printHelp(documentString)
             }
         }
+    }
+
+    void printHelp(String contents){
+        logger.info Util.multiTrim(contents, 5)
     }
 
 
@@ -278,5 +292,113 @@ class Help extends TaskUtil{
         }
         return resultPropertyMap
     }
+
+
+
+    /**************************************************
+     *
+     *  Generate Help File
+     *
+     *  - Command Data
+     *      {
+     *          name :
+     *          alias:
+     *          document :
+     *      }
+     *
+     *  - Task Data
+     *      {
+     *          name :
+     *          alias:
+     *          document :
+     *          options : {
+     *              terminalProtocol :
+     *              terminalIgnore :
+     *              undorable :
+     *              undomore :
+     *          }
+     *          properties : {
+     *              propertyName : valueType or valueList
+     *              propertyName2 : valueType or valueList
+     *              ...
+     *          }
+     *      }
+     **************************************************/
+    void generate(){
+        /** Collecting Datas **/
+        // -Command Datas
+        Map commandDataMap = [:]
+        config.methodCommandNameMap.each{ commandName, info ->
+            HelpDataForCommand helpData = generateHelpDataForCommand(commandName, info)
+            if (helpData)
+                commandDataMap[helpData.name] = helpData
+        }
+
+        // -Task Datas
+        Map taskDataMap = [:]
+        config.findAllInstances(Task).each{ def instance ->
+            HelpDataForTask helpData = generateHelpDataForTask(instance)
+            if (helpData)
+                taskDataMap[helpData.typeName] = helpData
+        }
+
+        /** Parse to JSON **/
+        String commandDataListJson = JsonOutput.toJson(commandDataMap)
+        String taskDataListJson = JsonOutput.toJson(taskDataMap)
+
+        /** Generate File to Help **/
+        String destDir = "./build/help"
+        FileSetup fileSetup = new FileSetup(modeAutoMkdir: true, modeAutoOverWrite: true)
+
+        FileMan.write("${destDir}/commands.json", commandDataListJson, fileSetup)
+        FileMan.write("${destDir}/tasks.json", taskDataListJson, fileSetup)
+        new FileMan().readResource("help/index.html").write("${destDir}/index.html", fileSetup)
+
+    }
+
+    private HelpDataForCommand generateHelpDataForCommand(String commandName, MethodInfomation info){
+        HelpIgnore helpIgnoreAnt = info.findAnnotation(HelpIgnore)
+        if (!helpIgnoreAnt){
+            Document documentAnt = info.findAnnotation(Document)
+            Alias aliasAnt = info.findAnnotation(Alias)
+            return new HelpDataForCommand(
+                    name: commandName,
+                    document: documentAnt?.value(),
+                    alias: aliasAnt?.value()
+            )
+        }
+        return null
+    }
+
+    private HelpDataForTask generateHelpDataForTask(Object instance){
+        Class taskType = instance.getClass()
+        String taskTypeName = taskType.getSimpleName().toLowerCase()
+
+        //-Collect
+        List<Annotation> allClassAnnotationList = config.findAllAnnotationFromClass(taskType)
+        HelpIgnore helpIgnoreAnt = allClassAnnotationList.find{ it.annotationType() == HelpIgnore }
+        if (!helpIgnoreAnt){
+            TerminalIgnore terminalIgnoreAnt = allClassAnnotationList.find { it.annotationType() == TerminalIgnore }
+            Document documentAnt = allClassAnnotationList.find { it.annotationType() == Document }
+            Alias aliasAnt = allClassAnnotationList.find { it.annotationType() == Alias }
+            Undoable undoableAnt = allClassAnnotationList.find { it.annotationType() == Undoable }
+            Undomore undomoreAnt = allClassAnnotationList.find { it.annotationType() == Undomore }
+            TerminalValueProtocol terminalValueRuleAnt = allClassAnnotationList.find { it.annotationType() == TerminalValueProtocol }
+            return new HelpDataForTask(
+                    typeName: taskTypeName,
+                    document: documentAnt?.value(),
+                    alias: aliasAnt?.value(),
+                    options:[
+                        terminalIgnore: !!terminalIgnoreAnt,
+                        terminalValueProtocol: terminalValueRuleAnt?.value()?.toList(),
+                        undoable: !!undoableAnt,
+                        undomore: !!undomoreAnt,
+                    ],
+                    properties: collectValueNames(taskType)
+            )
+        }
+        return null
+    }
+
 
 }

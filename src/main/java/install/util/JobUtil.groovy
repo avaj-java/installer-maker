@@ -6,6 +6,7 @@ import install.bean.ReportSetup
 import install.bean.TaskSetup
 import install.exception.WantToRestartException
 import jaemisseo.man.FileMan
+import jaemisseo.man.VariableMan.OnePartObject
 import jaemisseo.man.configuration.Config
 import jaemisseo.man.configuration.annotation.Inject
 import jaemisseo.man.configuration.annotation.method.After
@@ -152,8 +153,10 @@ class JobUtil extends TaskUtil{
 
         while(true){
             commitTaskList = setupTaskListFromFileByCommandName(commandName)
-            if (!commitTaskList)
+            if (!commitTaskList){
+                logger.warn('No Command or There are no task.')
                 break
+            }
             Integer i = startIndex
 
             /** Run Each Tasks **/
@@ -325,7 +328,7 @@ class JobUtil extends TaskUtil{
     protected void makeVirtualCommand(String commandName){
         //Find Task to need to add virtual command
         List<TaskSetup> taskSetupList = commandNameTaskListMap[commandName]
-        List<String> allVariableNameList = []
+        List<VariableMan.OnePartObject> allVariableObjectList = []
 
         /** (modeVariableQuestionBeforeTask) **/
         for (int i=0; i<taskSetupList.size(); i++){
@@ -335,21 +338,21 @@ class JobUtil extends TaskUtil{
                 String tempVirtualCommandsTaskTypeName = 'question'
 
                 //Extract Variable Name
-                List<String> variableNameList
+                List<VariableMan.OnePartObject> variableObjectList
                 List<String> tempPropertyList = propman.getPropertyList().findAll{ it.startsWith(task.propertyPrefix) }
-                variableNameList = tempPropertyList.collect{ String property ->
+                variableObjectList = tempPropertyList.collect{ String property ->
                     def value = propman.getRaw(property)
                     if (value instanceof List){
-                        return value.collect{ String v -> varman.parsedDataList(v).collect{ it.originalCode } }.flatten()
+                        return value.collect{ String v -> varman.parsedDataList(v).findAll{ it.originalCode } }.flatten()
                     }else{
-                        return varman.parsedDataList(value).collect{ it.originalCode }
+                        return varman.parsedDataList(value).findAll{ it.originalCode }
                     }
-                }.flatten().unique() - [""]
+                }.flatten().unique{ OnePartObject variableObject -> variableObject.originalCode }
 
-                if (variableNameList){
+                if (variableObjectList){
                     //(modeVariableQuestionBeforeCommand) Collecting
                     if (task.modeVariableQuestionBeforeCommand){
-                        allVariableNameList << variableNameList
+                        allVariableObjectList << variableObjectList
                     }
 
                     //(modeVariableQuestionBeforeTask)
@@ -360,26 +363,29 @@ class JobUtil extends TaskUtil{
                         virtualPropman["${commandTaskPropertyPrefix}if"] = conditionString
                         virtualPropman["${commandTaskPropertyPrefix}task"] = 'command'
                         virtualPropman["${commandTaskPropertyPrefix}command"] = tempVirtualCommandName
-                        propman["${commandTaskPropertyPrefix}if"] = conditionString
-                        propman["${commandTaskPropertyPrefix}task"] = 'command'
-                        propman["${commandTaskPropertyPrefix}command"] = tempVirtualCommandName
+                        propman["${commandTaskPropertyPrefix}if"]       = virtualPropman["${commandTaskPropertyPrefix}if"]
+                        propman["${commandTaskPropertyPrefix}task"]     = virtualPropman["${commandTaskPropertyPrefix}task"]
+                        propman["${commandTaskPropertyPrefix}command"]  = virtualPropman["${commandTaskPropertyPrefix}command"]
                         //Add Task (Command to Virtual Command)
                         TaskSetup virtualCommandTask = generateTaskSetup('', commandTaskPropertyPrefix)
                         taskSetupList.add(i, virtualCommandTask)
                         i++
                         //Generate Command (Virtual Command to Questions)
                         List<TaskSetup> tempTaskSetupList = []
-                        variableNameList.eachWithIndex{ String variableName, int varIndex ->
+                        variableObjectList.eachWithIndex{ VariableMan.OnePartObject variableObject, int varIndex ->
                             String taskName = varIndex
+                            String variableName = variableObject.originalCode
+                            String variableValue = variableObject.parsedValue
+                            String answerDefaultValue = (!variableValue && variableObject.hasFunc('nvl')) ? variableObject.getMember('nvl', 0) : variableValue
                             String tempPropertyPrefix = "${tempVirtualCommandName}.${taskName}."
                             virtualPropman["${tempPropertyPrefix}task"] = tempVirtualCommandsTaskTypeName
                             virtualPropman["${tempPropertyPrefix}desc"] = variableName
-                            virtualPropman["${tempPropertyPrefix}answer.default"] = ('${' +"${variableName}"+ '}')
+                            virtualPropman["${tempPropertyPrefix}answer.default"] = answerDefaultValue
                             virtualPropman["${tempPropertyPrefix}property"] = variableName
-                            propman["${tempPropertyPrefix}task"] = tempVirtualCommandsTaskTypeName
-                            propman["${tempPropertyPrefix}desc"] = variableName
-                            propman["${tempPropertyPrefix}answer.default"] = ('${' +"${variableName}"+ '}')
-                            propman["${tempPropertyPrefix}property"] = variableName
+                            propman["${tempPropertyPrefix}task"]            = virtualPropman["${tempPropertyPrefix}task"]
+                            propman["${tempPropertyPrefix}desc"]            = virtualPropman["${tempPropertyPrefix}desc"]
+                            propman["${tempPropertyPrefix}answer.default"]  = virtualPropman["${tempPropertyPrefix}answer.default"]
+                            propman["${tempPropertyPrefix}property"]        = virtualPropman["${tempPropertyPrefix}property"]
                             tempTaskSetupList << generateTaskSetup('', tempPropertyPrefix)
                         }
                         //Add Command (Virtual Command to Questions)
@@ -390,33 +396,36 @@ class JobUtil extends TaskUtil{
         }
 
         /** (modeVariableQuestionBeforeCommand) **/
-        if (allVariableNameList){
+        if (allVariableObjectList){
             String tempVirtualCommandName = "cmd_tmp_${new Date().getTime()}"
             String tempVirtualCommandsTaskTypeName = 'question'
             //Extract Variable Name
-            allVariableNameList = allVariableNameList.flatten().unique() - [""]
+            allVariableObjectList = allVariableObjectList.flatten().unique{ OnePartObject variableObject -> variableObject.originalCode }
             //Generate Task(Command to Virtual Command)
             String commandTaskPropertyPrefix = "${commandName}.question_before_command_${tempVirtualCommandName}."
             virtualPropman["${commandTaskPropertyPrefix}task"] = 'command'
             virtualPropman["${commandTaskPropertyPrefix}command"] = tempVirtualCommandName
-            propman["${commandTaskPropertyPrefix}task"] = 'command'
-            propman["${commandTaskPropertyPrefix}command"] = tempVirtualCommandName
+            propman["${commandTaskPropertyPrefix}task"]     = virtualPropman["${commandTaskPropertyPrefix}task"]
+            propman["${commandTaskPropertyPrefix}command"]  = virtualPropman["${commandTaskPropertyPrefix}command"]
             //Add Task(Command to Virtual Command)
             TaskSetup virtualCommandTask = generateTaskSetup('', commandTaskPropertyPrefix)
             taskSetupList.add(0, virtualCommandTask)
             //Generate Command (Virtual Command to Questions)
             List<TaskSetup> tempTaskSetupList = []
-            allVariableNameList.eachWithIndex{ String variableName, int varIndex ->
+            allVariableObjectList.eachWithIndex{ VariableMan.OnePartObject variableObject, int varIndex ->
                 String taskName = varIndex
+                String variableName = variableObject.originalCode
+                String variableValue = variableObject.parsedValue
+                String answerDefaultValue = (!variableValue && variableObject.hasFunc('nvl')) ? variableObject.getMember('nvl', 0) : variableValue
                 String tempPropertyPrefix = "${tempVirtualCommandName}.${taskName}."
                 virtualPropman["${tempPropertyPrefix}task"] = tempVirtualCommandsTaskTypeName
                 virtualPropman["${tempPropertyPrefix}desc"] = variableName
-                virtualPropman["${tempPropertyPrefix}answer.default"] = ('${' +"${variableName}"+ '}')
+                virtualPropman["${tempPropertyPrefix}answer.default"] = answerDefaultValue
                 virtualPropman["${tempPropertyPrefix}property"] = variableName
-                propman["${tempPropertyPrefix}task"] = tempVirtualCommandsTaskTypeName
-                propman["${tempPropertyPrefix}desc"] = variableName
-                propman["${tempPropertyPrefix}answer.default"] = ('${' +"${variableName}"+ '}')
-                propman["${tempPropertyPrefix}property"] = variableName
+                propman["${tempPropertyPrefix}task"]            = virtualPropman["${tempPropertyPrefix}task"]
+                propman["${tempPropertyPrefix}desc"]            = virtualPropman["${tempPropertyPrefix}desc"]
+                propman["${tempPropertyPrefix}answer.default"]  = virtualPropman["${tempPropertyPrefix}answer.default"]
+                propman["${tempPropertyPrefix}property"]        = virtualPropman["${tempPropertyPrefix}property"]
                 tempTaskSetupList << generateTaskSetup('', tempPropertyPrefix)
             }
             //Add Command (Virtual Command to Questions)
@@ -830,7 +839,7 @@ class JobUtil extends TaskUtil{
     protected void descript(TaskSetup task){
 //        String description = task.desc ? "$task.jobName:$task.desc" : "$task.jobName:$task.taskName:$task.taskTypeName"
         String description = task.desc ?: "$task.jobName:$task.taskName:$task.taskTypeName"
-        if (description && !task.commandName.equalsIgnoreCase('ask')){
+        if (description && !task.commandName.equalsIgnoreCase('ask') && task.taskClazz != Command){
             if (task.descColor)
                 config.logGen.setupConsoleLoggerColorPattern(task.descColor)
             logTaskDescription(description)
