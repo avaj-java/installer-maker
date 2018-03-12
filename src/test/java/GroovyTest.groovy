@@ -27,6 +27,31 @@ class GroovyTest {
 
 
     @Test
+    void parseJsonTest(){
+        String json = '''{
+            "1" : "1",            
+            "4" : "4",            
+            "3" : "3",            
+            "2" : "2",
+            "5" : "5"
+        }'''
+
+
+        println new JsonSlurper().parseText(json)
+
+        //
+        def jsonText = '''
+        {"A":0,"B":0,"C":2,"D":0,"F":5,"G":7,"H":9}
+        '''
+
+        LinkedHashMap json2 = new JsonSlurper().parseText(jsonText)
+        json2.each{ entry ->
+            println "${entry.key}"
+        }
+    }
+
+
+    @Test
     void stringList(){
         String content = """
             hahah
