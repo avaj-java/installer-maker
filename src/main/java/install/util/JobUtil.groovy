@@ -791,7 +791,7 @@ class JobUtil extends TaskUtil{
         if (conditionIfObj){
             logger.info("!Checking File")
             def portConditionObj = generateConditionObj(conditionIfObj){ String optionName, boolean flag -> return flag }
-            def resultCheckPortObj = generateConditionObj(conditionIfObj){ String optionName, boolean flag -> return new File(optionName).exists() }
+            def resultCheckPortObj = generateConditionObj(conditionIfObj){ String optionName, boolean flag -> return FileMan.exists(optionName) }
             logger.debug " - CONDITION: $portConditionObj"
             logger.debug " - RESULT   : $resultCheckPortObj"
             isTrue = !!Util.find(resultCheckPortObj, portConditionObj)
