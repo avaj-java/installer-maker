@@ -9,6 +9,9 @@ import jaemisseo.man.configuration.annotation.type.Bean
 @Bean
 class FileSetup extends jaemisseo.man.bean.FileSetup {
 
+    @Value('file.path')
+    String path
+
     @Value('file.encoding')
     String encoding = 'utf-8'
     @Value('file.backup.path')
@@ -24,5 +27,7 @@ class FileSetup extends jaemisseo.man.bean.FileSetup {
     Boolean modeAutoBackup = false
     @Value('mode.auto.overwrite')
     Boolean modeAutoOverWrite = false
+    @Value('mode.exclude.file.size.zero')
+    Boolean modeExcludeFileSizeZero = false
 
 }

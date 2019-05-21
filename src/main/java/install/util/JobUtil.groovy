@@ -154,7 +154,7 @@ class JobUtil extends TaskUtil{
         while(true){
             commitTaskList = setupTaskListFromFileByCommandName(commandName)
             if (!commitTaskList){
-                logger.warn('No Command or There are no task.')
+                logger.warn("No Command or There are no task. [${commandName}]")
                 break
             }
             Integer i = startIndex

@@ -22,6 +22,27 @@
 ##### SETUP - COMMANDS
 ##################################################
 
+##### hoya newbash
+newbash:
+    task: Exec
+    command:
+      lin:
+        - echo "It is not supported on Unix."
+      win: start "" "%ProgramFiles%\Git\git-bash.exe" -c "/usr/bin/bash --login -i"
+
+
+
+##### hoya newcmd
+newcmd:
+    task: Exec
+    command:
+      lin:
+        - echo "It is not supported on Unix."
+      win: start cmd.exe
+
+
+
+##### hoya
 hoya:
   chk0:
     task: NOTICE

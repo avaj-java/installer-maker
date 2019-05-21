@@ -52,7 +52,24 @@ class TestEMail extends TaskUtil{
 
     @Override
     Integer run(){
-        //START
+        try{
+            //Log Parameter
+            log()
+            //Setup Properties
+            Properties props = makeEmailProperties(host, port, auth, tls)
+            //Send Email
+            sendMail(props, username, password, from, to, subject, content)
+
+        }catch(MessagingException e){
+            logger.error "<ERROR>"
+            throw new Exception(e)
+        }
+        return STATUS_TASK_DONE
+    }
+
+
+
+    private void log(){
         logger.debug "<REQUEST> - CHECK"
         logger.debug " - host        : ${host}"
         logger.debug " - port        : ${port}"
@@ -65,51 +82,50 @@ class TestEMail extends TaskUtil{
         logger.debug "-------------------------"
         logger.debug " - from    : ${from}"
         logger.debug " - to      : ${to}"
+        logger.debug "-------------------------"
         logger.debug " - subject : ${omit(subject, printingMaximumLength)}"
+        logger.debug "-------------------------"
         logger.debug " - content : ${omit(content, printingMaximumLength)}"
+        logger.debug "-------------------------"
         logger.debug ""
+    }
 
+    private Properties makeEmailProperties(String host, String port, Boolean auth, Boolean tls){
         Properties props = new Properties()
-        props.put("mail.smtp.host", host)
-        props.put("mail.smtp.port", port)
+        if (host)
+            props.put("mail.smtp.host", host)
+        if (port)
+            props.put("mail.smtp.port", port)
         if (auth)
             props.put("mail.smtp.auth", auth)
         if (tls)
             props.put("mail.smtp.starttls.enable", tls)
+        return props
+    }
 
-        subject = subject ?: 'No Subject'
-        content = content ?: 'No Content'
-
-        //RUN
-        Session session = Session.getInstance(props, new javax.mail.Authenticator(){
+    private boolean sendMail(Properties properties, String username, String password, String from, String to, String subject, String content){
+        //Make Session
+        Session session = Session.getInstance(properties, new javax.mail.Authenticator(){
             protected PasswordAuthentication getPasswordAuthentication(){
                 return new PasswordAuthentication(username, password);
             }
         });
-
-        try{
-            Message message = new MimeMessage(session)
-            message.setFrom(new InternetAddress(from))
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to))
-            message.setSubject(subject)
-            message.setText(content)
-
-            logger.debug "<EMail>"
-            logger.debug "Sending ..."
-            Transport.send(message)
-            logger.debug "Done"
-
-        } catch (MessagingException e) {
-            logger.error "<ERROR>"
-            throw new Exception(e)
-        }
-
-        return STATUS_TASK_DONE
+        //Make Message
+        Message message = new MimeMessage(session)
+        message.setFrom(new InternetAddress(from))
+        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to))
+        message.setSubject( subject ?: 'No Subject' )
+        message.setText( content ?: 'No Content' )
+        //Send Email
+        logger.debug "(Email) Sending ..."
+        Transport.send(message)
+        logger.debug "Done"
+        return true
     }
 
 
 
-    String omit(String str, int maximumLength){
+    private String omit(String str, int maximumLength){
         //Validate
         if (maximumLength <= 2)
             throw new Exception('MaximumLength must be more than 2.')

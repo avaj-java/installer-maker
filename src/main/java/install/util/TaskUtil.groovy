@@ -216,10 +216,10 @@ class TaskUtil{
 
     PropMan parsePropMan(PropMan propmanToParse, VariableMan varman, List<String> excludeStartsWithList){
         varman.putFuncs([
-                fullpath: { VariableMan.OnePartObject it ->
+                fullpath: { VariableMan.OnePartObject it, Map<String, String> vsMap, Map<String, Closure> vcMap ->
                     it.substitutes = (it.substitutes) ? FileMan.getFullPath(it.substitutes) : ""
                 },
-                winpath: { VariableMan.OnePartObject it ->
+                winpath: { VariableMan.OnePartObject it, Map<String, String> vsMap, Map<String, Closure> vcMap ->
                     it.substitutes = (it.substitutes) ? FileMan.toBlackslash(it.substitutes) : ""
                 }
         ])
