@@ -256,21 +256,22 @@ class Hoya extends JobUtil {
      * WRITE Report
      */
     private void writeReport(List reportMapList, ReportSetup reportSetup){
-
         //Generate File Report
         if (reportMapList){
             String date = new Date().format('yyyyMMdd_HHmmss')
             String fileNamePrefix = 'report_analysis'
+            String filePath = reportSetup.fileSetup.path ?: "${fileNamePrefix}_${date}"
 
             if (reportSetup.modeReportText) {
 //                List<String> stringList = sqlman.getAnalysisStringResultList(reportMapList)
-//                FileMan.write("${fileNamePrefix}_${date}.txt", stringList, opt)
+//                FileMan.write("${reportSetup.path}.txt", stringList, opt)
             }
 
             if (reportSetup.modeReportExcel){
-                new ReportMan().write("${fileNamePrefix}_${date}.xlsx", reportMapList, 'sqlFileName')
+//                new ReportMan().write("${fileNamePrefix}_${date}.xlsx", reportMapList, 'sqlFileName')
+//                new ReportMan("${fileNamePrefix}_${date}.xlsx").write('sqlFileName', reportMapList)
+                new ReportMan("${filePath}.xlsx").write(reportMapList, 'sqlFileName')
             }
-
         }
 
     }

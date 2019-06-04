@@ -64,11 +64,12 @@ class QuestionSetup extends jaemisseo.man.bean.QuestionSetup {
                 int seperator = item.indexOf(')')
                 if (seperator != -1){
                     selection = item.substring(0, seperator)
-                    value = item.substring(seperator +1, item.length())
+                    value = item?.substring(seperator +2, item.length())
                 }else{
                     selection = generateNewKeySeq(valueMap)
                     value = item
                 }
+                logger.trace "  = = = = = = = = = =  (${selection}) = (${value})"
                 valueMap[selection] = value
             }
         }
