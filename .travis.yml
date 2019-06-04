@@ -1,6 +1,6 @@
 language: groovy
 jdk:
-  - openjdk6
+  - oraclejdk8
 os:
   - linux
 before_cache: 
