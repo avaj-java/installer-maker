@@ -1,10 +1,12 @@
 import install.bean.FileSetup
 import jaemisseo.man.FileMan
+import org.junit.Ignore
 import org.junit.Test
 
 class FileTest {
 
     @Test
+    @Ignore
     void comparingFiles(){
 
         String fileA = '/test/sample.text'
