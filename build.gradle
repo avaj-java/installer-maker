@@ -14,12 +14,10 @@ buildscript {
     }
     repositories {
         mavenCentral()
-        maven {
-            url 'http://repo.spring.io/milestone'
-        }
-    }
-    dependencies {
-//        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        mavenLocal()
+        maven { url 'http://repo.spring.io/milestone' }
+        maven { url 'https://repo.spring.io/snapshot' }
+        maven { url "https://jitpack.io" }
     }
 }
 
@@ -136,12 +134,12 @@ repositories {
     maven { url "http://maven.springframework.org/release" }
 }
 List<String> subprojectList = [
-        'com.github.avaj-java:command-man:0.5.1',
-        'com.github.avaj-java:common-util:0.3.7.1',
-        'com.github.avaj-java:common-man:0.4.0',
-        'com.github.avaj-java:fileman:0.4.0',
-        'com.github.avaj-java:reportman:0.3.1',
-        'com.github.avaj-java:restman:0.3.1'
+        'com.github.avaj-java:common-util:0.3.7.2',
+        'com.github.avaj-java:command-man:0.5.2',
+        'com.github.avaj-java:common-man:0.4.1',
+        'com.github.avaj-java:fileman:0.4.1',
+        'com.github.avaj-java:reportman:0.3.2',
+        'com.github.avaj-java:restman:0.3.2'
 ]
 List<String> dependencyList = [
         'org.codehaus.groovy:groovy-all:2.1.3',
@@ -207,14 +205,14 @@ if (modeRemoteDependencies){
 /*************************
  * Print Java Version
  *************************/
-printSubject "Java"
+printSubject "Check - Java"
 println ' - Compile Environment '
 exec{ executable 'java';  args "-version"; }
 
 /*************************
  * Print Module's Git Info
  *************************/
-printSubject "Git"
+printSubject "Check - Git"
 // Get best long length 'moduleName' and 'branchName' to adjust spacing
 int bestLongModuleNameLength = getLongestLength(moduleList, 'name')
 int bestLongBranchNameLength = getLongestLength(moduleList, 'branchName')
@@ -228,14 +226,14 @@ moduleList.each{ Dependency module ->
 /*************************
  * Print Build Options
  *************************/
-printSubject "Build Option"
+printSubject "Check - Build Option"
 // Print
 println "[${modeRemoteDependencies?'v':' '}] Remote Dependencies Mode( -Premote )"
 
 /*************************
  * Print Next
  *************************/
-printSubject "Start Task"
+printSubject "Check - Start Task"
 
 
 
@@ -251,16 +249,32 @@ printSubject "Start Task"
  *************************/
 /** Before jar **/
 task writeVersion {
+    doFirst{
+        printSubject "Generate - metadata"
+    }
     doLast{
         new File("$buildDir/resources/main/.version").write(version)
         new File("$buildDir/resources/main/.compiler").write("Java ${System.getProperty('java.version')}")
         new File("$buildDir/resources/main/.date").write(new Date().toString())
         new File("$buildDir/resources/main/.libtohome").write('../')
+        new File("$buildDir/resources/main/.version").write(version)
+    }
+}
+
+task copyHoyaTargetClasses(type: Copy) {
+    doFirst{
+        printSubject "Copy - Hoya's target classes"
+    }
+    from "${buildDir}/scan-target-classes"
+    into "${buildDir}/resources/main/scan-target-classes"
+    doLast{
+        new File("${buildDir}/resources/main/scan-target-classes").listFiles().each{ println it }
+        println ""
     }
 }
 
 jar {
-    dependsOn writeVersion
+    dependsOn copyHoyaTargetClasses, writeVersion
 
     /** MANIFEST **/
     manifest {
@@ -300,6 +314,10 @@ distributions{
 
 distZip {
     archiveName "${libFileName}.zip"
+    doLast{
+        printSubject "Check - Distribution (Path: ${distributionPath} )"
+        new File(distributionPath).listFiles().each{ println it }
+    }
 }
 
 /*************************
@@ -309,6 +327,10 @@ distZip {
  *************************/
 distTar {
     archiveName "${libFileName}.tar"
+    doLast{
+        printSubject "Check - Distribution (Path: ${distributionPath} )"
+        new File(distributionPath).listFiles().each{ println it }
+    }
 }
 
 
@@ -326,14 +348,7 @@ task extractZipToTemp(type: Copy){
     }
 }
 
-build.dependsOn extractZipToTemp
-build.doLast {
-    println "\n#########################"
-    println "##### Check Distributions (Path: ${distributionPath} )"
-    println "#########################"
-    new File(distributionPath).listFiles().each{ println it }
-    println ""
-}
+build.dependsOn extractZipToTemp, copyHoyaTargetClasses, writeVersion
 
 
 /*************************
@@ -348,10 +363,7 @@ task cleanHome(type: Delete){
     delete SystemEnv_INSTALLER_MAKER_HOME
     doLast{
         if (hadDeployment){
-            println "\n#########################"
-            println "##### Deleted Deployment!!! (Path: ${SystemEnv_INSTALLER_MAKER_HOME} )"
-            println "#########################"
-            println ""
+            printSubject "Deleted Before-Deployment!!! (Path: ${SystemEnv_INSTALLER_MAKER_HOME} )"
         }
     }
 }
@@ -361,11 +373,8 @@ task deployLocal(type: Copy){
     from "${distributionPath}/${projectName}"
     into SystemEnv_INSTALLER_MAKER_HOME
     doLast{
-        println "\n#########################"
-        println "##### ${(hadDeployment)?'Re-Deployed':'Newly-Deployed'} !!! (Path: ${SystemEnv_INSTALLER_MAKER_HOME} )"
-        println "#########################"
+        printSubject "${(hadDeployment)?'Re-Deployed':'Newly-Deployed'} !!! (Path: ${SystemEnv_INSTALLER_MAKER_HOME} )"
         new File(SystemEnv_INSTALLER_MAKER_HOME).listFiles().each{ println it }
-        println ""
     }
 }
 
