@@ -39,9 +39,9 @@ class JobUtil extends TaskUtil{
 
     List<Class> validTaskList = []
     List<Class> invalidTaskList = []
-    List<Class> allTaskList = Util.findAllClasses('install', [Task])
-    List<Class> undoableTaskList = Util.findAllClasses('install', [Undoable])
-    List<Class> undoMoreTaskList = Util.findAllClasses('install', [Undomore])
+    List<Class> allTaskList = Config.findAllClasses('install', [Task])
+    List<Class> undoableTaskList = Config.findAllClasses('install', [Undoable])
+    List<Class> undoMoreTaskList = Config.findAllClasses('install', [Undomore])
 
     def gOpt
     Integer taskResultStatus

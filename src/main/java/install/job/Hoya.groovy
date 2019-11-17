@@ -5,6 +5,7 @@ import install.bean.ReportSetup
 import install.bean.TaskSetup
 import install.exception.WantToRestartException
 import install.util.JobUtil
+import jaemisseo.man.configuration.Config
 import jaemisseo.man.configuration.annotation.Alias
 import jaemisseo.man.configuration.annotation.HelpIgnore
 import jaemisseo.man.configuration.annotation.method.Command
@@ -110,7 +111,7 @@ class Hoya extends JobUtil {
         ReportSetup reportSetup = config.injectValue(new ReportSetup())
 
         //Each level by level
-        validTaskList = Util.findAllClasses('install', [Task])
+        validTaskList = Config.findAllClasses('install', [Task])
         eachTaskWithCommit(commandName){ TaskSetup commitTask ->
             try{
                 return runTaskByCommitTask(commitTask)
@@ -138,7 +139,7 @@ class Hoya extends JobUtil {
         //Setup Log
         setupLog(gOpt.logSetup)
 
-        validTaskList = Util.findAllClasses('install', [Task])
+        validTaskList = Config.findAllClasses('install', [Task])
         boolean modeHelp = propman.getBoolean(['help', 'h'])
         String applicationName = propman.getString('application.name')
         // -Collect Command
@@ -222,7 +223,8 @@ class Hoya extends JobUtil {
         ReportSetup reportSetup = config.injectValue(new ReportSetup())
 
         //Each level by level
-        validTaskList = Util.findAllClasses('install', [Task])
+        Config.findAllClasses('install', [Task])
+        validTaskList = Config.findAllClasses('install', [Task])
         eachTaskWithCommit('hoya'){ TaskSetup commitTask ->
             try{
                 return runTaskByCommitTask(commitTask)
