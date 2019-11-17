@@ -134,7 +134,7 @@ repositories {
     maven { url "http://maven.springframework.org/release" }
 }
 List<String> subprojectList = [
-        'com.github.avaj-java:common-util:0.3.7.2',
+        'com.github.avaj-java:common-util:0.3.7.4',
         'com.github.avaj-java:command-man:0.5.2',
         'com.github.avaj-java:common-man:0.4.1',
         'com.github.avaj-java:fileman:0.4.1',
