@@ -22,7 +22,7 @@ buildscript {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.12'
+    gradleVersion = '4.10.3'
 }
 
 configurations.all {

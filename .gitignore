@@ -1,6 +1,9 @@
 classes/
 .gradle/
-gradle/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**
+!**/src/test/**
+
 .idea/
 *.iml
 *.jpr
