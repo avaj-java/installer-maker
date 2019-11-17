@@ -26,9 +26,9 @@
 newbash:
     task: Exec
     command:
-      lin:
-        - echo "It is not supported on Unix."
-      win: start "" "%ProgramFiles%\Git\git-bash.exe" -c "/usr/bin/bash --login -i"
+        lin:
+          - echo "It is not supported on Unix."
+        win: start "" "%ProgramFiles%\Git\git-bash.exe" -c "/usr/bin/bash --login -i"
 
 
 
@@ -36,9 +36,9 @@ newbash:
 newcmd:
     task: Exec
     command:
-      lin:
-        - echo "It is not supported on Unix."
-      win: start cmd.exe
+        lin:
+          - echo "It is not supported on Unix."
+        win: start cmd.exe
 
 
 

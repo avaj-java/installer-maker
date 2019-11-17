@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
 
-gradle clean deployLocal "$@"
+gradle clean test deployLocal "$@"

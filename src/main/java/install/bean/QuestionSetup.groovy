@@ -69,7 +69,6 @@ class QuestionSetup extends jaemisseo.man.bean.QuestionSetup {
                     selection = generateNewKeySeq(valueMap)
                     value = item
                 }
-                logger.trace "  = = = = = = = = = =  (${selection}) = (${value})"
                 valueMap[selection] = value
             }
         }

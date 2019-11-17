@@ -4,6 +4,7 @@ import install.bean.GlobalOptionForInstallerMaker
 import install.bean.ReportSetup
 import install.bean.TaskSetup
 import install.exception.WantToRestartException
+import jaemisseo.man.configuration.Config
 import jaemisseo.man.configuration.annotation.HelpIgnore
 import jaemisseo.man.configuration.annotation.method.Command
 import jaemisseo.man.configuration.annotation.method.Init
@@ -115,7 +116,7 @@ class InstallerMaker extends JobUtil{
         ReportSetup reportSetup = config.injectValue(new ReportSetup())
 
         //Each level by level
-        validTaskList = Util.findAllClasses('install', [Task])
+        validTaskList = Config.findAllClasses('install', [Task])
         eachTaskWithCommit(commandName){ TaskSetup commitTask ->
             try{
                 return runTaskByCommitTask(commitTask)
@@ -319,7 +320,7 @@ class InstallerMaker extends JobUtil{
             provider.setToRawProperty('build.installer.bin.path', binPath)
 
             //2. Each level by level
-            validTaskList = Util.findAllClasses('install', [Task])
+            validTaskList = Config.findAllClasses('install', [Task])
             eachTaskWithCommit('build'){ TaskSetup commitTask ->
                 try{
                     return runTaskByCommitTask(commitTask)

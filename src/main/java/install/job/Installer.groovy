@@ -4,6 +4,7 @@ import install.bean.FileSetup
 import install.bean.GlobalOptionForInstaller
 import install.bean.TaskSetup
 import install.exception.WantToRestartException
+import jaemisseo.man.configuration.Config
 import jaemisseo.man.configuration.annotation.HelpIgnore
 import jaemisseo.man.configuration.annotation.method.Command
 import jaemisseo.man.configuration.annotation.method.Init
@@ -124,7 +125,7 @@ class Installer extends JobUtil{
         ReportSetup reportSetup = config.injectValue(new ReportSetup())
 
         //Each level by level
-        validTaskList = Util.findAllClasses('install', [Task])
+        validTaskList = Config.findAllClasses('install', [Task])
         eachTaskWithCommit(commandName){ TaskSetup commitTask ->
             try{
                 return runTaskByCommitTask(commitTask)
@@ -173,7 +174,7 @@ class Installer extends JobUtil{
         //1. READ REMEMBERED ANSWER
         readRememberAnswer()
         //2. Each level by level
-        validTaskList = Util.findAllClasses('install', [Task])
+        validTaskList = Config.findAllClasses('install', [Task])
         eachTaskWithCommit('ask'){ TaskSetup commitTask ->
             return runTaskByCommitTask(commitTask)
         }
@@ -201,7 +202,7 @@ class Installer extends JobUtil{
         ReportSetup reportSetup = gOpt.reportSetup
 
         //Each level by level
-        validTaskList = Util.findAllClasses('install', [Task])
+        validTaskList = Config.findAllClasses('install', [Task])
         eachTaskWithCommit('install'){ TaskSetup commitTask ->
             try{
                 return runTaskByCommitTask(commitTask)
