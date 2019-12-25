@@ -14,11 +14,11 @@ import install.bean.FileSetup
 @TerminalValueProtocol(['to', 'structure'])
 class Mkdir extends TaskUtil{
 
-    @Value(name='to', filter='getFilePath', required=true)
-    String destPath
+    @Value(name='to', filter='getFilePathList', required=true)
+    List<String> destPathList
 
     @Value('structure')
-    Map buildStructureMap
+    Map<String, Map<String, Object>> buildStructureMap
 
     @Value
     FileSetup fileSetup
@@ -27,7 +27,9 @@ class Mkdir extends TaskUtil{
 
     @Override
     Integer run(){
-        FileMan.mkdirs(destPath, buildStructureMap)
+        destPathList.each{ String path ->
+            FileMan.mkdirs(path, buildStructureMap, true)
+        }
         return STATUS_TASK_DONE
     }
 
