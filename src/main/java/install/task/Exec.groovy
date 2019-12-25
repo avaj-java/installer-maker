@@ -14,6 +14,15 @@ import jaemisseo.man.util.Util
 @TerminalValueProtocol(['command'])
 class Exec extends TaskUtil{
 
+    @Value('before-command')
+    List<String> beforeCommandForAllList
+
+    @Value('before-command.lin')
+    List<String> beforeCommandForLinList
+
+    @Value('before-command.win')
+    List<String> beforeCommandForWinList
+
     @Value('command')
     List<String> commandForAllList
 
@@ -23,8 +32,27 @@ class Exec extends TaskUtil{
     @Value('command.win')
     List<String> commandForWinList
 
+    @Value('after-command')
+    List<String> afterCommandForAllList
+
+    @Value('after-command.lin')
+    List<String> afterCommandForLinList
+
+    @Value('after-command.win')
+    List<String> afterCommandForWinList
+
+
     @Value('mode.ignore.error')
     Boolean modeIgnoreError
+
+    @Value('before-command.mode.ignore.error')
+    Boolean modeIgnoreErrorBeforeCommand
+
+    @Value('command.mode.ignore.error')
+    Boolean modeIgnoreErrorCommand
+
+    @Value('after-command.mode.ignore.error.after')
+    Boolean modeIgnoreErrorAfterCommand
 
     @HelpIgnore
     @Value('os.name')
@@ -42,22 +70,26 @@ class Exec extends TaskUtil{
 
     @Override
     Integer run(){
+        runCommand(beforeCommandForAllList, beforeCommandForWinList, beforeCommandForLinList, (modeIgnoreError || modeIgnoreErrorBeforeCommand))
+        runCommand(commandForAllList, commandForWinList, commandForLinList, (modeIgnoreError || modeIgnoreErrorCommand))
+        runCommand(afterCommandForAllList, afterCommandForWinList, afterCommandForLinList, (modeIgnoreError || modeIgnoreErrorAfterCommand))
+//        logMiddleTitle 'FINISHED EXEC'
+        return STATUS_TASK_DONE
+    }
+
+
+
+    void runCommand(List<String> commandForAllList, List<String> commandForWinList, List<String> commandForLinList, boolean modeIgnoreError){
         try{
             //Get Command
             List<String> userCommandList = (commandForAllList) ? commandForAllList : (isWindows) ? commandForWinList : commandForLinList
-
             //Exec Command
             userCommandList.each{ String command ->
-                commandWIthStyleB(command)
+                commandWIthStyleB(command, modeIgnoreError)
             }
-
         }catch(e){
             throw e
         }
-
-//        logMiddleTitle 'FINISHED EXEC'
-
-        return STATUS_TASK_DONE
     }
 
 
@@ -72,7 +104,7 @@ class Exec extends TaskUtil{
         doProcess(process)
     }
 
-    void commandWIthStyleB(String userCommand){
+    void commandWIthStyleB(String userCommand, boolean modeIgnoreError){
         //Data
         String command = (isWindows) ? "cmd.exe /c ${userCommand}" : "${userCommand}"
         String[] commandArray = command.split(/\s+/)
@@ -82,10 +114,10 @@ class Exec extends TaskUtil{
         ProcessBuilder builder = new ProcessBuilder().command(commandArray).directory( new File(userDir) )
         builder.redirectErrorStream(true);
         Process process = builder.start()
-        doProcess(process)
+        doProcess(process, modeIgnoreError)
     }
 
-    void doProcess(Process process){
+    void doProcess(Process process, boolean modeIgnoreError){
         Util.newThread {
             OutputStream stdin = process.getOutputStream(); // <- Eh?
             InputStream stdout = process.getInputStream();
