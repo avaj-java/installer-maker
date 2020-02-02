@@ -3,7 +3,7 @@ jdk:
   - openjdk8
 os:
   - linux
-before_cache: 
+before_cache:
   - echo "################################################## START CACHE"
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
@@ -26,7 +26,7 @@ before_deploy:
 deploy:
   provider: releases
   api_key:
-    secure: CLvKTpH/B42NDft0om2OGyMWNY/BeeUNvEKhd+UxIxHV86qGxNbHC2rGiqpJwr8QfTSjxLNoy/GwygRWjhpzRUdjxJz8LXjOD8DWPYncmRnfvTRddDtVkJgDRkwN4pnu4nIRSUEFakDvraVRBOMWZ+k2ObQbIsbAfdMA0NzQZfy3pbSCf818j8yeC/XX42zeFmBkazP9kxcFMB8BOGRpoUuRmGkAS6xhB3Uj7k1jzJkFNkftx6iuccNL2HBj3tx20VTtMPk1+uZZAG+WRokqeYTx3XXQcIO8OhWggvJtqQCxT5ImHWqGfCXmzKrHK2SGwJfGZ7gq9KjgxDjvoTW5GXVDMWSveQic8cJ0zRta9qwTi4JygQWB7QdOJslHNFUW+5o4QLyTGhEJJgLZzQZnss0TZZlVjQEZfhog1lfUGN7K3MmwH92UKoc0CEN+IEN87mQyYetTCv1RdzTnFgNEsDuBJ5INBWN276GOlTdul4lgc/wlH+IRVcbetmilowT8T5E+TafVtH2LVHjyH39N+0cYth+/n8Oy1LEOwWKvrT11ty7SJkyHfi6DbgQumU2pIwsu1pa2q6VaHKBozRsmV1EqaaEOB7TYzYoYrQEwbt5Kogcp4Vyr0s4bf4sT5+1yesRq9LgwxVLAK7PaHpJoGnqXOpDwTLhlehHRqSDTbQc=
+    secure: "PHKCS6L351P5plf3Sw5zDVMnPqKMNNcooEySi8npC45ezfrd7mkUnePPDnd+luMCeUdpJa9XD1gbagJJy9tj0B4ckjUnwb2faLvONKDauNAi+b6w1Jsu6Xhhbn6IFjIfY9wdjG2d4iAzkE2je7sdvunEcbR6HDUiM8x48ewoR/1Io7Y7gKTexxBWZpRRm9Pey/RH/mev1S3gyDj5c2VTCMxmF1TUFtepa5mNDE13EnPIeYQOEM+UoNyzKDNnxZaavHvGQ+xEbEL8AJFHJhk02H+Njh1FKnP6g3tcHFF1HU+d8+H/sZqEZ/JjLn7118x5p1U9ZyScbXHuoDXgHYvt4PeYIGmgqVPwcfxx32DRv4eoYyxuKWOi93k03i/jIzw2TFP7PeevFl5Skg5of67i/U4ZEBWF8JiWDTfePeH1xeULBLGvLkqsVGD5Aa35xxJWEGo1Ij1qvvT2o5OGX1FVj3e6D2Bj6E2FC7lzH9z7uOKpQn9CtUH0Nex56iNUANCyfNBr26dCXTlAAKUutCNp8TJlMG6f2vb5ubHVJIjQxo2JqburgxkUJWGqfaG1WRhg4DXZ//1wB1YiLJTErWVFrP0A7zCJ6uBZ3YJnJHbIuFONlfA77zYd57r9RIe+ypBh5thu9tFq7aB+ePgnNRZRfJ00odqIqxm1fbc7IF665Mg="
   file: "build/distributions/*.zip"
   file_glob: true
   skip_cleanup: true
@@ -37,4 +37,7 @@ deploy:
 
 after_deploy:
   - echo "################################################## FINISH DEPLOY"
-  
+
+
+
+
