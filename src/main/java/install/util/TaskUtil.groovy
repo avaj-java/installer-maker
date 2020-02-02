@@ -137,14 +137,23 @@ class TaskUtil{
     protected void setPropValue(){
         def property = provider.parse("property")
         def value = provider.get("value")
+//        String type = provider.get("type")
         if (property){
             //- Set Some Value to Some Property
             if (value && property instanceof String){
+//                if (type?.toUpperCase() == 'LIST_FROM_FILE')
+//                    value = FileMan.getListFromFile(value)
+//                else if (type?.toUpperCase() == 'RAW_FROM_FILE')
+//                    value = FileMan.getStringFromFile(value)
                 provider.setToRawProperty(property, value)
 
             //- Set Some Property with JSON Object
             }else if (property instanceof Map){
                 (property as Map).each{ String propertyName, def propertyValue ->
+//                    if (type?.toUpperCase() == 'LIST_FROM_FILE')
+//                        propertyValue = FileMan.getListFromFile(propertyValue)
+//                    else if (type?.toUpperCase() == 'RAW_FROM_FILE')
+//                        propertyValue = FileMan.getStringFromFile(propertyValue)
                     provider.setToRawProperty(propertyName, propertyValue)
                 }
             }
@@ -215,14 +224,30 @@ class TaskUtil{
     }
 
     PropMan parsePropMan(PropMan propmanToParse, VariableMan varman, List<String> excludeStartsWithList){
-        varman.putFuncs([
-                fullpath: { VariableMan.OnePartObject it, Map<String, String> vsMap, Map<String, Closure> vcMap ->
-                    it.substitutes = (it.substitutes) ? FileMan.getFullPath(it.substitutes) : ""
-                },
-                winpath: { VariableMan.OnePartObject it, Map<String, String> vsMap, Map<String, Closure> vcMap ->
-                    it.substitutes = (it.substitutes) ? FileMan.toBlackslash(it.substitutes) : ""
-                }
-        ])
+        varman
+            .putFuncs([
+                    fullpath: { VariableMan.OnePartObject it, Map<String, String> vsMap, Map<String, Closure> vcMap ->
+                        it.substitutes = (it.substitutes) ? FileMan.getFullPath(it.substitutes) : ""
+                    },
+                    winpath: { VariableMan.OnePartObject it, Map<String, String> vsMap, Map<String, Closure> vcMap ->
+                        it.substitutes = (it.substitutes) ? FileMan.toBlackslashTwice(it.substitutes) : ""
+                    }
+            ])
+            .putVariableClosures([
+                    'FILE': { VariableMan.OnePartObject it, Map<String, Object> vsMap, Map<String, Closure> vcMap ->
+                        if (it.members){
+                            String filePath = VariableMan.parseMember(it.members[0], vsMap, vcMap)
+                            it.substitutes = FileMan.getStringFromFile(filePath)
+                        }
+                    },
+                    'LISTFILE': { VariableMan.OnePartObject it, Map<String, Object> vsMap, Map<String, Closure> vcMap ->
+                        if (it.members){
+                            String filePath = VariableMan.parseMember(it.members[0], vsMap, vcMap)
+                            it.originalValue = FileMan.getListFromFile(filePath)
+                            it.substitutes = it.originalValue
+                        }
+                    }
+            ])
         /** Parse ${Variable} Exclude Levels **/
         // -BasicVariableOnly
         Map map = propmanToParse.properties

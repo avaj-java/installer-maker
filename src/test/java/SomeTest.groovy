@@ -5,6 +5,8 @@ import jaemisseo.man.bean.FileSetup
 import jaemisseo.man.util.Util
 import org.junit.Test
 
+import java.text.SimpleDateFormat
+
 class SomeTest {
 
     @Test
@@ -37,5 +39,29 @@ class SomeTest {
             return false
         }
     }
+
+    @Test
+    void fileVariableTest(){
+        VariableMan varman = new VariableMan().putVariableClosures([
+                'FILE': { VariableMan.OnePartObject it, Map<String, Object> vsMap, Map<String, Closure> vcMap ->
+                    if (it.members){
+                        String filePath = VariableMan.parseMember(it.members[0], vsMap, vcMap)
+                        it.substitutes = FileMan.getStringFromFile(filePath)
+                    }
+                },
+                'LISTFILE': { VariableMan.OnePartObject it, Map<String, Object> vsMap, Map<String, Closure> vcMap ->
+                    if (it.members){
+                        String filePath = VariableMan.parseMember(it.members[0], vsMap, vcMap)
+                        it.originalValue = FileMan.getListFromFile(filePath)
+                        it.substitutes = it.originalValue
+                    }
+                }
+        ])
+        File file = FileMan.getFileFromResource('text-test.txt')
+        String filePath = file.path
+        String result = varman.parse('${listfile("' +filePath+ '").join(" -hehe- ")}')
+        println result
+    }
+
 
 }

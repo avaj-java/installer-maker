@@ -44,6 +44,8 @@ class SqlSetup extends jaemisseo.man.bean.SqlSetup {
     def replaceTablespace
     @Value(name='sql.replace.user', filter='parse')
     def replaceUser
+    @Value(name='sql.replace.owner', filter='parse')
+    def replaceOwner
     @Value(name='sql.replace.datafile', filter='parse')
     def replaceDatafile
     @Value(name='sql.replace.password', filter='parse')

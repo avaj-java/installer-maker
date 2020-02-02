@@ -23,6 +23,10 @@ class Set extends TaskUtil{
     @Value('target')
     List<String> targetProperties
 
+    //TODO: 생각중..
+    @Value(name='type', caseIgnoreValidList=['parse', 'raw', 'list-from-file', 'raw-from-file'])
+    String type
+
     @Value(name='rsp.file', filter="getFilePath")
     String rspFilePath
 

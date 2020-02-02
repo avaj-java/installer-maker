@@ -134,10 +134,10 @@ repositories {
     maven { url "http://maven.springframework.org/release" }
 }
 List<String> subprojectList = [
-        'com.github.avaj-java:common-util:0.3.7.4',
-        'com.github.avaj-java:command-man:0.5.2',
-        'com.github.avaj-java:common-man:0.4.1',
-        'com.github.avaj-java:fileman:0.4.1',
+        'com.github.avaj-java:common-util:0.3.7.5',
+        'com.github.avaj-java:command-man:0.5.2.2',
+        'com.github.avaj-java:common-man:0.4.2',
+        'com.github.avaj-java:fileman:0.4.2.1',
         'com.github.avaj-java:reportman:0.3.2',
         'com.github.avaj-java:restman:0.3.2'
 ]
@@ -150,7 +150,7 @@ List<String> dependencyList = [
         'com.sun.mail:javax.mail:1.5.5',
 //        "com.oracle:ojdbc6:11.2.0.3",
         'org.yaml:snakeyaml:1.18',
-        'com.jcraft:jsch:0.1.54'
+        'com.jcraft:jsch:0.1.55'
 ]
 dependencies {
     //JAEMISSEO
