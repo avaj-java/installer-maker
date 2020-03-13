@@ -103,7 +103,8 @@ installer-maker -v
 
 ## Detailed help
 
-[Detailed help]()     
+[Detailed help](https://github.com/avaj-java/installer-maker/tree/master/docs/kor) - "Sorry, only korean"
+
  
       
 
