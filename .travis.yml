@@ -1,8 +1,20 @@
+##################################################
+#
+# Environment
+#
+##################################################
 language: groovy
 jdk:
   - openjdk8
 os:
   - linux
+
+
+##################################################
+#
+# CACHE
+#
+##################################################
 before_cache:
   - echo "################################################## START CACHE"
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
@@ -13,16 +25,29 @@ cache:
     - "$HOME/.gradle/wrapper/"
 after_cache:
   - echo "################################################## FINISH CACHE"
+
+
+
+##################################################
+#
+# SCRIPT
+#
+##################################################
 script:
-  - gradle clean build
+  - ./gradlew clean build
   - export RELEASE_PKG_FILE=$(ls build/distributions/*.zip)
   - echo "# Zip File => $RELEASE_PKG_FILE"
 
+
+##################################################
+#
+# DEPLOY
+#
+##################################################
 before_deploy:
   - export RELEASE_PKG_FILE=$(ls build/distributions/*.zip)
   - echo "################################################## START DEPLOY "
   - echo "# Deploying $RELEASE_PKG_FILE to GitHsub releases"
-
 deploy:
   provider: releases
   api_key:
@@ -34,10 +59,10 @@ deploy:
     tags: true
     repo: avaj-java/installer-maker
     all_branches: true
-
 after_deploy:
   - echo "################################################## FINISH DEPLOY"
 
 
 
-
+after_success:
+  - ./gradlew jacocoTestReport coveralls

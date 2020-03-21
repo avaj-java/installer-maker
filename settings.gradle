@@ -1,2 +1,4 @@
+rootProject.name = 'installer-maker'
+
 include 'command-man', "common-util", "common-man", "fileman", "reportman", "restman"
 
