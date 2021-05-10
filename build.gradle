@@ -1,5 +1,3 @@
-group 'jaemisseo'
-
 apply plugin: "groovy"
 apply plugin: "java"
 apply plugin: "application"
@@ -23,10 +21,11 @@ buildscript {
     }
     dependencies {
         classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.2'
+        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.8"
     }
 }
 
-task wrapper(type: Wrapper) {
+wrapper {
     gradleVersion = '4.10.3'
 }
 
@@ -68,6 +67,8 @@ mainClassName = "install.Starter"
 String distributionPath = "${buildDir}/distributions"
 String libFileName = "${projectName}-${version}"
 String SystemEnv_INSTALLER_MAKER_HOME = "$System.env.INSTALLER_MAKER_HOME"
+String deployDefaultPath = System.properties["user.home"] + "/installer-maker"
+String deployPath = SystemEnv_INSTALLER_MAKER_HOME ?: deployDefaultPath
 boolean modeRemoteDependencies = project.hasProperty('remote')
 boolean hadDeployment = false
 List<Dependency> moduleList = []
@@ -141,9 +142,9 @@ repositories {
 List<String> subprojectList = [
         'com.github.avaj-java:common-util:0.3.7.5',
         'com.github.avaj-java:command-man:0.5.2.2',
-        'com.github.avaj-java:common-man:0.4.2',
+        'com.github.avaj-java:common-man:0.4.3',
         'com.github.avaj-java:fileman:0.4.2.1',
-        'com.github.avaj-java:reportman:0.3.2',
+        'com.github.avaj-java:reportman:0.3.4',
         'com.github.avaj-java:restman:0.3.2'
 ]
 List<String> dependencyList = [
@@ -185,10 +186,7 @@ jar.rootSpec.exclude( fileTree(dir: 'external_lib_dev', include: ['*.jar']).coll
 allprojects {
     apply plugin: 'com.github.kt3k.coveralls'
     apply plugin: 'jacoco'
-
-    repositories {
-        jcenter()
-    }
+    apply plugin: 'org.sonarqube'
 }
 
 /**************************************************
@@ -218,6 +216,28 @@ subprojects {
         reports {
             html.enabled = true
             xml.enabled = true
+            csv.enabled = false
+            //to create coverage report in html
+            html.destination file("${buildDir}/reports/coverage")
+            //for XML
+            xml.destination file("${buildDir}/reports/jacoco.xml")
+        }
+    }
+
+    /** SonarQube **/
+    sonarqube {
+        properties {
+            property "sonar.sourceEncoding", "UTF-8"
+            // 프로젝트별로 달라지는 설정들
+            property "sonar.sources", "src/main/java"
+//            property "sonar.exclusions", "**/*Generated.java"
+            property "sonar.branch", "Foo"
+            property "sonar.junit.reportPaths", "${buildDir}/test-results"
+            property "sonar.jacoco.reportPaths", "${buildDir}/jacoco/test.exec"
+            property 'sonar.coverage.jacoco.xmlReportPaths', "${project.buildDir}/reports/jacoco.xml"
+            // deprecated된 프로퍼티는 경고가 나오기에 제거하였다.
+//            property "sonar.jacoco.reportPath", null
+//            property "sonar.jacoco.reportPaths", null
         }
     }
 }
@@ -283,12 +303,15 @@ printSubject "Check - Start Task"
 task jacocoRootReport(type: JacocoReport) {
     description = 'Generates an aggregate report from all subprojects'
     dependsOn = subprojects.test
-    sourceDirectories = files(subprojects.sourceSets.main.allSource.srcDirs)
-    classDirectories =  files(subprojects.sourceSets.main.output)
-    executionData = files(subprojects.jacocoTestReport.executionData)
+//    sourceDirectories = files(subprojects.sourceSets.main.allSource.srcDirs)
+//    classDirectories =  files(subprojects.sourceSets.main.output)
+//    executionData = files(subprojects.jacocoTestReport.executionData)
     reports {
         html.enabled = true // human readable
         xml.enabled = true // required by coveralls
+        csv.enabled = false
+        html.destination file("${buildDir}/reports/coverage")
+        xml.destination file("${buildDir}/reports/jacoco.xml")
     }
 }
 
@@ -417,11 +440,11 @@ build.dependsOn extractZipToTemp, copyHoyaTargetClasses, writeVersion
  *************************/
 /** Before deployLocal **/
 task cleanHome(type: Delete){
-    hadDeployment = new File(SystemEnv_INSTALLER_MAKER_HOME).exists()
-    delete SystemEnv_INSTALLER_MAKER_HOME
+    hadDeployment = new File(deployPath).exists()
+    delete deployPath
     doLast{
         if (hadDeployment){
-            printSubject "Deleted Before-Deployment!!! (Path: ${SystemEnv_INSTALLER_MAKER_HOME} )"
+            printSubject "Deleted Before-Deployment!!! (Path: ${deployPath} )"
         }
     }
 }
@@ -429,10 +452,10 @@ task cleanHome(type: Delete){
 task deployLocal(type: Copy){
     dependsOn distZip, extractZipToTemp, cleanHome
     from "${distributionPath}/${projectName}"
-    into SystemEnv_INSTALLER_MAKER_HOME
+    into deployPath
     doLast{
-        printSubject "${(hadDeployment)?'Re-Deployed':'Newly-Deployed'} !!! (Path: ${SystemEnv_INSTALLER_MAKER_HOME} )"
-        new File(SystemEnv_INSTALLER_MAKER_HOME).listFiles().each{ println it }
+        printSubject "${(hadDeployment)?'Re-Deployed':'Newly-Deployed'} !!! (Path: ${deployPath} )"
+        new File(deployPath).listFiles().each{ println it }
     }
 }
 
