@@ -30,4 +30,4 @@ build/
 
 node_modules
 
-.coveralls.yml
+#.coveralls.yml
