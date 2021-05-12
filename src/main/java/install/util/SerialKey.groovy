@@ -43,7 +43,6 @@ class SerialKey {
         return checksum % 10;
     }
 
-    /** 스타크레프트 식 **/
     void generator() {
         int eax=3, edx=0, edi, lastnumber;
         List<Integer> serial = [];
@@ -69,9 +68,9 @@ class SerialKey {
      * CDKey Generator (Great Method)
      *
      ****************************************************************************************************/
-    //지정된 자릿수의 랜덤한 숫자를 반환합니다.
-    // 최대 10까지 가능합니다.
-    // 4 이면 1000 에서 9999 사이의 랜덤 숫자
+    //Random number by specific number digit
+    //Max Specific number is 10
+    //If 4 => Random number 1000 ~ 9999
     int get_rand_number(int len) {
         len = Math.abs((int)len);
         if (len < 1)
@@ -81,8 +80,6 @@ class SerialKey {
         return rand( Math.pow(10, len - 1), (Math.pow(10, len) - 1) );
     }
 
-    //넘어온 세자리수를 36진수로 변환해서 반환합니다.
-    // preg_match_callback 을 통해서만 사용됩니다.
     String get_simple_36(int m){
         String str = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         int div = Math.floor(m / 36);
@@ -90,7 +87,6 @@ class SerialKey {
         return "${str[div]}${str[rest]}";
     }
 
-    //지정된 자리수에 존재하는 소수 전체를 배열로 반환합니다.
     // max len = 5
     List<Integer> get_simple_prime_number(int len){
         len = Math.abs((int)len);
@@ -106,15 +102,15 @@ class SerialKey {
         int $start = Math.pow(10, (len - 1)) + 1;//101
         int $end = Math.pow(10, len) - 1;//999
         List<Integer> prime = $prime_1;
-        prime.remove(0);//1제거
-        prime.remove(1);//2제거
+        prime.remove(0);
+        prime.remove(1);
         return makePrimeNumberArray(prime, $start, $end);
     }
 
     List<Integer> makePrimeNumberArray(List<Integer> prime, int start, int end){
         List<Integer> array = []
         boolean isContinue2 = false
-        for (int i=11; i<=end; i+=2){//10보다 큰 소수에는 짝수가 없다.
+        for (int i=11; i<=end; i+=2){
             int max = Math.floor(Math.sqrt(i));
 
             for (int j : prime) {
@@ -136,8 +132,6 @@ class SerialKey {
         return array
     }
 
-    //지정된 자릿수의 숫자로된 시리얼을 반환합니다.
-    // - 를 포함하고 싶지 않을때는 $cut 이 $len 보다 크거나 같으면 됩니다.
     // max len = 36
     String get_serial(int len, int cut, String hipen){
         len = Math.abs((int)len);
@@ -150,8 +144,8 @@ class SerialKey {
         String sec = microtimeArray[1]
         String base_number = "${sec}${usec}"
 
-        base_number = "${base_number}${get_rand_number(10)}${get_rand_number(8)}";//36자리 유니크한 숫자 문자열
-        List<Integer> prime = get_simple_prime_number(5);//5자리 소수 배열
+        base_number = "${base_number}${get_rand_number(10)}${get_rand_number(8)}";
+        List<Integer> prime = get_simple_prime_number(5);
         shuffle(prime)
 
         String serial = bcmul(substr(base_number, 0, len), prime[0]);
@@ -165,8 +159,6 @@ class SerialKey {
         return toHipenedKey(serial, cut, hipen)
     }
 
-    //지정된 자릿수의 숫자와 영문으로된 시리얼을 반환합니다.
-    // - 를 포함하고 싶지 않을때는 $cut 이 $len 보다 크거나 같으면 됩니다.
     // max len = 24
     String generate_auto_mix_key(int len, int cut, String hipen){
         len = Math.abs((int)len);

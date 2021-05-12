@@ -145,4 +145,7 @@ if [ "$THIS_OS" = "WIN" ]; then
 fi
 
 ##### Run Jar
+## When use ~Java8
 java -Xss50m -cp "${PATH_TO_LIB_DIR}/*" install.Starter --hoya "$@"
+## When use Java9
+#java -Xss50m --add-opens java.base/jdk.internal.loader=ALL-UNNAMED --add-opens jdk.zipfs/jdk.nio.zipfs=ALL-UNNAMED -cp "${PATH_TO_LIB_DIR}/*" install.Starter --hoya "$@"

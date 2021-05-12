@@ -1,5 +1,6 @@
 package install.configuration
 
+import install.util.encryptor.crypto.RSAGreatMan
 import jaemisseo.man.FileMan
 import jaemisseo.man.TimeMan
 import jaemisseo.man.bean.FileSetup
@@ -83,7 +84,6 @@ class ConfigTest {
         }
         println "FINISH ==========  ${timeman.getTime()}"
     }
-
 
 
 

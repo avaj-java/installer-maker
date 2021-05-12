@@ -38,4 +38,7 @@ goto execute
 set CMD_LINE_ARGS=%$
 
 :execute
+rem When use ~java8
 java -Xss50m -cp "%PATH_TO_LIB_DIR%/*" install.Starter --hoya %CMD_LINE_ARGS%
+rem // When use java9
+rem java -Xss50m --add-opens java.base/jdk.internal.loader=ALL-UNNAMED --add-opens jdk.zipfs/jdk.nio.zipfs=ALL-UNNAMED -cp "%PATH_TO_LIB_DIR%/*" install.Starter --hoya %CMD_LINE_ARGS%

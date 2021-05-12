@@ -23,7 +23,7 @@ class RSAGoodMan {
 
     public static void main(String[] args) throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         RSAGoodMan rsaman = new RSAGoodMan()
-        String text = "암호화된 문자열 abcdefg hijklmn"
+        String text = "Encrypted string abcdefg hijklmn"
 
         KeyPair pair = rsaman.generateKeyPair()
         String publicKey = byteArrayToHex(pair.getPublic().getEncoded())
@@ -31,15 +31,15 @@ class RSAGoodMan {
 
         rsaman.test(text, publicKey, privateKey)
         rsaman.test('hi Test Ya', publicKey, privateKey)
-        rsaman.test('이거슨 테스트야', publicKey, privateKey)
-        rsaman.test('하하aa 11테스트 하는중 12451번째', publicKey, privateKey)
-        rsaman.test(' ㄹ%@52 ㅏ하하 도도여뱌쟈탸 ../ TEST /..; ', publicKey, privateKey)
+        rsaman.test('This is Test', publicKey, privateKey)
+        rsaman.test('Hahasldkfhjaa !@#!@#11 Testing 12451 time', publicKey, privateKey)
+        rsaman.test(' %@52 sfdal;j34wl;i235c.`as\\3../ TEST /..; ', publicKey, privateKey)
 
         rsaman.test(text, privateKey, publicKey)
         rsaman.test('hi Test Ya', privateKey, publicKey)
-        rsaman.test('이거슨 테스트야', privateKey, publicKey)
-        rsaman.test('하하aa 11테스트 하는중 12451번째', privateKey, publicKey)
-        rsaman.test(' ㄹ%@52 ㅏ하하 도도여뱌쟈탸 ../ TEST /..; ', privateKey, publicKey)
+        rsaman.test('This is Test', privateKey, publicKey)
+        rsaman.test('Hahasldkfhjaa !@#!@#11 Testing 12451 time', privateKey, publicKey)
+        rsaman.test(' %@52 sfdal;j34wl;i235c.`as\\3../ TEST /..; ', privateKey, publicKey)
     }
 
 
@@ -63,7 +63,7 @@ class RSAGoodMan {
         //KeyPairGenerator generator = KeyPairGenerator.getInstance("DiffieHellman", "SunJCE"); Not an RSA key: DH
         //KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "SunRsaSign"); // OK
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "SunJSSE"); // OK
-        generator.initialize(DEFAULT_KEY_SIZE, new SecureRandom()); // 여기에서는 2048 bit 키를 생성하였음
+        generator.initialize(DEFAULT_KEY_SIZE, new SecureRandom()); // This case is generating 2048 bit Key
         return generator.generateKeyPair();
     }
 
@@ -87,7 +87,7 @@ class RSAGoodMan {
             e.printStackTrace();
         }
 
-        // 공개키를 전달하여 암호화
+        // Bring someone PublicKey, Encrypt
         byte[] input = text.getBytes();
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
         byte[] cipherText = cipher.doFinal(input);
@@ -114,7 +114,7 @@ class RSAGoodMan {
             e.printStackTrace();
         }
 
-        // 개인키를 가지고있는쪽에서 복호화
+        // Decrypt from someone who has PrivateKey
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
         byte[] plainText = cipher.doFinal(hexToByteArray(encryptedText));
         return new String(plainText)

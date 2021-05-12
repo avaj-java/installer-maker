@@ -130,18 +130,19 @@ class SFTPMan{
     SFTPMan upload(String localPath, String serverPath, FileSetup opt){
         //- Check Path Parameter
         localPath = FileMan.getFullPath(localPath)
-        serverPath = FileMan.getFullPath(serverPath)
+//        serverPath = FileMan.getFullPath(serverPath)
         FileMan.checkPath(localPath, serverPath)
         //- Check Source(Local)
         List<String> entryList = FileMan.getEntryList(localPath)
         if (FileMan.checkSourceFiles(localPath, entryList)){
             //- Check Dest(Server)
-            checkDir(serverPath, opt.modeAutoMkdir)
-            checkFiles(serverPath, entryList, opt.modeAutoOverWrite)
+//            checkDir(serverPath, opt.modeAutoMkdir)
+//            checkFiles(serverPath, entryList, opt.modeAutoOverWrite)
             /** UPLOAD **/
             FileMan.startLogPath('UPLOAD', localPath, serverPath)
             if (FileMan.isFile(localPath)){
                 File sourceFile = new File(localPath)
+                logger.debug("Hello : modeProgressBar:$modeProgressBar") //TODO:Test
                 Util.eachWithTimeProgressBar([sourceFile], 30, modeProgressBar){ Map data ->
                     if (FileMan.isFile(serverPath) || !isDirectory(serverPath)){
                         put(sourceFile, serverPath, opt)

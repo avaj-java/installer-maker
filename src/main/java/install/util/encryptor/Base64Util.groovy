@@ -4,21 +4,6 @@ import org.apache.commons.codec.binary.Base64
 
 class Base64Util  implements EncryptionUtil{
 
-    /*************************
-     * Let's Test
-     *  -
-     *************************/
-    public static void main(String[] args) throws Exception{
-        String plainText = '하하하$호호%숫2자$특^수@문6자$~~meta~~stream~~';
-
-        String encryptedText = doEncrypt(plainText);
-        String decryptedText = doDecrypt(encryptedText);
-        System.out.println ( "01. PLAINTEXT : " +plainText );
-        System.out.println ( "01. ENCRYPT   : " +encryptedText );
-        System.out.println ( "01. DECRYPT   : " +decryptedText );
-
-        assert plainText == decryptedText;
-    }
 
     /*************************
      * Static - encrypt

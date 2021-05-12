@@ -14,11 +14,11 @@ class FileSetup extends jaemisseo.man.bean.FileSetup {
 
     @Value('file.encoding')
     String encoding = 'utf-8'
-    @Value('file.backup.path')
-    String lineBreak
     @Value('file.linebreak')
-    String lastLineBreak = ''
+    String lineBreak
     @Value('file.last.linebreak')
+    String lastLineBreak = ''
+    @Value('file.backup.path')
     String backupPath
 
     @Value('mode.auto.mkdir')

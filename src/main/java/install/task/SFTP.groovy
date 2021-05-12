@@ -22,28 +22,50 @@ Upload and Download with SFTP
   ex) username/password@127.0.0.1:22:~/path/to/do/something
 
 <usage>
-  ex) hoya -sftp upload username/password@127.0.0.1:22:/server/path/to/file /local/path/to/file        
+  ex) hoya -sftp upload /local/path/to/file username/password@127.0.0.1:22:/server/path/to/file        
   ex) hoya -sftp download username/password@127.0.0.1:22:/server/path/to/file /local/path/to/file
   ex) hoya -sftp -method=list -url=username/password@127.0.0.1:22:/server/path/to/file
   ex) hoya -sftp -method=entrylist -url=username/password@127.0.0.1:22:/server/path/to/file
+  
+  hoya -sftp -method=upload -id=ID -pw=PW -host=192.168.3.52 -from=/d/my_local_path/some_file.zip -to=//home/meta/sj-test
+  hoya -sftp -method=download -id=ID -pw=PW -host=192.168.3.52 -from=//home/meta/sj-test -to=/d/my_local_path/some_file.zip
+
 """)
 @Task
-@TerminalValueProtocol(['method', 'url', 'param'])
+@TerminalValueProtocol(['method', 'param1', 'param2'])
 class SFTP extends TaskUtil{
-
-    @Value(name='url')
-    String url
 
     @Value(name='method', required=true, caseIgnoreValidList=['UPLOAD','DOWNLOAD','LIST','ENTRYLIST'])
     String method
 
-    @Value(name='param')
-    String param
+    @Value(name='param1')
+    String param1
+
+    @Value(name='param2')
+    String param2
+
+    @Value(name='id')
+    String id
+
+    @Value(name='pw')
+    String pw
+
+    @Value(name='from')
+    String from
+
+    @Value(name='to')
+    String to
+
+    @Value(name='host')
+    String host
+
+    @Value(name='port')
+    String port
 
     @Value
     FileSetup fileSetup
 
-    @Value('mode.progress.bar')
+    @Value(name='mode.progress.bar', value="true") //TODO: Default Valuerk 기능이 없었나?
     Boolean modeProgressBar
 
 
@@ -51,26 +73,35 @@ class SFTP extends TaskUtil{
 
     @Override
     Integer run(){
-        SFTPMan sftpman = new SFTPMan().setModeProgressBar(modeProgressBar)
-        String id
-        String pw
-        String host
-        int port
-        String path
+        SFTPMan sftpman = new SFTPMan().setModeProgressBar(modeProgressBar?:true)
+        String id = id
+        String pw = pw
+        String host = host
+        int port = port ?: 22
+        String from = from
+        String to = to
 
-        //Connection Expression
-        int seperatorAllIndex = url.indexOf('@')
-        String idPw = url.substring(0, seperatorAllIndex)
-        String hostPortPath = url.substring(seperatorAllIndex+1, url.length())
-        //Connection Expression 2
-        List<String> idPwlist = idPw.split('[/]').toList()
-        id = idPwlist[0]
-        pw = idPwlist[1] ? idPwlist[1..(idPwlist.size()-1)].join('/') : id
-        //Connection Expression 3
-        List<String> hostPortPathlist = hostPortPath.split(':').toList()
-        host = hostPortPathlist[0] ?: 'localhost'
-        port = hostPortPathlist[1] ? hostPortPathlist[1].toInteger() : 22
-        path = hostPortPathlist[2] ?: '~/'
+        //TODO: 옵션 정리 필요..
+//        if (param1){
+//            //Connection Expression
+//            int seperatorAllIndex = param1.lastIndexOf('@')
+//            logger.debug("Check1 - url:$param1  sep:$seperatorAllIndex")
+//            String idPw = param1.substring(0, seperatorAllIndex)
+//            logger.debug("Check2 - IDPW: ${idPw}")
+//            String hostPortPath = param1.substring(seperatorAllIndex+1, param1.length())
+//            logger.debug("Check3 - hostPortPath: ${hostPortPath}")
+//            //Connection Expression 2
+//            List<String> idPwlist = idPw.split('[/]').toList()
+//            id = idPwlist[0]
+//            pw = idPwlist[1] ? idPwlist[1..(idPwlist.size()-1)].join('/') : id
+//            //Connection Expression 3
+//            List<String> hostPortPathlist = hostPortPath.split(':').toList()
+//            host = hostPortPathlist[0] ?: 'localhost'
+//            port = hostPortPathlist[1] ? hostPortPathlist[1].toInteger() : 22
+//            to = hostPortPathlist[2] ?: '~/'
+//        }
+        logger.debug("Check4 - ID:$id  PW:$pw  host:$host  port:$port  path:$to")
+        sleep(1000)
 
         try{
             //Connect
@@ -78,16 +109,16 @@ class SFTP extends TaskUtil{
             //Do
             switch(method.toUpperCase()){
                 case SFTPMan.UPLOAD:
-                    sftpman.upload(param, path, fileSetup)
+                    sftpman.upload(from, to, fileSetup)
                     break
                 case SFTPMan.DOWNLOAD:
-                    sftpman.download(path, param, fileSetup)
+                    sftpman.download(to, param2, fileSetup)
                     break
                 case SFTPMan.LIST:
-                    sftpman.printLs(path)
+                    sftpman.printLs(to)
                     break
                 case SFTPMan.ENTRYLIST:
-                    sftpman.printRecursiveLs(path)
+                    sftpman.printRecursiveLs(to)
                     break
                 default:
                     break

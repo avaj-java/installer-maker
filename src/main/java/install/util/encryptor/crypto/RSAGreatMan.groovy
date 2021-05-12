@@ -33,15 +33,6 @@ class RSAGreatMan {
     }
 
 
-    public static void main(String[] args) throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        RSAGreatMan rsaman = new RSAGreatMan()
-        rsaman.makeKeyPair()
-        rsaman.test("암호화된 문자열 abcdefg hijklmn")
-        rsaman.test('hi Test Ya')
-        rsaman.test('이거슨 테스트야')
-        rsaman.test('하하aa 11테스트 하는중 12451번째')
-        rsaman.test(' ㄹ%@52 ㅏ하하 도도여뱌쟈탸 ../ TEST /..; ')
-    }
 
 
 
