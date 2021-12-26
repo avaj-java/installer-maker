@@ -1,0 +1,86 @@
+####################################################################################################
+#
+# HOYA
+#
+#   - 'installer-maker init --default' to see more default variables.
+#   - You can change it or use it as a variable.
+#   - You can also create a variable. (However, avoid reserved words.)
+#
+#  < DEFAULT PROPERTIES >
+# installer.home=[UNCHANGEABLE]
+# log.dir=${installer.home}/log/
+# log.file.name=installer_${date(yyMMdd_HHmms)}
+# log.level.console=info
+# log.level.file=debug
+# color.desc=yellow
+# color.question=yellow
+# color.task=
+# variable.sign=$
+# rsp=
+####################################################################################################
+var:
+  data.dir: ${installer.home}/data
+  java.opts: -Xms512m -Xmx1524m -XX:MaxPermSize=1024m
+  program.home: ~/test_install
+  java.home: $JAVA_HOME
+  was:
+    contextpath: test
+    home: ${program.home}/apache-tomcat-7.0.47
+    encoding: UTF-8
+    port:
+      ajp: 18084
+      connect: 18081
+      reconnect: 18083
+      shutdown: 18082
+  db:
+    password: TEST_INSTALL
+    user: TEST_INSTALL
+  dba:
+    password: system
+    user: system
+  tablespace:
+    data: ''
+    idx: ''
+    file:
+      data: ''
+      idx: ''
+
+##################################################
+#####
+##### INSTALLER - COMMANDS (ask)
+#####
+##################################################
+ask:
+  helloMessage:
+    task: msg
+
+  ask1:
+    task: question
+    desc: Hi! What your name?
+
+  ask2:
+    task: questionYN
+    desc: Do you like banana?
+
+##################################################
+#####
+##### INSTALLER - COMMANDS (install)
+#####
+##################################################
+install:
+  step1:
+    if: '{"r.sqllevel.answer":["3"]}'
+    task: Sql
+    file: ${data.dir}/sql/create_tablespace.sql
+    sql:
+      password: ${dba.password}
+      user: ${dba.user}
+
+  step2:
+    if: '{"r.sqllevel.answer":["2","3"]}'
+    task: Sql
+    file: ${data.dir}/sql/create_user.sql
+    sql:
+      password: ${dba.password}
+      user: ${dba.user}
+

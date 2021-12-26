@@ -1,2 +1,12 @@
-include 'command-man', "common-util", "common-man", "fileman", "reportman", "restman"
+rootProject.name = 'installer-maker-app'
+
+include 'job:hoya'
+include 'job:hoya:hoya-task'
+include 'job:hoya:hoya-core'
+include 'job:hoya:hoya-core:command-man', 'job:hoya:hoya-core:common-util', 'job:hoya:hoya-core:common-man', 'job:hoya:hoya-core:fileman', 'job:hoya:hoya-core:restman'
+include 'job:hoya:hoya-core:reportman', 'job:hoya:hoya-core:reportman-annotation', 'job:hoya:hoya-core:reportman-annotation-alter'
+
+include 'job:installer'
+
+include 'job:installer-maker'
 

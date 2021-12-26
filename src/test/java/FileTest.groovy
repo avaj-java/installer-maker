@@ -1,4 +1,4 @@
-import install.bean.FileSetup
+import com.jaemisseo.hoya.bean.FileSetup
 import jaemisseo.man.FileMan
 import org.junit.Ignore
 import org.junit.Test

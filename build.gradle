@@ -1,3 +1,5 @@
+import groovy.json.JsonOutput
+
 apply plugin: "groovy"
 apply plugin: "java"
 apply plugin: "application"
@@ -10,7 +12,7 @@ apply plugin: "idea"
  **************************************************/
 buildscript {
     ext {
-        groovyVersion = '2.1.3'
+        groovyVersion = '2.4.3'
     }
     repositories {
         mavenCentral()
@@ -19,9 +21,13 @@ buildscript {
         maven { url 'https://repo.spring.io/snapshot' }
         maven { url "https://jitpack.io" }
     }
+    dependencies {
+        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.2'
+        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.8"
+    }
 }
 
-task wrapper(type: Wrapper) {
+wrapper {
     gradleVersion = '4.10.3'
 }
 
@@ -51,27 +57,38 @@ sourceSets {
  * Define Variable&Function
  *
  **************************************************/
-sourceCompatibility = "1.6"
-targetCompatibility = "1.6"
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
-String projectName = "installer-maker"
+String projectName = "installer-maker-cli"
 version = "git describe --tags".execute([], project.projectDir).text.trim()
-applicationName = projectName
+applicationName = "installer-maker"
 group = "jaemmisseo"
-mainClassName = "install.Starter"
+mainClassName = "com.jaemisseo.install.application.InstallerMakerCliApplication"
 
 String distributionPath = "${buildDir}/distributions"
 String libFileName = "${projectName}-${version}"
 String SystemEnv_INSTALLER_MAKER_HOME = "$System.env.INSTALLER_MAKER_HOME"
+String deployDefaultPath = System.properties["user.home"] + "/installer-maker"
+String deployPath = SystemEnv_INSTALLER_MAKER_HOME ?: deployDefaultPath
+////TODO: 임시
+//deployPath += "-test001"
 boolean modeRemoteDependencies = project.hasProperty('remote')
 boolean hadDeployment = false
 List<Dependency> moduleList = []
+
+
+ext.setProperty('coreBasePath', ':job:hoya:hoya-core')
 
 ext.getString = { String propertyName -> return project.hasProperty(propertyName) ? project.property(propertyName) : null }
 ext.getBoolean = { String propertyName -> return project.hasProperty(propertyName) && (!project.property(propertyName) || project.property(propertyName) == 'true') }
 ext.getDependency = { String dependencyString ->
     String name = dependencyString.split(':').toList()[1]
-    return (modeRemoteDependencies) ? dependencyString : project(":${name}")
+//    println "121123t,3tkwtpr3proqc.rqwci0wq.c0e2"
+    println modeRemoteDependencies
+    println dependencyString
+    println name
+    return (modeRemoteDependencies) ? dependencyString : project(":job:hoya:hoya-core:${name}")
 }
 
 static void printSubject(String subjectName){
@@ -87,7 +104,7 @@ static int getLongestLength(List list, String fieldName){
 static int getLongestLength(List<String> list){
     int longestLength = -1
     list.each{ def text ->
-        int length = text?.length()
+        int length = text?.length() ?: 0
         if (longestLength < length)
             longestLength = length
     }
@@ -95,6 +112,8 @@ static int getLongestLength(List<String> list){
 }
 
 static String getSpacesToLineUp(String stringItem, int bestLongerLength){
+    if (stringItem == null)
+        return ''
     return (stringItem.length() < bestLongerLength) ? (1..(bestLongerLength - stringItem.length())).collect{' '}.join('') : ''
 }
 
@@ -117,6 +136,7 @@ class Dependency {
     String name
     String branchName
     String version
+    String module
 }
 
 
@@ -127,36 +147,20 @@ class Dependency {
  *
  **************************************************/
 repositories {
+    mavenCentral()
     jcenter()
     maven { url "http://central.maven.org/maven2/" }
     maven { url "https://jitpack.io" }
     maven { url 'http://repo.spring.io/milestone' }
     maven { url "http://maven.springframework.org/release" }
 }
-List<String> subprojectList = [
-        'com.github.avaj-java:common-util:0.3.7.5',
-        'com.github.avaj-java:command-man:0.5.2.2',
-        'com.github.avaj-java:common-man:0.4.2',
-        'com.github.avaj-java:fileman:0.4.2.1',
-        'com.github.avaj-java:reportman:0.3.2',
-        'com.github.avaj-java:restman:0.3.2'
-]
-List<String> dependencyList = [
-        'org.codehaus.groovy:groovy-all:2.1.3',
-        'org.slf4j:slf4j-api:1.7.7',
-        'ch.qos.logback:logback-classic:1.2.3',
-        'ch.qos.logback:logback-core:1.2.3',
-        'org.fusesource.jansi:jansi:1.16',
-        'com.sun.mail:javax.mail:1.5.5',
-//        "com.oracle:ojdbc6:11.2.0.3",
-        'org.yaml:snakeyaml:1.18',
-        'com.jcraft:jsch:0.1.55'
-]
+
 dependencies {
-    //JAEMISSEO
-    subprojectList.each{ compile(getDependency(it)) }
-    //Others
-    dependencyList.each{ compile(it) }
+
+    compile project(":job:hoya")
+    compile project(':job:installer')
+    compile project(':job:installer-maker')
+
     //Test
     testCompile "junit:junit:4.11"
 
@@ -170,25 +174,70 @@ jar.rootSpec.exclude( fileTree(dir: 'external_lib_dev', include: ['*.jar']).coll
 
 
 
+
+
+/**************************************************
+ *
+ * Setup All Projects
+ *
+ **************************************************/
+allprojects {
+    apply plugin: 'com.github.kt3k.coveralls'
+    apply plugin: 'jacoco'
+    apply plugin: 'org.sonarqube'
+}
+
 /**************************************************
  *
  * Setup Each Sub Projects
  *
  **************************************************/
 subprojects {
+
     /*************************
      * Gethering Module's Git Info
      *************************/
     moduleList << new Dependency(
             name        : project.name,
-            branchName  : 'git rev-parse --abbrev-ref HEAD'.execute([], project.projectDir).text.trim(),
-            version     : 'git describe --tags'.execute([], project.projectDir).text.trim()
+            module      : project,
+//            branchName  : 'git rev-parse --abbrev-ref HEAD'.execute([], project.projectDir).text.trim(),
+//            version     : 'git describe --tags'.execute([], project.projectDir).text.trim()
     )
     group = 'jaemmisseo'
     version = moduleList[(moduleList.size()-1)].version
 
     //Message to Sub Gradle
     ext.setProperty('modeParentRemoteDependencies', modeRemoteDependencies)
+
+    /** jacocoTestReport to Submodules **/
+    jacocoTestReport {
+        reports {
+            html.enabled = true
+            xml.enabled = true
+            csv.enabled = false
+            //to create coverage report in html
+            html.destination file("${buildDir}/reports/coverage")
+            //for XML
+            xml.destination file("${buildDir}/reports/jacoco.xml")
+        }
+    }
+
+    /** SonarQube **/
+    sonarqube {
+        properties {
+            property "sonar.sourceEncoding", "UTF-8"
+            // 프로젝트별로 달라지는 설정들
+            property "sonar.sources", "src/main/java"
+//            property "sonar.exclusions", "**/*Generated.java"
+            property "sonar.branch", "Foo"
+            property "sonar.junit.reportPaths", "${buildDir}/test-results"
+            property "sonar.jacoco.reportPaths", "${buildDir}/jacoco/test.exec"
+            property 'sonar.coverage.jacoco.xmlReportPaths', "${project.buildDir}/reports/jacoco.xml"
+            // deprecated된 프로퍼티는 경고가 나오기에 제거하였다.
+//            property "sonar.jacoco.reportPath", null
+//            property "sonar.jacoco.reportPaths", null
+        }
+    }
 }
 
 if (modeRemoteDependencies){
@@ -242,6 +291,36 @@ printSubject "Check - Start Task"
  * Tasks 
  *
  **************************************************/
+
+/*************************
+ *
+ * TASK - jacoco to report coverage
+ *
+ *************************/
+// 각 서브모듈들의 JacocoReport 취합
+task jacocoRootReport(type: JacocoReport) {
+    description = 'Generates an aggregate report from all subprojects'
+//    dependsOn = subprojects.test
+//    sourceDirectories = files(subprojects.sourceSets.main.allSource.srcDirs)
+//    classDirectories =  files(subprojects.sourceSets.main.output)
+//    executionData = files(subprojects.jacocoTestReport.executionData)
+    reports {
+        html.enabled = true // human readable
+        xml.enabled = true // required by coveralls
+        csv.enabled = false
+        html.destination file("${buildDir}/reports/coverage")
+        xml.destination file("${buildDir}/reports/jacoco.xml")
+    }
+}
+
+/** coveralls Task로 jacocoRootReport 로 취합된 결과만 전송 **/
+coveralls {
+    sourceDirs = subprojects.sourceSets.main.allSource.srcDirs.flatten()
+    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoRootReport/jacocoRootReport.xml"
+}
+
+
+
 /*************************
  *
  * TASK - jar
@@ -251,6 +330,13 @@ printSubject "Check - Start Task"
 task writeVersion {
     doFirst{
         printSubject "Generate - metadata"
+        //Check building files
+        file("$buildDir/resources/main").mkdirs()
+        File[] files = new File("$buildDir/resources/main").listFiles()
+        printSubject "Count ($buildDir/resources/main): ${files?.length}"
+        files?.each{
+            println it.name
+        }
     }
     doLast{
         new File("$buildDir/resources/main/.version").write(version)
@@ -305,8 +391,8 @@ jar {
 distributions{
     main.contents.into("bin"){
         from([
-                "src/main/resources/binForBuilder/hoya",
-                "src/main/resources/binForBuilder/hoya.bat",
+                "${project(":job:hoya").projectDir.path}/src/main/resources/binForHoya/hoya",
+                "${project(":job:hoya").projectDir.path}/src/main/resources/binForHoya/hoya.bat",
         ])
         fileMode 0755
     }
@@ -359,11 +445,11 @@ build.dependsOn extractZipToTemp, copyHoyaTargetClasses, writeVersion
  *************************/
 /** Before deployLocal **/
 task cleanHome(type: Delete){
-    hadDeployment = new File(SystemEnv_INSTALLER_MAKER_HOME).exists()
-    delete SystemEnv_INSTALLER_MAKER_HOME
+    hadDeployment = new File(deployPath).exists()
+    delete deployPath
     doLast{
         if (hadDeployment){
-            printSubject "Deleted Before-Deployment!!! (Path: ${SystemEnv_INSTALLER_MAKER_HOME} )"
+            printSubject "Deleted Before-Deployment!!! (Path: ${deployPath} )"
         }
     }
 }
@@ -371,10 +457,10 @@ task cleanHome(type: Delete){
 task deployLocal(type: Copy){
     dependsOn distZip, extractZipToTemp, cleanHome
     from "${distributionPath}/${projectName}"
-    into SystemEnv_INSTALLER_MAKER_HOME
+    into deployPath
     doLast{
-        printSubject "${(hadDeployment)?'Re-Deployed':'Newly-Deployed'} !!! (Path: ${SystemEnv_INSTALLER_MAKER_HOME} )"
-        new File(SystemEnv_INSTALLER_MAKER_HOME).listFiles().each{ println it }
+        printSubject "${(hadDeployment)?'Re-Deployed':'Newly-Deployed'} !!! (Path: ${deployPath} )"
+        new File(deployPath).listFiles().each{ println it }
     }
 }
 

@@ -1,0 +1,26 @@
+plugins {
+    id 'java'
+}
+
+apply from: './build-source-set-jaemisseo-module-groovy.gradle'
+
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven { url "http://central.maven.org/maven2/" }
+    maven { url "https://jitpack.io" }
+    maven { url 'http://repo.spring.io/milestone' }
+    maven { url "http://maven.springframework.org/release" }
+}
+
+dependencies {
+
+    getSubprojects().each{
+        compile it
+    }
+
+    //JAEMISSEO
+//    subprojectList.each{ compile(getDependency(it)) }
+
+}

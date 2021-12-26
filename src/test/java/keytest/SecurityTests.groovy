@@ -1,7 +1,7 @@
 package keytest
 
-import install.util.encryptor.crypto.RSAGreatMan
-import install.util.encryptor.crypto.Security
+import com.jaemisseo.hoya.util.encryptor.crypto.RSAGreatMan
+import com.jaemisseo.hoya.util.encryptor.crypto.Security
 import org.junit.Ignore
 import org.junit.Test
 

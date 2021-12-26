@@ -1,10 +1,11 @@
 [![Build Status](https://travis-ci.org/avaj-java/installer-maker.svg?branch=master)](https://travis-ci.org/avaj-java/installer-maker)
+[![Coverage Status](https://coveralls.io/repos/github/avaj-java/installer-maker/badge.svg)](https://coveralls.io/github/avaj-java/installer-maker)
 [![All Download](https://img.shields.io/github/downloads/avaj-java/installer-maker/total.svg)](https://github.com/avaj-java/installer-maker/releases)
 [![Release](https://img.shields.io/github/release/avaj-java/installer-maker.svg)](https://github.com/avaj-java/installer-maker/releases)
 [![License](https://img.shields.io/github/license/avaj-java/installer-maker.svg)](https://github.com/avaj-java/installer-maker/releases)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=MCUPCPFHFYZNN&lc=KR&item_name=jaemisseo&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted)
                                                                              
-*Read this in other languages: [English](README.md), [한국어](README.ko.md), [日本語](README.ja.md), [中文](README.ch.md)
+*Read this in other languages: [English](README.md), [한국어](docs/kor/README.ko.md), [日本語](docs/jpn/README.ja.md), [中文](docs/chn/README.ch.md)
 
 -----
 ## table of contents

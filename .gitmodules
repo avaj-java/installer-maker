@@ -1,19 +1,27 @@
-
+[submodule "avaj-java.github.io"]
+	path = avaj-java.github.io
+	url = https://github.com/avaj-java/avaj-java.github.io.git
 [submodule "command-man"]
-    path = command-man
+    path = job/hoya/hoya-core/command-man
     url = https://github.com/avaj-java/command-man.git
 [submodule "common-man"]
-	path = common-man
+	path = job/hoya/hoya-core/common-man
 	url = https://github.com/avaj-java/common-man.git
 [submodule "common-util"]
-    path = common-util
+    path = job/hoya/hoya-core/common-util
     url = https://github.com/avaj-java/common-util.git
 [submodule "fileman"]
-    path = fileman
+    path = job/hoya/hoya-core/fileman
     url = https://github.com/avaj-java/fileman.git
 [submodule "restman"]
-	path = restman
+	path = job/hoya/hoya-core/restman
 	url = https://github.com/avaj-java/restman.git
 [submodule "reportman"]
-	path = reportman
+	path = job/hoya/hoya-core/reportman
 	url = https://github.com/avaj-java/reportman.git
+[submodule "reportman-annotation"]
+	path = job/hoya/hoya-core/reportman-annotation
+	url = https://github.com/avaj-java/reportman-annotation.git
+[submodule "reportman-annotation-alter"]
+	path = job/hoya/hoya-core/reportman-annotation-alter
+	url = https://github.com/avaj-java/reportman-annotation-alter.git
