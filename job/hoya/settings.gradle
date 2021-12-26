@@ -1,0 +1,8 @@
+rootProject.name = 'hoya'
+
+include 'hoya-core'
+include 'hoya-task'
+include 'hoya-core:command-man', "hoya-core:common-util", "hoya-core:common-man", "hoya-core:fileman", "hoya-core:restman"
+include 'hoya-core:reportman', 'hoya-core:reportman-annotation', 'hoya-core:reportman-annotation-alter'
+
+

@@ -1,11 +1,8 @@
-import install.bean.QuestionSetup
+import com.jaemisseo.hoya.bean.QuestionSetup
 import jaemisseo.man.FileMan
 import jaemisseo.man.VariableMan
 import jaemisseo.man.bean.FileSetup
-import jaemisseo.man.util.Util
 import org.junit.Test
-
-import java.text.SimpleDateFormat
 
 class SomeTest {
 

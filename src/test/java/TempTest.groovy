@@ -2,6 +2,8 @@ import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import org.junit.Test
 
+import java.text.SimpleDateFormat
+
 /**
  * Created by sujkim on 2017-02-26.
  */
@@ -25,7 +27,7 @@ class TempTest {
 
     @Test
     void "date format"(){
-        println "${new Date().format('yyyyMMddHHmmssSSS')}"
+        println "${new SimpleDateFormat("yyyyMMddHHmmssSSS").format(new Date())}"
     }
 
 

@@ -1,0 +1,15 @@
+plugins {
+    id 'java'
+}
+
+apply from: '../hoya/build-source-set-jaemisseo-module-groovy.gradle'
+
+//repositories {
+//    mavenCentral()
+//}
+
+dependencies {
+
+    compile project(':job:hoya')
+
+}

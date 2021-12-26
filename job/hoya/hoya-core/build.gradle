@@ -1,0 +1,98 @@
+plugins {
+    id 'java'
+}
+
+apply from: '../../hoya/build-source-set-jaemisseo-module-groovy.gradle'
+
+boolean modeRemoteDependencies = project.hasProperty('remote')
+
+
+ext.getString = { String propertyName -> return project.hasProperty(propertyName) ? project.property(propertyName) : null }
+ext.getBoolean = { String propertyName -> return project.hasProperty(propertyName) && (!project.property(propertyName) || project.property(propertyName) == 'true') }
+ext.getDependency = { String dependencyString ->
+    String name = dependencyString.split(':').toList()[1]
+    println "!!!!!!!!!!!!!!!!! = = = = = = ==121123t,3tkwtpr3proqc.rqwci0wq.c0e2"
+    println modeRemoteDependencies
+    println dependencyString
+    println name
+    return (modeRemoteDependencies) ? dependencyString : project(":job:hoya:hoya-core:${name}")
+}
+
+/**************************************************
+ *
+ * Dependencies
+ *
+ **************************************************/
+repositories {
+    mavenCentral()
+    jcenter()
+    maven { url "http://central.maven.org/maven2/" }
+    maven { url "https://jitpack.io" }
+    maven { url 'http://repo.spring.io/milestone' }
+    maven { url "http://maven.springframework.org/release" }
+}
+List<String> subprojectList = [
+        'com.github.avaj-java:common-util:0.4.2',
+        'com.github.avaj-java:command-man:0.5.4',
+        'com.github.avaj-java:common-man:0.5.1',
+        'com.github.avaj-java:fileman:0.4.4',
+        'com.github.avaj-java:reportman:0.3.5',
+        'com.github.avaj-java:restman:0.3.3'
+]
+
+TreeSet<Project> allModules = rootProject.project.subprojects.findAll{true }
+
+List<Project> foundLocalProjects = subprojectList.collect{dependencyString ->
+    println "${dependencyString} >>>>>"
+    String name = dependencyString.split(':').toList()[1]
+
+    Project foundProject = allModules.find{it.name == name }
+    println "${name} >>  ${foundProject?.name}"
+    return foundProject
+}
+
+println foundLocalProjects
+
+def groovy_version = '2.5.3'
+
+List<String> dependencyList = [
+
+        /** Groovy **/ //- from :common-util
+        "org.codehaus.groovy:groovy:${groovy_version}",
+        "org.codehaus.groovy:groovy-sql:${groovy_version}",
+        "org.codehaus.groovy:groovy-json:${groovy_version}",
+
+        /** Logger **/
+        'org.slf4j:slf4j-api:1.7.30',
+//        'org.slf4j:jcl-over-slf4j:1.7.30',
+//        'org.slf4j:slf4j-simple:1.7.30',
+        'ch.qos.logback:logback-classic:1.2.3',
+//        'ch.qos.logback:logback-core:1.2.3',
+        'org.fusesource.jansi:jansi:1.16',
+
+        /** ... **/
+        'com.sun.mail:javax.mail:1.5.5',
+//        "com.oracle:ojdbc6:11.2.0.3",
+        'org.yaml:snakeyaml:1.18',
+        'com.jcraft:jsch:0.1.55'
+]
+
+dependencies {
+
+    dependencyList.each{ compile(it) }
+
+    //JAEMISSEO
+//    subprojectList.each{ compile(getDependency(it)) }
+    foundLocalProjects.each{
+//        println "======3=4=134=34=2342=352=52=523=5=5=6=6==7=77=7=7=7=7="
+//        println "======3=4=134=34=2342=352=52=523=5=5=6=6==7=77=7=7=7=7="
+//        println "======3=4=134=34=2342=352=52=523=5=5=6=6==7=77=7=7=7=7="
+        println it
+        compile(it)
+    }
+
+
+
+//    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+//    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+}
