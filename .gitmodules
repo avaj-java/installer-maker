@@ -1,3 +1,6 @@
+[submodule "avaj-java.github.io"]
+	path = avaj-java.github.io
+	url = https://github.com/avaj-java/avaj-java.github.io.git
 [submodule "command-man"]
     path = job/hoya/hoya-core/command-man
     url = https://github.com/avaj-java/command-man.git
