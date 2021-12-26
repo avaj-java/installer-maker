@@ -4,7 +4,7 @@ import com.jaemisseo.hoya.bean.GlobalOptionForHoya
 import com.jaemisseo.hoya.bean.ReportSetup
 import com.jaemisseo.hoya.task.config.TaskSetup
 import jaemisseo.man.configuration.exception.WantToRestartException
-import jaemisseo.man.configuration.config.CommanderConfig
+import jaemisseo.man.configuration.context.CommanderConfig
 import jaemisseo.man.configuration.annotation.Alias
 import jaemisseo.man.configuration.annotation.HelpIgnore
 import jaemisseo.man.configuration.annotation.method.Command

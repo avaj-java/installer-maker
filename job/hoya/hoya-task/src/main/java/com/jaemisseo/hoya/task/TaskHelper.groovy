@@ -5,7 +5,7 @@ import com.jaemisseo.hoya.util.YamlUtil
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.VariableMan
-import jaemisseo.man.configuration.config.CommanderConfig
+import jaemisseo.man.configuration.context.CommanderConfig
 import jaemisseo.man.configuration.annotation.Inject
 import jaemisseo.man.configuration.data.PropertyProvider
 import org.slf4j.Logger

@@ -33,7 +33,7 @@ repositories {
 }
 List<String> subprojectList = [
         'com.github.avaj-java:common-util:0.4.2',
-        'com.github.avaj-java:command-man:0.5.4',
+        'com.github.avaj-java:command-man:0.5.5',
         'com.github.avaj-java:common-man:0.5.1',
         'com.github.avaj-java:fileman:0.4.4',
         'com.github.avaj-java:reportman:0.3.5',

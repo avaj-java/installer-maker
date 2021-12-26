@@ -2,9 +2,9 @@ package com.jaemisseo.install.job
 
 import com.jaemisseo.hoya.job.JobHelper
 import jaemisseo.man.PropMan
-import jaemisseo.man.configuration.config.CommanderConfig
-import jaemisseo.man.configuration.config.Environment
-import jaemisseo.man.configuration.config.SelfAware
+import jaemisseo.man.configuration.context.CommanderConfig
+import jaemisseo.man.configuration.context.Environment
+import jaemisseo.man.configuration.context.SelfAware
 import jaemisseo.man.configuration.data.PropertyProvider
 
 /**

@@ -1,7 +1,7 @@
 package com.jaemisseo.hoya.job
 
-import jaemisseo.man.configuration.config.Environment
-import jaemisseo.man.configuration.config.SelfAware
+import jaemisseo.man.configuration.context.Environment
+import jaemisseo.man.configuration.context.SelfAware
 import com.jaemisseo.hoya.task.Command
 import com.jaemisseo.hoya.task.Help
 import com.jaemisseo.hoya.task.Notice
@@ -21,7 +21,7 @@ import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.VariableMan
 import jaemisseo.man.VariableMan.OnePartObject
-import jaemisseo.man.configuration.config.CommanderConfig
+import jaemisseo.man.configuration.context.CommanderConfig
 import jaemisseo.man.configuration.annotation.Inject
 import jaemisseo.man.configuration.annotation.method.After
 import jaemisseo.man.configuration.annotation.method.Before

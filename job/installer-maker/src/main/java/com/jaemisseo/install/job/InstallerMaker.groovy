@@ -10,7 +10,7 @@ import com.jaemisseo.hoya.task.config.TaskSetup
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.ReportMan
-import jaemisseo.man.configuration.config.CommanderConfig
+import jaemisseo.man.configuration.context.CommanderConfig
 import jaemisseo.man.configuration.annotation.HelpIgnore
 import jaemisseo.man.configuration.annotation.method.Command
 import jaemisseo.man.configuration.annotation.method.Init

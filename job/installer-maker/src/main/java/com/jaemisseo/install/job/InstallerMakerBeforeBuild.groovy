@@ -10,9 +10,9 @@ import com.jaemisseo.install.exception.FailedToExtractDistributionException
 import com.jaemisseo.install.exception.OverRetryLimit
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
-import jaemisseo.man.configuration.config.CommanderConfig
-import jaemisseo.man.configuration.config.Environment
-import jaemisseo.man.configuration.config.SelfAware
+import jaemisseo.man.configuration.context.CommanderConfig
+import jaemisseo.man.configuration.context.Environment
+import jaemisseo.man.configuration.context.SelfAware
 import jaemisseo.man.configuration.data.PropertyProvider
 import org.apache.commons.io.FileUtils
 

@@ -3,7 +3,7 @@ package com.jaemisseo.install.configuration
 import jaemisseo.man.FileMan
 import jaemisseo.man.TimeMan
 import jaemisseo.man.bean.FileSetup
-import jaemisseo.man.configuration.config.CommanderConfig
+import jaemisseo.man.configuration.context.CommanderConfig
 import jaemisseo.man.configuration.annotation.type.Bean
 import jaemisseo.man.configuration.annotation.type.Data
 import jaemisseo.man.configuration.annotation.type.Employee
