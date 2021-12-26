@@ -1,0 +1,16 @@
+plugins {
+    id 'java'
+}
+
+version 'unspecified'
+
+//dependencies {
+//
+//    compile project(':job:installer')
+//    compile project(':job:installer-maker')
+//
+//}
+
+jar {
+    enabled false
+}

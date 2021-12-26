@@ -1,4 +1,0 @@
-#!/usr/bin/env sh
-
-echo "- INSTALLER_MAKER_HOME: $INSTALLER_MAKER_HOME"
-echo "- HOYA_HOME: $HOYA_HOME"

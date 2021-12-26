@@ -1,6 +1,6 @@
 package keytest
 
-import install.util.SerialKey
+import com.jaemisseo.hoya.util.SerialKey
 import org.junit.Test
 
 class SerialKeyTest {

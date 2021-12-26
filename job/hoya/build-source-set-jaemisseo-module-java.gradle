@@ -1,0 +1,41 @@
+/**************************************************
+ *
+ *  IRUDA Source Set 공통
+ *
+ **************************************************/
+//plugins {
+//    id 'java'
+//}
+
+apply plugin: 'groovy'
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+/*************************
+ * SOURCE SET
+ *************************/
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java']
+        }
+        resources {
+            srcDirs = ['src/main/resources']
+        }
+    }
+    test {
+        java {
+            srcDirs = ['src/test/java']
+        }
+        resources {
+            srcDirs = ['src/main/resources']
+        }
+    }
+}
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+repositories {
+    maven { url "https://jitpack.io" }
+    mavenCentral()
+}
