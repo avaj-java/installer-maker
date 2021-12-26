@@ -52,7 +52,8 @@ before_deploy:
   - echo "# Deploying $RELEASE_PKG_FILE to GitHsub releases"
 deploy:
   provider: releases
-  api_key: $GITHUB_TOKEN
+  api_key:
+    secure: "sBZvcPBtAiYwQ7u5xvApERefEfkCONrCC9sXE0IwELtHWCbdeJAnvp1yXgNkSjmR5M4GYYJDNqg5s1+W0W/JqXkBD516e1xled7KnFb1znU+CERqIje7tFgaX+cCBD1ZWbRuV3vTG7ZUZgngtGb8yadPlQdF6t3FIRVGMiG6MuetMSsXLnHyb5xu7CVCVhaoql0ef1m+BybVRrG3E4LT2lH0OH4Wcrm/g5nXsRvs9jEPceAltBZtAxC+RZGEvwzCyE8nEP76yiwXlBklMHbVYrIn11TM6Dw778R9RmQaj9Yb8iZm3VJyT4I1mKeCMfytBbRhVc/nkVe/Qcz41JoLkYzdPJn3XEgT7R700wO67Zpl4P+H2H2gYSTeD6zNIu0UQ5d8e3aU9izmyTyb9Bu+Fa/a09Dzb7gFzn6U6l801yzak6oL9AVcgMBps+wRvAhikqiyhYNwmz3AGMZGuATgCp70BGZtVf7B8nHTB/p7sQxT4uPZQayF1tOZiguWqCzWpCLPOCWwWRMYl8zvegFkzmXn/gdVXdZUv1Zwei4q2T9YHe3SnqqSviB5sKDl431aSrb2lVAYp7OWg6ZKxDEGSq8m5xNf5ik6p5E1xDOsRoOyTjiGcGKAP9s87Vbgo5j3VO6mXOKVz34RI8C2x4n3QvxtMzGHXYP6eGZA6XIccFM="
   file: "build/distributions/*.zip"
   file_glob: true
   skip_cleanup: true
