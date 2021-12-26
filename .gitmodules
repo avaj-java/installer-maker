@@ -19,3 +19,9 @@
 [submodule "reportman"]
 	path = job/hoya/hoya-core/reportman
 	url = https://github.com/avaj-java/reportman.git
+[submodule "reportman-annotation"]
+	path = job/hoya/hoya-core/reportman-annotation
+	url = https://github.com/avaj-java/reportman-annotation.git
+[submodule "reportman-annotation-alter"]
+	path = job/hoya/hoya-core/reportman-annotation-alter
+	url = https://github.com/avaj-java/reportman-annotation-alter.git
