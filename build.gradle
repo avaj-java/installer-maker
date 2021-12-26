@@ -330,6 +330,11 @@ coveralls {
 task writeVersion {
     doFirst{
         printSubject "Generate - metadata"
+        File[] files = new File("$buildDir/resources/main").listFiles()
+        printSubject "Count ($buildDir/resources/main): ${files.length}"
+        files?.each{
+            println it.name
+        }
     }
     doLast{
         new File("$buildDir/resources/main/.version").write(version)
