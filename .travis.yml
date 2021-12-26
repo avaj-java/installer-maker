@@ -53,7 +53,7 @@ before_deploy:
 deploy:
   provider: releases
   api_key:
-    secure: "PHKCS6L351P5plf3Sw5zDVMnPqKMNNcooEySi8npC45ezfrd7mkUnePPDnd+luMCeUdpJa9XD1gbagJJy9tj0B4ckjUnwb2faLvONKDauNAi+b6w1Jsu6Xhhbn6IFjIfY9wdjG2d4iAzkE2je7sdvunEcbR6HDUiM8x48ewoR/1Io7Y7gKTexxBWZpRRm9Pey/RH/mev1S3gyDj5c2VTCMxmF1TUFtepa5mNDE13EnPIeYQOEM+UoNyzKDNnxZaavHvGQ+xEbEL8AJFHJhk02H+Njh1FKnP6g3tcHFF1HU+d8+H/sZqEZ/JjLn7118x5p1U9ZyScbXHuoDXgHYvt4PeYIGmgqVPwcfxx32DRv4eoYyxuKWOi93k03i/jIzw2TFP7PeevFl5Skg5of67i/U4ZEBWF8JiWDTfePeH1xeULBLGvLkqsVGD5Aa35xxJWEGo1Ij1qvvT2o5OGX1FVj3e6D2Bj6E2FC7lzH9z7uOKpQn9CtUH0Nex56iNUANCyfNBr26dCXTlAAKUutCNp8TJlMG6f2vb5ubHVJIjQxo2JqburgxkUJWGqfaG1WRhg4DXZ//1wB1YiLJTErWVFrP0A7zCJ6uBZ3YJnJHbIuFONlfA77zYd57r9RIe+ypBh5thu9tFq7aB+ePgnNRZRfJ00odqIqxm1fbc7IF665Mg="
+    secure: $GITHUB_TOKEN
   file: "build/distributions/*.zip"
   file_glob: true
   skip_cleanup: true
