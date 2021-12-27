@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory
  */
 public abstract class TaskHelper {
 
-    final Logger logger = LoggerFactory.getLogger(this.getClass());
+    Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public static final Integer STATUS_NOTHING = 0
     public static final Integer STATUS_TASK_DONE = 1

@@ -7,6 +7,7 @@
 //    id 'java'
 //    id 'groovy'
 //}
+
 apply plugin: 'java'
 apply plugin: 'groovy'
 
@@ -29,7 +30,7 @@ sourceSets {
             srcDirs = ['src/test/java']
         }
         resources {
-            srcDirs = ['src/main/resources']
+            srcDirs = ['src/test/resources']
         }
     }
 }

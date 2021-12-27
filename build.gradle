@@ -161,9 +161,6 @@ dependencies {
     compile project(':job:installer')
     compile project(':job:installer-maker')
 
-    //Test
-    testCompile "junit:junit:4.11"
-
     /** Local File System으로부터 참조(*.jar) **/
     compile fileTree(dir: 'external_lib', include: ['*.jar'])
     compile fileTree(dir: 'external_lib_dev', include: ['*.jar'])
@@ -203,7 +200,7 @@ subprojects {
 //            branchName  : 'git rev-parse --abbrev-ref HEAD'.execute([], project.projectDir).text.trim(),
 //            version     : 'git describe --tags'.execute([], project.projectDir).text.trim()
     )
-    group = 'jaemmisseo'
+    group = 'avaj-java'
     version = moduleList[(moduleList.size()-1)].version
 
     //Message to Sub Gradle

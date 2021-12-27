@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory
 
 public abstract class JobHelper extends TaskHelper{
 
-    final Logger logger = LoggerFactory.getLogger(this.getClass());
+    Logger logger = LoggerFactory.getLogger(this.getClass());
 
     String jobName = this.getClass().simpleName.toLowerCase()
     String commandName = null

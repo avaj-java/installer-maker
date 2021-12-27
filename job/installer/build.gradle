@@ -8,8 +8,13 @@ apply from: '../hoya/build-source-set-jaemisseo-module-groovy.gradle'
 //    mavenCentral()
 //}
 
+group = 'avaj-java'
+version = '0.0.1'
+
 dependencies {
 
     compile project(':job:hoya')
+
+    apply from: '../hoya/build-test-dependencies.gradle'
 
 }

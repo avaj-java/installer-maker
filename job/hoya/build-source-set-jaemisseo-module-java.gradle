@@ -27,7 +27,7 @@ sourceSets {
             srcDirs = ['src/test/java']
         }
         resources {
-            srcDirs = ['src/main/resources']
+            srcDirs = ['src/test/resources']
         }
     }
 }

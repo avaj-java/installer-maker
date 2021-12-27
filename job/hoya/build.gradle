@@ -14,6 +14,9 @@ repositories {
     maven { url "http://maven.springframework.org/release" }
 }
 
+group = 'avaj-java'
+version = '0.0.1'
+
 dependencies {
 
     getSubprojects().each{
@@ -22,5 +25,7 @@ dependencies {
 
     //JAEMISSEO
 //    subprojectList.each{ compile(getDependency(it)) }
+
+    apply from: './build-test-dependencies.gradle'
 
 }
