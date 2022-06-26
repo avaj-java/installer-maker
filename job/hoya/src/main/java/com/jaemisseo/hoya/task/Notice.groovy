@@ -23,9 +23,12 @@ class Notice extends TaskHelper{
 
     @Override
     Integer run(){
+
         //Show You Welcome Message
         logger.info msg
         logger.info ''
+
         return STATUS_TASK_DONE
+
     }
 }

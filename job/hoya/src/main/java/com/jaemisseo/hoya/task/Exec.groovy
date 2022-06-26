@@ -70,10 +70,15 @@ class Exec extends TaskHelper{
 
     @Override
     Integer run(){
+
         runCommand(beforeCommandForAllList, beforeCommandForWinList, beforeCommandForLinList, (modeIgnoreError || modeIgnoreErrorBeforeCommand))
+
         runCommand(commandForAllList, commandForWinList, commandForLinList, (modeIgnoreError || modeIgnoreErrorCommand))
+
         runCommand(afterCommandForAllList, afterCommandForWinList, afterCommandForLinList, (modeIgnoreError || modeIgnoreErrorAfterCommand))
+
 //        logMiddleTitle 'FINISHED EXEC'
+
         return STATUS_TASK_DONE
     }
 

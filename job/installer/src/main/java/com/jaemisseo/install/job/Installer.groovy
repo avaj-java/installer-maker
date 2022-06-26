@@ -2,6 +2,8 @@ package com.jaemisseo.install.job
 
 import com.jaemisseo.hoya.bean.GlobalOptionForInstaller
 import com.jaemisseo.hoya.bean.ReportSetup
+import com.jaemisseo.install.helper.InstallerAfterAsk
+import com.jaemisseo.install.helper.InstallerBeforeAsk
 import jaemisseo.man.configuration.exception.WantToRestartException
 import com.jaemisseo.hoya.job.JobHelper
 import com.jaemisseo.hoya.task.TaskHelper

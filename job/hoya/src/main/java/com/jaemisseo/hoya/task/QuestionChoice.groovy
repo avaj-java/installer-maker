@@ -23,6 +23,23 @@ class QuestionChoice extends TaskHelper{
 
     @Override
     Integer run(){
+
+        /** Before **/
+        QuestionMan qman = beforeQuestion()
+
+        /** Ask Question **/
+        String answerFromUser = qman.question(opt, QuestionMan.QUESTION_TYPE_CHOICE)
+
+        /** After **/
+        String value = qman.getValue()
+        int status = afterQuestion(answerFromUser, value)
+
+        return status
+    }
+
+
+
+    private QuestionMan beforeQuestion(){
         //Get Properties
         QuestionMan qman = new QuestionMan().setValidAnswer([undoSign, redoSign])
         if (opt.questionColor){
@@ -34,23 +51,23 @@ class QuestionChoice extends TaskHelper{
             }
         }
 
-        //Ask Question
-        //Get Answer
-        String yourAnswer = qman.question(opt, QuestionMan.QUESTION_TYPE_CHOICE)
+        return qman
+    }
 
+    private int afterQuestion(String answerFromUser, String value){
         //Check undo & redo command
-        if (checkUndoQuestion(yourAnswer))
+        if (checkUndoQuestion(answerFromUser))
             return STATUS_UNDO_QUESTION
 
-        if (checkRedoQuestion(yourAnswer))
+        if (checkRedoQuestion(answerFromUser))
             return STATUS_REDO_QUESTION
 
         //Remeber 'answer'
-        rememberAnswer(yourAnswer)
+        rememberAnswer(answerFromUser)
 
         //Set 'answer' and 'value' Property
-        set('answer', yourAnswer)
-        set('value', qman.getValue())
+        set('answer', answerFromUser)
+        set('value', value)
 
         //Set Some Property
         setPropValue()

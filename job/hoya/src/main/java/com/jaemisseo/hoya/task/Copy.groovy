@@ -14,11 +14,13 @@ import com.jaemisseo.hoya.bean.FileSetup
 @TerminalValueProtocol(['from', 'to'])
 class Copy extends TaskHelper{
 
-    @Value(name='from', filter='getFilePathList', required=true)
-    List<String> sourcePathList
+    @Value(name='from', filter='findAllFilePaths', required=true)
+//    @Value(name='from', filter='getFilePathList', required=true)
+    List<String> sourcePaths
 
-    @Value(name='to', filter='getFilePathList', required=true)
-    List<String> destPathList
+    @Value(name='to', filter='findAllFilePaths', required=true)
+//    @Value(name='to', filter='getFilePathList', required=true)
+    List<String> destPaths
 
     @Value
     FileSetup fileSetup
@@ -27,11 +29,24 @@ class Copy extends TaskHelper{
 
     @Override
     Integer run(){
-        sourcePathList.each{ String sourceFilePath ->
-            destPathList.each{ String destFilePath ->
+
+        /** Log - START **/
+        logger.info " <Task:Copy>"
+        logger.info "  - From      : $sourcePaths"
+        logger.info "  - To        : $destPaths"
+        logger.info ""
+
+        /** Log - START **/
+        sourcePaths.each{ String sourceFilePath ->
+
+            destPaths.each{ String destFilePath ->
+
                 FileMan.copy(sourceFilePath, destFilePath, fileSetup)
+
             }
+
         }
+
         return STATUS_TASK_DONE
     }
 

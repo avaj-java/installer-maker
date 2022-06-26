@@ -3,6 +3,8 @@ package com.jaemisseo.install.job
 import com.jaemisseo.hoya.bean.FileSetup
 import com.jaemisseo.hoya.bean.GlobalOptionForInstallerMaker
 import com.jaemisseo.hoya.bean.ReportSetup
+import com.jaemisseo.install.helper.InstallerMakerAfterBuild
+import com.jaemisseo.install.helper.InstallerMakerBeforeBuild
 import jaemisseo.man.configuration.exception.ScriptNotFoundException
 import jaemisseo.man.configuration.exception.WantToRestartException
 import com.jaemisseo.hoya.job.JobHelper

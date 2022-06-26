@@ -23,7 +23,23 @@ class QuestionYN extends TaskHelper{
 
     @Override
     Integer run(){
-        //Get Properties
+
+        /** Before **/
+        QuestionMan qman = beforeQuestion()
+
+        /** Ask Question **/
+        String answerFromUser = qman.question(opt, QuestionMan.QUESTION_TYPE_YN)
+
+        /** After **/
+        String value = qman.getValue()
+        int status = afterQuestion(answerFromUser, value)
+
+        return status
+    }
+
+
+
+    private QuestionMan beforeQuestion(){
         QuestionMan qman = new QuestionMan().setValidAnswer([undoSign, redoSign])
         if (opt.questionColor){
             qman.setBeforeQuestionClosure{
@@ -33,27 +49,27 @@ class QuestionYN extends TaskHelper{
                 config.logGen.setupBeforeConsoleLoggerPattern()
             }
         }
-        
-        //Ask Question
-        //Get Answer
-        String yourAnswer = qman.question(opt, QuestionMan.QUESTION_TYPE_YN)
 
+        return qman
+    }
+
+    private int afterQuestion(String answerFromUser, String value){
         //Check undo & redo command
-        if (checkUndoQuestion(yourAnswer))
+        if (checkUndoQuestion(answerFromUser))
             return STATUS_UNDO_QUESTION
 
-        if (checkRedoQuestion(yourAnswer))
+        if (checkRedoQuestion(answerFromUser))
             return STATUS_REDO_QUESTION
 
         //Remeber Answer
-        rememberAnswer(yourAnswer)
+        rememberAnswer(answerFromUser)
 
         //Set 'answer' and 'value' Property
-        set('answer', yourAnswer)
-        set('value', qman.getValue())
+        set('answer', answerFromUser)
+        set('value', value)
 
         //If 'answer' is Y
-        if (yourAnswer?.toUpperCase()?.equals(QuestionMan.Y))
+        if (answerFromUser?.toUpperCase()?.equals(QuestionMan.Y))
             setPropValue()
 
         return STATUS_TASK_DONE

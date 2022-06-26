@@ -1,10 +1,9 @@
 package com.jaemisseo.hoya.task
 
-
+import com.jaemisseo.hoya.util.FileFinderUtil
 import jaemisseo.man.configuration.annotation.type.Task
 import jaemisseo.man.configuration.annotation.type.Undoable
 import jaemisseo.man.configuration.annotation.Value
-import jaemisseo.man.FileMan
 import jaemisseo.man.QuestionMan
 import com.jaemisseo.hoya.bean.QuestionSetup
 import jaemisseo.man.util.Util
@@ -25,20 +24,89 @@ class QuestionFindFile extends TaskHelper{
     @Value(name="find.file.name", required=true)
     String searchFileName
 
+    @Value(name='find.if', filter='parse')
+    def searchIf
+
     @Value("find.result.default")
     List<String> resultDefaultList
 
     @Value("find.result.edit.relpath")
     String editResultPath
 
-    @Value(name='find.if', filter='parse')
-    def searchIf
+    @Value("find.result.edit.refactoring.pattern")
+    String editResultRefactoringPattern
+
+    @Value("find.result.edit.refactoring.result")
+    String editResultRefactoringResult
 
     @Value("mode.recursive")
     Boolean modeRecursive
 
+
     @Override
     Integer run(){
+
+        /** Before **/
+        //- Setup
+        List<File> itemList = []
+        modeRecursive = (modeRecursive != null) ? modeRecursive : false
+        QuestionMan qman = beforeQuestion()
+
+        /** (New Thread) Finding Files... **/
+        FileFinderUtil.File fileFinder = new FileFinderUtil.File(
+                searchRootPath: searchRootPath,
+                searchFileName: searchFileName,
+                resultDefaultList: resultDefaultList,
+                searchIf: searchIf,
+                editResultPath: editResultPath,
+                editResultRefactoringPattern: editResultRefactoringPattern,
+                editResultRefactoringResult: editResultRefactoringResult
+        )
+
+        Thread threadSearcher = Util.newThread(' <Stoped Searching>      '){
+            if (modeRecursive){
+                FileFinderUtil.collectFileRecursivley(itemList, fileFinder)
+            }else{
+                FileFinderUtil.collectFile(itemList, fileFinder)
+            }
+            int defaultCount = resultDefaultList?.size() ?: 0
+            logger.info "${itemList.size() + defaultCount} was founded."
+            logger.info " <Finished Searching>"
+        }
+
+        /** (Main Thread) Ask Question **/
+        String answerFromUser = null
+        try{
+            //Wait that all resultDefaultList is printed
+            waitUntilAllOfResultDefaultListIsPrinted(resultDefaultList, itemList)
+
+            //Question
+            answerFromUser = qman.question(opt){ String answer, jaemisseo.man.bean.QuestionSetup option ->
+                if (answer.isNumber()){
+                    int answerNum = Integer.parseInt(answer)
+                    return (itemList.size() >= answerNum && answerNum >= 1)
+                }
+                return false
+            }
+
+        }catch(e){
+            throw e
+        }finally{
+            //Thread-Searcher - STOP
+            threadSearcher.interrupt()
+        }
+
+        /** After **/
+        int seletedIndex = (Integer.parseInt(answerFromUser) -1)
+        String value = itemList[seletedIndex].path
+        int status = afterQuestion(answerFromUser, value)
+
+        return status
+    }
+
+
+
+    private QuestionMan beforeQuestion(){
         /** Get Properties **/
         QuestionMan qman = new QuestionMan().setValidAnswer([undoSign, redoSign])
         if (opt.questionColor){
@@ -50,10 +118,6 @@ class QuestionFindFile extends TaskHelper{
             }
         }
 
-        List<File> itemList = []
-
-        modeRecursive = (modeRecursive != null) ? modeRecursive : false
-
         /** Log - START **/
         logger.info " <Searching>"
         logger.info "  - Root Path      : $searchRootPath"
@@ -61,86 +125,27 @@ class QuestionFindFile extends TaskHelper{
         logger.info "  - Condition      : $searchIf"
         logger.info "  - Mode Recursive : $modeRecursive"
         logger.info "  - Result Path    : $editResultPath"
+        logger.info "  - Result Refactoring Pattern : $editResultRefactoringPattern"
+        logger.info "  - Result Refactoring Result  : $editResultRefactoringResult"
         logger.info ""
 
-        /** New Thread - Finding Files... **/
-        Thread threadSearcher = Util.newThread(' <Stoped Searching>      '){
+        return qman
+    }
 
-            int defaultCount = 0
-            if (modeRecursive){
-                List<File> foundFileList = FileMan.findAllWithProgressBar(searchRootPath, searchFileName, searchIf) { data ->
-                    File foundFile = data.item
-                    if (!data.stringList && resultDefaultList){
-                        resultDefaultList.each{ String defaultPath ->
-                            data.stringList << "  ${++defaultCount}) ${defaultPath}"
-                            itemList << new File(defaultPath)
-                        }
-                    }
-                    int count = data.count + defaultCount
-                    String editedPath = (editResultPath) ? FileMan.getFullPath(foundFile.path, editResultPath) : foundFile.path
-                    data.stringList << "  ${count}) ${editedPath}"
-                    itemList << new File(editedPath)
-                    return true
-                }
-                logger.info "${foundFileList.size() + defaultCount} was founded."
-                logger.info " <Finished Searching>"
-            }else{
-                //TODO: Not Good.. ==> must be updated with more more nice logic
-                if (resultDefaultList){
-                    resultDefaultList.each{ String defaultPath ->
-                        println "  ${++defaultCount}) ${defaultPath}"
-                        itemList << new File(defaultPath)
-                    }
-                }
-                if (!searchRootPath)
-                    searchRootPath = ''
-                List<String> foundFilePathList = FileMan.getSubFilePathList(searchRootPath + '/*')
-                foundFilePathList.eachWithIndex{ String foundFilePath, int index ->
-                    int count = index + 1 + defaultCount
-                    String editedPath = (editResultPath) ? FileMan.getFullPath(foundFilePath, editResultPath) : foundFilePath
-                    println "  ${count}) ${editedPath}"
-                    itemList << new File(editedPath)
-                }
-                logger.info "${foundFilePathList.size() + defaultCount} was founded."
-                logger.info " <Finished Searching>"
-            }
-        }
-
-        /** Ask Question **/
-        //Get Answer
-        String yourAnswer
-        try{
-            //Wait that all resultDefaultList is printed
-            while (resultDefaultList && itemList.size() < resultDefaultList.size()){}
-            //Question
-            yourAnswer = qman.question(opt){ String answer, jaemisseo.man.bean.QuestionSetup option ->
-                if (answer.isNumber()){
-                    int answerNum = Integer.parseInt(answer)
-                    return (itemList.size() >= answerNum && answerNum >= 1)
-                }
-                return false
-            }
-        }catch(e){
-            throw e
-        }finally{
-            //Thread-Searcher - STOP
-            threadSearcher.interrupt()
-        }
-
+    private int afterQuestion(String answerFromUser, String value){
         //Check undo & redo command
-        if (checkUndoQuestion(yourAnswer))
+        if (checkUndoQuestion( answerFromUser ))
             return STATUS_UNDO_QUESTION
 
-        if (checkRedoQuestion(yourAnswer))
+        if (checkRedoQuestion( answerFromUser ))
             return STATUS_REDO_QUESTION
 
         //Remeber 'answer'
-        rememberAnswer(yourAnswer)
+        rememberAnswer( answerFromUser )
 
         //Set 'answer' and 'value' Property
-        int seletedIndex = (Integer.parseInt(yourAnswer) -1)
-        set('answer', yourAnswer)
-        set('value', itemList[seletedIndex].path)
+        set('answer', answerFromUser)
+        set('value', value)
 
         //Set Some Property
         setPropValue()
@@ -148,6 +153,11 @@ class QuestionFindFile extends TaskHelper{
         return STATUS_TASK_DONE
     }
 
+
+
+    private static waitUntilAllOfResultDefaultListIsPrinted(List<String> resultDefaultList, List<File> itemList){
+        while (resultDefaultList && itemList.size() < resultDefaultList.size()){}
+    }
 
 
     /**

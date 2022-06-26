@@ -1,4 +1,4 @@
-package com.jaemisseo.install.job
+package com.jaemisseo.install.helper
 
 import com.jaemisseo.hoya.job.JobHelper
 import jaemisseo.man.PropMan

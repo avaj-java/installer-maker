@@ -1,4 +1,4 @@
-package com.jaemisseo.install.job
+package com.jaemisseo.install.helper
 
 import com.jaemisseo.hoya.bean.FileSetup
 import com.jaemisseo.hoya.bean.GlobalOptionForInstallerMaker
@@ -8,6 +8,8 @@ import com.jaemisseo.install.exception.FailedToCopyDistributionDirException
 import com.jaemisseo.install.exception.FailedToDownloadDistributionException
 import com.jaemisseo.install.exception.FailedToExtractDistributionException
 import com.jaemisseo.install.exception.OverRetryLimit
+import com.jaemisseo.install.job.Installer
+import com.jaemisseo.install.job.InstallerMaker
 import jaemisseo.man.FileMan
 import jaemisseo.man.PropMan
 import jaemisseo.man.configuration.context.CommanderConfig
@@ -96,7 +98,9 @@ class InstallerMakerBeforeBuild extends JobHelper {
         //TODO: How to check environment cli or gradle
         boolean modeNeedToDownload = environment.getModeNeedToDownloadForRemaking()
         if (modeNeedToDownload){
-            libSourcePath = 'https://github.com/avaj-java/installer-maker/releases/download/0.7.3/installer-maker-0.7.3.zip';
+            String version = "0.8.3.1"
+            String fileName = "installer-maker-cli-${version}"
+            libSourcePath = "https://github.com/avaj-java/installer-maker/releases/download/${version}/${fileName}.zip";
             logger.debug """<Installer-Maker> Copy And Generate Installer Library
              - Installer Home: ${buildInstallerHome}"
              - Copy Installer Lib: 
@@ -107,7 +111,7 @@ class InstallerMakerBeforeBuild extends JobHelper {
             downloadAndStoreDistribution(libSourcePath, storedDirPath, gOpt, 0)
             if (new File(storedDirPath).exists()){
                 try {
-                    String storedLibPath = new File(storedDirPath, "installer-maker-0.7.3/lib/*.*").getPath()
+                    String storedLibPath = new File(storedDirPath, "${fileName}/lib/*.*").getPath()
                     copyLibDirToLibDir(storedLibPath, libDestPath, gOpt);
 //                    copyLibToLibDirWithURLClassLoader(libDestPath, gOpt)
                 }catch(FailedToCopyDistributionDirException ftcdde){

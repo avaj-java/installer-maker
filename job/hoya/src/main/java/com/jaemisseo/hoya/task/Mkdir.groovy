@@ -27,9 +27,13 @@ class Mkdir extends TaskHelper{
 
     @Override
     Integer run(){
+
         destPathList.each{ String path ->
+
             FileMan.mkdirs(path, buildStructureMap, true)
+
         }
+
         return STATUS_TASK_DONE
     }
 

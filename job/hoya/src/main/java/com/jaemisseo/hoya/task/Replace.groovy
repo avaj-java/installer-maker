@@ -40,6 +40,7 @@ class Replace extends TaskHelper{
 
     @Override
     Integer run(){
+
         filePathList.each{ String filePath ->
             new FileMan(filePath)
                         .set( fileSetup )
@@ -52,6 +53,7 @@ class Replace extends TaskHelper{
                         .write( fileSetup.clone([modeAutoOverWrite:true]) )
                         .report()
         }
+
         return STATUS_TASK_DONE
     }
 

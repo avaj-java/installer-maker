@@ -60,7 +60,7 @@ class SFTP extends TaskHelper{
     String host
 
     @Value(name='port')
-    String port
+    Integer port
 
     @Value
     FileSetup fileSetup

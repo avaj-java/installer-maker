@@ -48,12 +48,12 @@ hoya:
     task: NOTICE
     msg: "Hey, ${user.name}. I'm hoya, Can I help you?"
 
-####################
-##### CHOOSE -1
-####################
+  ####################
+  ##### CHOOSE -1
+  ####################
   chk1:
     task: QuestionChoice
-    desc: INSTALL PROGRAM
+    desc: What do you need to ???
     answer.default: f
     answer.options:
       - f) FILE
@@ -62,9 +62,9 @@ hoya:
       - c) CRYPT
 
 
-####################
-##### CHOOSE -2
-####################
+  ####################
+  ##### CHOOSE -2
+  ####################
   chk2:
     task: QuestionChoice
     if: '{"hoya.chk1.answer":["f"]}'
@@ -101,9 +101,9 @@ hoya:
       - d) DECRYPT
 
 
-####################
-##### SQL
-####################
+  ####################
+  ##### SQL
+  ####################
   sql1:
     task: Question
     if: '[ {"hoya.chk1.answer":["s"]}, {"hoya.chk3.answer":["j"]} ]'
@@ -170,9 +170,9 @@ hoya:
 
 
 
-####################
-##### ZIP
-####################
+  ####################
+  ##### ZIP
+  ####################
   zip1:
     task: Question
     if: '{"hoya.chk2.answer":"z"}'
@@ -191,9 +191,9 @@ hoya:
     task: ZIP
     if: '{"hoya.chk2.answer":"z"}'
 
-####################
-##### TAR
-####################
+  ####################
+  ##### TAR
+  ####################
   tar1:
     task: Question
     if: '{"hoya.chk2.answer":"t"}'
@@ -212,9 +212,9 @@ hoya:
     task: TAR
     if: '{"hoya.chk2.answer":"t"}'
 
-####################
-##### JAR
-####################
+  ####################
+  ##### JAR
+  ####################
   jar1:
     task: Question
     if: '{"hoya.chk2.answer":"j"}'
@@ -233,9 +233,9 @@ hoya:
     task: jar
     if: '{"hoya.chk2.answer":"j"}'
 
-####################
-##### UNZIP
-####################
+  ####################
+  ##### UNZIP
+  ####################
   unzip1:
     task: Question
     if: '{"hoya.chk2.answer":"xz"}'
@@ -254,9 +254,9 @@ hoya:
     task: ZIP
     if: '{"hoya.chk2.answer":"xz"}'
 
-####################
-##### UNTAR
-####################
+  ####################
+  ##### UNTAR
+  ####################
   untar1:
     task: Question
     if: '{"hoya.chk2.answer":"xt"}'
@@ -275,9 +275,9 @@ hoya:
     task: TAR
     if: '{"hoya.chk2.answer":"xt"}'
 
-####################
-##### UNJAR
-####################
+  ####################
+  ##### UNJAR
+  ####################
   unjar1:
     task: Question
     if: '{"hoya.chk2.answer":"xj"}'
@@ -297,9 +297,9 @@ hoya:
     if: '{"hoya.chk2.answer":"xj"}'
 
 
-####################
-##### MERGE PROPERTIES
-####################
+  ####################
+  ##### MERGE PROPERTIES
+  ####################
   merge1:
     task: Question
     if: '{"hoya.chk2.answer":"m"}'
@@ -319,17 +319,17 @@ hoya:
     if: '{"hoya.chk2.answer":"m"}'
 
 
-####################
-##### TEST JDBC
-####################
+  ####################
+  ##### TEST JDBC
+  ####################
   jdbc:
     task: TestJDBC
     if: '{"hoya.chk3.answer":"j"}'
 
 
-####################
-##### TEST REST
-####################
+  ####################
+  ##### TEST REST
+  ####################
   rest1:
     task: Question
     if: '{"hoya.chk3.answer":"r"}'
@@ -364,9 +364,9 @@ hoya:
     task: TestREST
     if: '{"hoya.chk3.answer":"r"}'
 
-####################
-##### TEST SOCKET
-####################
+  ####################
+  ##### TEST SOCKET
+  ####################
   socket1:
     task: Question
     if: '{"hoya.chk3.answer":"s"}'
@@ -393,9 +393,9 @@ hoya:
     if: '{"hoya.chk3.answer":"s"}'
 
 
-####################
-##### TEST EMAIL
-####################
+  ####################
+  ##### TEST EMAIL
+  ####################
   email1:
     task: Question
     if: '{"hoya.chk3.answer":"e"}'
@@ -463,9 +463,9 @@ hoya:
     task: TestEMAIL
     if: '{"hoya.chk3.answer":"e"}'
 
-####################
-##### TEST PORT
-####################
+  ####################
+  ##### TEST PORT
+  ####################
   port1:
     task: Question
     if: '{"hoya.chk3.answer":"p"}'
@@ -485,9 +485,9 @@ hoya:
     if: '{"hoya.chk3.answer":"p"}'
 
 
-####################
-##### CRYPT
-####################
+  ####################
+  ##### CRYPT
+  ####################
   crypt1:
     task: QuestionChoice
     if: '{"hoya.chk1.answer":["c"]}'
@@ -513,9 +513,9 @@ hoya:
     answer.default: aes
     property: method
 
-####################
-##### TEMP ENCRYPT
-####################
+  ####################
+  ##### TEMP ENCRYPT
+  ####################
   encrypt1:
     task: Question
     if: '{"hoya.chk4.answer":"e"}'
@@ -527,9 +527,9 @@ hoya:
     task: ENCRYPT
     if: '{"hoya.chk4.answer":"e"}'
 
-####################
-##### TEMP DECRYPT
-####################
+  ####################
+  ##### TEMP DECRYPT
+  ####################
   decrypt1:
     task: Question
     if: '{"hoya.chk4.answer":"d"}'

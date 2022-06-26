@@ -27,7 +27,9 @@ class Jar extends TaskHelper{
 
     @Override
     Integer run(){
+
         FileMan.jar(filePath, destPath, fileSetup)
+
         return STATUS_TASK_DONE
     }
 
