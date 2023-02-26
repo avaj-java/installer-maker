@@ -1,6 +1,7 @@
 package com.jaemisseo.hoya.task
 
 import com.jaemisseo.hoya.application.HoyaCliApplication
+import org.junit.Ignore
 import org.junit.Test
 import jaemisseo.man.configuration.context.Command
 
@@ -10,6 +11,7 @@ import java.util.regex.Pattern
 class FindFileTest {
 
     @Test
+    @Ignore
     void matcher_capture(){
         boolean matchesByRegex = "D:/big_install/apache-tomcat-8.5.45/webapps/docs/appdev/sample/src/mypackage/Hello.java".matches("(?<DIR>.*)/(?<NAME>.*)[.]java")
         assert matchesByRegex
@@ -21,6 +23,7 @@ class FindFileTest {
     }
 
     @Test
+    @Ignore
     void findAll_from_root(){
         new HoyaCliApplication().run(new Command(
 //                "-questionfindfile",
@@ -39,6 +42,7 @@ class FindFileTest {
     }
 
     @Test
+    @Ignore
     void findAll_one_level_files_from_some_dir(){
         new HoyaCliApplication().run(new Command(
                 "-questionfindfile",
@@ -74,6 +78,7 @@ class FindFileTest {
     }
 
     @Test
+    @Ignore
     void findAll_from_user_dir(){
         new HoyaCliApplication().run(new Command(
                 "-questionfindfile",

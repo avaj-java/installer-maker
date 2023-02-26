@@ -30,6 +30,8 @@ class GlobalOptionForInstallerMaker extends Option{
     @Value('properties.dir')
     String propertiesDir = './'
 
+    @Value('mode.executable')
+    Boolean modeExecutable = true
     @Value('mode.auto.rsp')
     Boolean modeAutoRsp
     @Value('mode.auto.zip')

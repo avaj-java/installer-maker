@@ -24,8 +24,17 @@ import java.sql.SQLException
 @TerminalValueProtocol(['file'])
 class Sql extends TaskHelper{
 
-    @Value(name='file', filter='getFilePathList', required=true)
-    List<String> filePathList
+    @Value(name='file', filter='getFilePathList')
+    List<String> files
+
+    @Value(name='query', filter='getList')
+    List<String> queries
+
+    @Value(name='before-query', filter='getList')
+    List<String> beforeQueries
+
+    @Value(name='after-query', filter='getList')
+    List<String> afterQueries
 
     @Value
     SqlSetup sqlSetup
@@ -42,58 +51,92 @@ class Sql extends TaskHelper{
         //1. Default Setup
         SqlMan sqlman = new SqlMan()
         sqlObjectListList = []
-
-        // -Mode No Progress Bar
+        //- Mode No Progress Bar
         if ([Level.WARN, Level.ERROR, Level.OFF].contains(config.logGen.getConsoleLogLevel()))
             sqlSetup.modeProgressBar = false
 
         //2. Execute All SQL
-        filePathList.each{ String filePath ->
-            try{
-                String originFileName = new File(filePath).getName()
-                logger.info(" <<< SQL: ${originFileName} >>> ")
 
-                //2. Generate Query Replaced With New Object Name
-                sqlman.init()
-                    .queryFromFile(filePath)
+        //- Queries from File
+        files?.each{ String filePath ->
+
+            //- Check File
+            File file = new File(filePath)
+            String originFileName = file.getName()
+            logger.info(" <<< SQL(file): ${originFileName} >>> ")
+
+            //- Generate Query Replaced With New Object Name
+            sqlman.init()
+                    .beforeQuery(beforeQueries.toArray(new String[0]))
+                    .query(file)
+                    .afterQuery(afterQueries.toArray(new String[0]))
                     .command([SqlMan.ALL])
                     .replace(sqlSetup)
 
-                //3. Report Checking Before
-                if (sqlSetup.modeSqlCheckBefore){
-                    try {
-                        sqlman.checkBefore(sqlSetup)
+            //- Execute
+            execute( sqlman, sqlSetup )
 
-                    }catch(e){
-                        throw new SQLException('Error, Checking Before Execution.', e)
-                    }
-                }
+        }
 
-                //- Generate SQL File
-                if (sqlSetup.modeSqlFileGenerate){
-                    logger.info("Creating SQL File...")
-                    FileMan.write("./replaced_${originFileName}", sqlman.getReplacedQueryList(), reportSetup.fileSetup)
-                }
+        //- Queries
+        queries?.each{ String query ->
 
-                //4. Execute
-                if (sqlSetup.modeSqlExecute){
-                    sqlman.run(sqlSetup)
-                }
+            //- Check Query
+            logger.info(" <<< SQL(query): ${query} >>> ")
 
-            }catch(e){
-                throw e
-            }finally{
-                //Add Report
-                sqlObjectListList << sqlman.getAnalysisResultList()
-                //Report to console
-                sqlman.reportResult()
-                logger.info("")
-            }
+            //- Generate Query Replaced With New Object Name
+            sqlman.init()
+                    .beforeQuery(beforeQueries.toArray(new String[0]))
+                    .query(query)
+                    .afterQuery(afterQueries.toArray(new String[0]))
+                    .command([SqlMan.ALL])
+                    .replace(sqlSetup)
+
+            //- Execute
+            execute( sqlman, sqlSetup )
 
         }
 
         return STATUS_TASK_DONE
     }
+
+    private execute(SqlMan sqlman, SqlSetup sqlSetup){
+        try{
+            //1. Report Checking Before
+            if (sqlSetup.modeSqlCheckBefore){
+                try {
+                    sqlman.checkBefore(sqlSetup)
+                }catch(Exception e){
+                    throw new SQLException('Error, Checking Before Execution.', e)
+                }
+            }
+
+            //2. Generate SQL File
+            if (sqlSetup.modeSqlFileGenerate){
+                String originFileName = sqlman.sqlFileName ?: new UUID().toString();
+                logger.info("Creating SQL File...")
+                FileMan.write("./replaced_${originFileName}", sqlman.getReplacedQueryList(), reportSetup.fileSetup)
+            }
+
+            //3. Execute
+            if (sqlSetup.modeSqlExecute){
+                sqlman.run(sqlSetup)
+            }
+
+        }catch(e){
+            throw e
+        }finally{
+            //- Add Report
+            sqlObjectListList << sqlman.getAnalysisResultList()
+            //- Report to console
+            sqlman.reportResult()
+            logger.info("")
+        }
+    }
+
+
+
+
 
     @Override
     void reportWithConsole(ReportSetup reportSetup, List reportMapList){
@@ -114,11 +157,12 @@ class Sql extends TaskHelper{
                 reportMapList.add(new ReportSql(
                         sqlFileName: sqlObj.sqlFileName,
                         seq: sqlObj.seq,
-                        isOk: (sqlObj.isOk == null) ? '' : (sqlObj.isOk) ? 'Complete' : 'Failed',
+                        isOk: (sqlObj.isOk == null) ? "" : (sqlObj.isOk) ? "O" : "X",
                         query: sqlObj.query,
+                        executor: sqlObj.executor,
                         commandType: sqlObj.commandType,
                         objectType: sqlObj.objectType,
-                        schemeName: sqlObj.schemeName,
+                        schemeName: sqlObj.schemaName ?: sqlObj.schemaNameForObject,
                         objectName: sqlObj.objectName,
                         warnningMessage: sqlObj.warnningMessage,
                         error: sqlObj.error?.toString(),

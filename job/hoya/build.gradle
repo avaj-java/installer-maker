@@ -20,8 +20,16 @@ version = '0.0.1'
 dependencies {
 
     getSubprojects().each{
+
+        if (["reportman-annotation-alter"].contains(it.name))
+            return;
+
         compile it
+        println "    - Dependent on "+ it.name
+
     }
+
+    implementation 'commons-io:commons-io:2.5'
 
     //JAEMISSEO
 //    subprojectList.each{ compile(getDependency(it)) }

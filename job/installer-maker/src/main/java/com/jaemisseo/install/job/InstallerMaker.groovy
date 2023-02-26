@@ -322,11 +322,14 @@ public class InstallerMaker extends JobHelper {
         try{
             ReportSetup reportSetup = gOpt.reportSetup
 
-            //1. Gen Starter and Response File
-            String binPath = before.remakeLibAndBin(gOpt)
-
-            //- set bin path on builded installer
-            provider.setToRawProperty('build.installer.bin.path', binPath)
+            if (gOpt.modeExecutable){
+                //1. Gen Starter and Response File
+                String binPath = before.remakeLibAndBin(gOpt)
+                //- set bin path on builded installer
+                provider.setToRawProperty('build.installer.bin.path', binPath)
+            }else{
+                //None
+            }
 
             //2. Each level by level
             validTaskList = CommanderConfig.findAllClasses('com.jaemisseo', [Task])

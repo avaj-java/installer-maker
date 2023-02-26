@@ -30,6 +30,7 @@ class ReportSql extends Option{
     @ReportColumn(index=0, headerName="SEQ", width=1000)
     Integer seq
 
+    @ReportColumnDataStyle(alignment=HSSFCellStyle.ALIGN_CENTER)
     @ReportColumn(index=1, headerName="EXECUTION")
     String isOk
 
@@ -37,19 +38,22 @@ class ReportSql extends Option{
     @ReportColumn(index=2, headerName="QUERY", width=13000)
     String query
 
-    @ReportColumn(index=3, headerName="COMMAND")
+    @ReportColumn(index=3, headerName="EXECUTOR")
+    String executor
+
+    @ReportColumn(index=4, headerName="COMMAND")
     String commandType
 
-    @ReportColumn(index=4, headerName="OBJECT TYPE")
+    @ReportColumn(index=5, headerName="OBJECT TYPE")
     String objectType
 
 
     @ReportColumnDataStyle(wrapText=true)
-    @ReportColumn(index=5, headerName="SCHEME NAME", width=6000)
+    @ReportColumn(index=6, headerName="SCHEME NAME", width=6000)
     String schemeName
 
     @ReportColumnDataStyle(wrapText=true)
-    @ReportColumn(index=6, headerName="OBJECT NAME", width=6000)
+    @ReportColumn(index=7, headerName="OBJECT NAME", width=6000)
     String objectName
 
     @ReportColumnDataStyle(alignment=HSSFCellStyle.ALIGN_CENTER)
@@ -58,13 +62,13 @@ class ReportSql extends Option{
 
 
 
-    @ReportColumnHighlightStyle(condition='not($${7}${dataStartRow}="")', range=ReportMan.RANGE_DATA_ALL, background=HSSFColor.RED.index)
-    @ReportColumnDataStyle(wrapText=true)
-    @ReportColumn(index=7, headerName="WARN BEFORE", width=5000)
-    String warnningMessage
-
     @ReportColumnHighlightStyle(condition='not($${8}${dataStartRow}="")', range=ReportMan.RANGE_DATA_ALL, background=HSSFColor.RED.index)
     @ReportColumnDataStyle(wrapText=true)
-    @ReportColumn(index=8, headerName="ERROR AFTER", width=10000)
+    @ReportColumn(index=8, headerName="WARN BEFORE", width=5000)
+    String warnningMessage
+
+    @ReportColumnHighlightStyle(condition='not($${9}${dataStartRow}="")', range=ReportMan.RANGE_DATA_ALL, background=HSSFColor.RED.index)
+    @ReportColumnDataStyle(wrapText=true)
+    @ReportColumn(index=9, headerName="ERROR AFTER", width=10000)
     String error
 }
