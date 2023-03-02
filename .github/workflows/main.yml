@@ -48,8 +48,8 @@ jobs:
           path: build/reports/jacoco/test/html
 
       - name: Get Version
-#         run: echo "##[set-output name=version;]$(echo '${{ github.event.head_commit.message }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
-        run: echo "APP_VERSION=$(echo '${{ github.event.head_commit.message }}'" >> $GITHUB_STATE
+        run: echo "version=$(echo '${{ github.event.head_commit.message }}'" >> $GITHUB_STATE
+#         run: echo "##[set-output name=version;]$(echo '${{ github.event.head_commit.message }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"        
         id: extract_version_name       
 
 #       - name: Create Release
@@ -58,8 +58,8 @@ jobs:
 #         env:
 #           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #         with:
-#           tag_name: ${{ steps.extract_version_name.outputs.APP_VERSION }}
-#           release_name: ${{ steps.extract_version_name.outputs.APP_VERSION }}
+#           tag_name: ${{ steps.extract_version_name.outputs.version }}
+#           release_name: ${{ steps.extract_version_name.outputs.version }}
 #           draft: false
 #           prerelease: false
 
@@ -84,7 +84,7 @@ jobs:
           file: build/distributions/*.zip
           file_glob: true
           asset_name: mything
-          tag: ${{ steps.extract_version_name.outputs.APP_VERSION }}
+          tag: ${{ steps.extract_version_name.outputs.version }}
           overwrite: true
-          body: "This is my release text - ${{ steps.extract_version_name.outputs.APP_VERSION }}"
+          body: "This is my release text - ${{ steps.extract_version_name.outputs.version }}"
         
