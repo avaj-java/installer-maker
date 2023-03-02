@@ -30,6 +30,7 @@ dependencies {
     }
 
     implementation 'commons-io:commons-io:2.5'
+    implementation 'org.postgresql:postgresql:42.4.0'
 
     //JAEMISSEO
 //    subprojectList.each{ compile(getDependency(it)) }
