@@ -51,27 +51,38 @@ jobs:
         run: echo "version=$(echo '${{ github.event.head_commit.message }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')" >> $GITHUB_STATE
         id: extract_version_name       
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.extract_version_name.outputs.version }}
-          release_name: ${{ steps.extract_version_name.outputs.version }}
-          draft: false
-          prerelease: false
+#       - name: Create Release
+#         id: create_release
+#         uses: actions/create-release@v1
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         with:
+#           tag_name: ${{ steps.extract_version_name.outputs.version }}
+#           release_name: ${{ steps.extract_version_name.outputs.version }}
+#           draft: false
+#           prerelease: false
 
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create_release.outputs.upload_url }}
-          asset_path: ./build/distributions/*.zip
-          asset_name: installer-maker-cli-0.8.3.1.zip
-          asset_content_type: application/zip
+#       - name: Upload Release Asset
+#         id: upload-release-asset
+#         uses: actions/upload-release-asset@v1
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         with:
+#           upload_url: ${{ needs.create_release.outputs.upload_url }}
+#           asset_path: ./build/distributions/*.zip
+#           asset_name: installer-maker-cli-0.8.3.1.zip
+#           asset_content_type: application/zip
 
-#       - run: export RELEASE_PKG_FILE=$(ls build/distributions/*.zip)
-#       - run: echo "# Zip File => $RELEASE_PKG_FILE
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_name: owner/repository-name
+          # A personal access token for the GitHub repository in which the release will be created and edited.
+          # It is recommended to create the access token with the following scopes: `repo, user, admin:repo_hook`.
+          repo_token: ${{ secrets.YOUR_PERSONAL_ACCESS_TOKEN }}
+          file: ./build/distributions/*.zip
+          asset_name: mything
+          tag: ${{ github.ref }}
+          overwrite: true
+          body: "This is my release text"
+        
