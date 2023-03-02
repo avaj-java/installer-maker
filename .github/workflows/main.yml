@@ -1,0 +1,72 @@
+name: 'CI'
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'      
+  pull_request:
+    branches:
+      - master
+      - develop
+    
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup JDK
+        uses: actions/setup-java@v3      
+        with:
+          java-version: '8.0.362+9'
+          distribution: 'temurin'
+          
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+      
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: clean build
+          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/develop' }}
+  
+      - name: Upload Jacoco Report
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: jacoco-report
+          path: build/reports/jacoco/test/html
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ./installer-maker-cli-0.8.3.1.zip
+          asset_name: installer-maker-cli-0.8.3.1.zip
+          asset_content_type: application/zip
+
+#       - run: export RELEASE_PKG_FILE=$(ls build/distributions/*.zip)
+#       - run: echo "# Zip File => $RELEASE_PKG_FILE
