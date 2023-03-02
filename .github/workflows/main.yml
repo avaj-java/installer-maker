@@ -47,10 +47,19 @@ jobs:
           name: jacoco-report
           path: build/reports/jacoco/test/html
 
-      - name: Get Version
-        run: echo "version=$(echo '${{ github.event.head_commit.message }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')" >> $GITHUB_STATE
+      - name: Setup Variables
+        run: |
+          echo "APP_VERSION=$(echo '${{ github.event.head_commit.message }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')" >> $GITHUB_OUTPUT
+          echo "GIT_VERSION=$(git describe --tags)" >> $GITHUB_OUTPUT
+          echo "today=$(date -I)" >> $GITHUB_ENV
 #         run: echo "##[set-output name=version;]$(echo '${{ github.event.head_commit.message }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"        
-        id: extract_version_name       
+        id: var
+
+      - name: Check Variables
+        run: |
+          echo "APP_VERSION is ${{ steps.var.outputs.APP_VERSION }}" 
+          echo "The second color is ${{ steps.var.outputs.GIT_VERSION }}"
+          echo "today is $(env.today)"
 
 #       - name: Create Release
 #         id: create_release
@@ -58,8 +67,8 @@ jobs:
 #         env:
 #           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #         with:
-#           tag_name: ${{ steps.extract_version_name.outputs.version }}
-#           release_name: ${{ steps.extract_version_name.outputs.version }}
+#           tag_name: ${{ steps.extract_version_name.outputs.APP_VERSION }}
+#           release_name: ${{ steps.extract_version_name.outputs.APP_VERSION }}
 #           draft: false
 #           prerelease: false
 
@@ -84,7 +93,7 @@ jobs:
           file: build/distributions/*.zip
           file_glob: true
           asset_name: mything
-          tag: ${{ steps.extract_version_name.outputs.version }}
+          tag: ${{ steps.extract_version_name.outputs.APP_VERSION }}
           overwrite: true
-          body: "This is my release text - ${{ steps.extract_version_name.outputs.version }}"
+          body: "This is my release text - ${{ steps.extract_version_name.outputs.APP_VERSION }}"
         
