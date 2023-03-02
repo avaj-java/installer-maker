@@ -3,12 +3,12 @@ name: 'CI'
 on:
   push:
     branches:
-      - 'master'
-      - 'develop'
+      - master
+      - develop
   pull_request:
     branches:
-      - 'master'
-      - 'develop'
+      - master
+      - develop
 
 jobs:
   ci:
@@ -19,7 +19,7 @@ jobs:
       - name: Setup JDK
         uses: actions/setup-java@v3      
         with:
-          java-version: '1.8'
+          java-version: '8.0.362+9'
           distribution: 'temurin'
           
       - name: Grant execute permission for gradlew
