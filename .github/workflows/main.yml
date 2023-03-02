@@ -5,9 +5,6 @@ on:
     branches:
       - master
       - develop
-    tags:
-      - '*'
-#       - 'v[0-9]+.[0-9]+.[0-9]+'
   pull_request:
     branches:
       - master
@@ -64,40 +61,4 @@ jobs:
           echo "today = $(env.today)"
           echo "----- ----- ----- ----- -----"
           echo "github.ref = ${{github.ref}}"
-
-#       - name: Create Release
-#         id: create_release
-#         uses: actions/create-release@v1
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         with:
-#           tag_name: ${{ steps.extract_version_name.outputs.APP_VERSION }}
-#           release_name: ${{ steps.extract_version_name.outputs.APP_VERSION }}
-#           draft: false
-#           prerelease: false
-
-#       - name: Upload Release Asset
-#         id: upload-release-asset
-#         uses: actions/upload-release-asset@v1
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         with:
-#           upload_url: ${{ needs.create_release.outputs.upload_url }}
-#           asset_path: ./build/distributions/*.zip
-#           asset_name: installer-maker-cli-0.8.3.1.zip
-#           asset_content_type: application/zip
-
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_name: avaj-java/installer-maker
-          # A personal access token for the GitHub repository in which the release will be created and edited.
-          # It is recommended to create the access token with the following scopes: `repo, user, admin:repo_hook`.
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/distributions/*.zip
-          file_glob: true
-          asset_name: mything
-          tag: ${{ github.ref }}
-          overwrite: true
-          body: "This is my release text - ${{ github.ref }}"
         
