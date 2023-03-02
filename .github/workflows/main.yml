@@ -58,19 +58,12 @@ jobs:
 
       - name: Check Variables
         run: |
-          echo "APP_VERSION is ${{ steps.var.outputs.APP_VERSION }}" 
-          echo "APP_VERSION2 is ${{ steps.var.outputs.APP_VERSION2 }}"
-          echo "version is $(env.version)"
-          echo "today is $(env.today)"
-
-      - name: Get tag
-        id: tag
-        uses: dawidd6/action-get-tag@v1
-        with:
-          # Optionally strip `v` prefix
-          strip_v: true
-      - name: Use tag
-        run: echo ${{steps.tag.outputs.tag}}
+          echo "APP_VERSION = ${{ steps.var.outputs.APP_VERSION }}" 
+          echo "APP_VERSION2 = ${{ steps.var.outputs.APP_VERSION2 }}"
+          echo "version = $(env.version)"
+          echo "today = $(env.today)"
+          echo "----- ----- ----- ----- -----"
+          echo "github.ref = ${{github.ref}}"
 
 #       - name: Create Release
 #         id: create_release
@@ -104,7 +97,7 @@ jobs:
           file: build/distributions/*.zip
           file_glob: true
           asset_name: mything
-          tag: ${{ steps.app.outputs.version }}
+          tag: ${{ github.ref }}
           overwrite: true
-          body: "This is my release text - ${{ steps.app.outputs.APP_VERSION }}"
+          body: "This is my release text - ${{ github.ref }}"
         
