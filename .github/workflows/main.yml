@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+    branches:
+      - master
+      - develop
+    
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup JDK
+        uses: actions/setup-java@v3      
+        with:
+          java-version: '8.0.362+9'
+          distribution: 'temurin'
+          
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+      
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: clean build
+          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/develop' }}
+  
+      - name: Upload Jacoco Report
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: jacoco-report
+          path: build/reports/jacoco/test/html
+
+      - name: Setup Variables
+        run: |
+          echo "APP_VERSION=$(echo '${{ github.event.head_commit.message }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')" >> $GITHUB_STATE
+          echo "APP_VERSION2=$(git describe --tags)" >> $GITHUB_STATE
+          echo "version=$(git describe --tags)" >> $GITHUB_ENV
+          echo "today=$(date -I)" >> $GITHUB_ENV
+#         run: echo "##[set-output name=version;]$(echo '${{ github.event.head_commit.message }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"        
+        id: var
+
+      - name: Check Variables
+        run: |
+          echo "APP_VERSION = ${{ steps.var.outputs.APP_VERSION }}" 
+          echo "APP_VERSION2 = ${{ steps.var.outputs.APP_VERSION2 }}"
+          echo "version = $(env.version)"
+          echo "today = $(env.today)"
+          echo "----- ----- ----- ----- -----"
+          echo "github.ref = ${{github.ref}}"
+        
