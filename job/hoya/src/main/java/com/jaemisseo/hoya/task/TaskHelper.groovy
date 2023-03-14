@@ -249,10 +249,29 @@ public abstract class TaskHelper {
                             it.originalValue = FileMan.getListFromFile(filePath)
                             it.substitutes = it.originalValue
                         }
+                    },
+
+                    //TODO: 보안?
+                    "EXEC": { VariableMan.OnePartObject it, Map<String, Object> vsMap, Map<String, Closure> vcMap ->
+                        if (it.members){
+                            String command = VariableMan.parseMember(it.members[0], vsMap, vcMap)
+                            String result = ""
+                            File dir = new File(".")
+                            try{
+                                result = command.execute([], dir).text.trim()
+                            }catch(e){
+                                logger.error("Error ocurred during executing command - [$command]", e)
+                            }
+
+                            it.substitutes = result
+//                        it.length = it.substitutes.length()
+                            it.length = it.substitutes.getBytes().length
+                        }
                     }
             ])
+
         /** Parse ${Variable} Exclude Levels **/
-        // -BasicVariableOnly
+        //1. Parse - BasicVariableOnly
         Map map = propmanToParse.properties
         if (excludeStartsWithList){
             map.each{ String propertyName, def value ->
@@ -265,7 +284,8 @@ public abstract class TaskHelper {
                     propmanToParse.set(propertyName, varman.parseDefaultVariableOnly(value))
             }
         }
-        // -All
+
+        //2. Parse - All
         (1..5).each{ int i ->
             map = propmanToParse.properties
             varman.putVariables(map)
